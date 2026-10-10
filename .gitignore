@@ -1,0 +1,59 @@
+# JavaScript dependencies and build output
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environment variables; keep placeholder examples
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Private credentials
+*service-account*.json
+*firebase-adminsdk*.json
+*.pem
+*.key
+
+# Local datasets; allow documentation and approved samples
+data/**
+!data/*.md
+!data/samples/
+!data/samples/**
+
+# Trained model artifacts
+*.pkl
+*.pickle
+*.joblib
+*.onnx
+*.h5
+*.pt
+*.pth
+
+# Generated test results and coverage
+coverage/
+htmlcov/
+.coverage
+.coverage.*
+playwright-report/
+test-results/
+
+# Local Firebase files and logs
+.firebase/
+*.log
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
