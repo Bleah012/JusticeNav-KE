@@ -1,0 +1,63 @@
+name: CI
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+  workflow_dispatch:
+permissions: { contents: read }
+jobs:
+  setup-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate project setup
+        shell: python
+        run: |
+          import json, os, subprocess
+          from pathlib import Path
+          for name in ("README.md", ".gitignore", ".env.example"):
+              if not Path(name).read_text(encoding="utf-8-sig").strip():
+                  raise SystemExit(f"Required file is empty: {name}")
+          expected = {
+              "VITE_API_BASE_URL": "http://localhost:8000",
+              "VITE_FIREBASE_API_KEY": "your_firebase_api_key",
+              "VITE_FIREBASE_AUTH_DOMAIN": "your_project_id.firebaseapp.com",
+              "VITE_FIREBASE_PROJECT_ID": "your_project_id",
+              "VITE_FIREBASE_STORAGE_BUCKET": "your_storage_bucket",
+              "VITE_FIREBASE_MESSAGING_SENDER_ID": "your_messaging_sender_id",
+              "VITE_FIREBASE_APP_ID": "your_firebase_app_id",
+              "APP_ENV": "development",
+              "FRONTEND_ORIGIN": "http://localhost:5173",
+              "FIREBASE_PROJECT_ID": "your_project_id",
+              "GOOGLE_APPLICATION_CREDENTIALS": "",
+          }
+          actual = {}
+          for line in Path(".env.example").read_text(encoding="utf-8-sig").splitlines():
+              if not line.strip() or line.lstrip().startswith("#"):
+                  continue
+              key, value = (part.strip() for part in line.split("=", 1))
+              if key in actual:
+                  raise SystemExit(f"Duplicate example setting: {key}")
+              actual[key] = value
+          if actual != expected:
+              raise SystemExit(".env.example must contain the agreed placeholders only.")
+          tracked = subprocess.check_output(["git", "ls-files", "-z"]).decode().split("\0")
+          for name in filter(None, tracked):
+              path = Path(name)
+              private_env = path.name.startswith(".env") and path.name != ".env.example"
+              local_folder = any(p in {"node_modules", ".venv", "venv"} for p in path.parts)
+              if private_env or local_folder:
+                  raise SystemExit(f"Local-only file is tracked: {name}")
+          # Check the full proposed change, not just the latest PR commit.
+          event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+          pr = event.get("pull_request")
+          base = pr["base"]["sha"] if pr else event.get("before")
+          if base and base != "0" * 40:
+              change = f'{base}...{pr["head"]["sha"]}' if pr else f"{base}..HEAD"
+              subprocess.run(["git", "diff", "--check", change], check=True)
+          else:
+              subprocess.run(["git", "show", "--format=", "--check", "HEAD"], check=True)
+          print("All setup checks passed.")
