@@ -1,0 +1,47 @@
+@layer components {
+  /* Extend the existing account-page styles without changing Sign In. */
+  .sign-up__agreement {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    margin: 4px 0 20px;
+    font-size: 13px;
+  }
+
+  .sign-up__agreement input {
+    width: 18px;
+    height: 18px;
+    margin: 4px 0 0;
+    accent-color: var(--ink);
+    cursor: pointer;
+  }
+
+  .sign-up__agreement label {
+    min-height: 44px;
+    padding-block: 2px;
+    cursor: pointer;
+  }
+
+  .sign-up__agreement a {
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sign-up__agreement input:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .sign-up .sign-up__notice {
+    margin: 18px 0 0;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--teal-soft);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+}
