@@ -1,0 +1,69 @@
+@layer components {
+  /* Match the approved button dimensions, typography, and variants. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-height: 42px;
+    max-width: 100%;
+    padding: 10px 24px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    font: inherit;
+    font-weight: 500;
+    text-align: center;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    box-shadow: none;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .btn-primary {
+    color: var(--canvas);
+    background: var(--navy-2);
+    border-color: var(--navy-2);
+  }
+  .btn-primary:not(:disabled):hover {
+    color: var(--navy-2);
+    background: var(--canvas);
+  }
+  .btn-secondary {
+    color: var(--ink);
+    background: transparent;
+    border-color: var(--ink);
+  }
+  .btn-ghost {
+    color: var(--ink);
+    background: transparent;
+  }
+  .btn-danger {
+    color: var(--danger);
+    background: #ffffff;
+    border-color: #f0b6b1;
+  }
+  .btn-full {
+    width: 100%;
+  }
+  .btn > svg {
+    flex-shrink: 0;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px var(--canvas);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}

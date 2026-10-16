@@ -1,0 +1,135 @@
+@layer components {
+  /* Match the approved black header and responsive navigation. */
+  .public-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 72px;
+    color: var(--canvas);
+    background: var(--navy-2);
+    border-bottom: 1px solid rgba(254, 254, 252, 0.25);
+  }
+  .public-header__inner {
+    width: min(1220px, calc(100% - 48px));
+    height: 100%;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .public-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-family: var(--font-sans);
+    font-size: 19px;
+    font-weight: 500;
+  }
+  .public-header__brand strong {
+    font-weight: 500;
+  }
+  .public-header__mark {
+    width: 39px;
+    height: 39px;
+    flex-shrink: 0;
+  }
+  .public-header__mark rect {
+    fill: var(--ink);
+    stroke: var(--canvas);
+    stroke-width: 1px;
+  }
+  .public-header__nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .public-header__nav > a:not(.btn),
+  .public-header__signin {
+    padding: 10px 12px;
+    color: var(--canvas);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .public-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .public-header .btn {
+    color: var(--ink);
+    background: var(--canvas);
+  }
+  .public-header__toggle {
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    color: var(--canvas);
+    background: transparent;
+    cursor: pointer;
+  }
+  .public-header__nav > .public-header__mobile-action {
+    display: none;
+  }
+  .public-header a:focus-visible,
+  .public-header button:focus-visible {
+    outline: 2px solid var(--canvas);
+    outline-offset: 3px;
+    box-shadow: none;
+  }
+  @media (max-width: 1100px) {
+    .public-header__nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      padding: 14px 24px;
+      max-height: calc(100svh - 72px);
+      overflow-y: auto;
+      background: var(--navy-2);
+      border-bottom: 1px solid rgba(254, 254, 252, 0.25);
+    }
+    .public-header__nav.is-open {
+      display: grid;
+    }
+    .public-header__nav > a {
+      text-align: left;
+    }
+    .public-header__nav > .public-header__mobile-action {
+      display: inline-flex;
+    }
+    .public-header__signin,
+    .public-header__start {
+      display: none;
+    }
+    .public-header__toggle {
+      display: grid;
+    }
+  }
+  @media (max-width: 760px) {
+    .public-header {
+      height: 64px;
+    }
+    .public-header__inner {
+      width: calc(100% - 28px);
+    }
+    .public-header__brand {
+      font-size: 16px;
+    }
+    .public-header__mark {
+      width: 35px;
+      height: 35px;
+    }
+    .public-header__nav {
+      padding-inline: 16px;
+      max-height: calc(100svh - 64px);
+    }
+  }
+}
