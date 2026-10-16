@@ -368,7 +368,7 @@ export function HomePage() {
             </nav>
           </div>
           <div className="home-footer__bottom" id="disclaimer">
-            <span>&copy; {new Date().getFullYear()} JusticeNav KE</span>
+            <span>&copy; 2026 JusticeNav KE</span>
             <p>Information and navigation support, not legal advice.</p>
           </div>
         </div>
