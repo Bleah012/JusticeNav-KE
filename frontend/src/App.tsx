@@ -8,6 +8,7 @@ import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { JusticeServicesPage } from "./pages/JusticeServicesPage";
 import { ServiceProfilePage } from "./pages/ServiceProfilePage";
 import { ResourcesPage } from "./pages/ResourcesPage";
+import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -30,6 +31,7 @@ function App() {
         <Route path="/services" element={<JusticeServicesPage />} />
         <Route path="/services/:serviceId" element={<ServiceProfilePage />} />
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/privacy" element={<PrivacyNoticePage />} />
       </Route>
       <Route path="/login" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
