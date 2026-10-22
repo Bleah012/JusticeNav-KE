@@ -11,6 +11,7 @@ import { ResourcesPage } from "./pages/ResourcesPage";
 import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
 import { TermsOfUsePage } from "./pages/TermsOfUsePage";
 import { AssessmentEntryPage } from "./pages/AssessmentEntryPage";
+import { AssessmentClarificationPage } from "./pages/AssessmentClarificationPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -41,6 +42,10 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/app/assessments/new" element={<AssessmentEntryPage />} />
+      <Route
+        path="/app/assessments/clarify"
+        element={<AssessmentClarificationPage />}
+      />
     </Routes>
   );
 }

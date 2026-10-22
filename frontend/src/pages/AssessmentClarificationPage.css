@@ -1,0 +1,182 @@
+@layer components {
+  .assessment-clarification__meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .assessment-clarification__meta strong {
+    flex-shrink: 0;
+    color: var(--ink);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .assessment-clarification__progress {
+    display: block;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    margin: 8px 0 32px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 2px;
+    background: var(--line);
+    accent-color: var(--ink);
+  }
+
+  .assessment-clarification__progress::-webkit-progress-bar {
+    border-radius: 2px;
+    background: var(--line);
+  }
+
+  .assessment-clarification__progress::-webkit-progress-value {
+    border-radius: 2px;
+    background: var(--ink);
+  }
+
+  .assessment-clarification__progress::-moz-progress-bar {
+    border-radius: 2px;
+    background: var(--ink);
+  }
+
+  .assessment-clarification__title h1 {
+    font-size: 64px;
+  }
+
+  .assessment-clarification__question {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .assessment-clarification__question legend {
+    max-width: 100%;
+    margin-bottom: 14px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  .assessment-clarification__options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .assessment-clarification__options label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    min-height: 54px;
+    padding: 14px 15px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .assessment-clarification__options label:has(input:checked) {
+    border-color: var(--ink);
+    background: var(--teal-soft);
+  }
+
+  .assessment-clarification__options label:hover {
+    border-color: var(--ink);
+  }
+
+  .assessment-clarification__options input {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--ink);
+  }
+
+  .assessment-clarification__options span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .assessment-clarification__options svg {
+    flex-shrink: 0;
+    margin-left: auto;
+    visibility: hidden;
+  }
+
+  .assessment-clarification__options input:checked ~ svg {
+    visibility: visible;
+  }
+
+  .assessment-clarification__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .assessment-clarification__fields label {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+    font-weight: 500;
+  }
+
+  .assessment-clarification__fields label > span {
+    min-height: 48px;
+  }
+
+  .assessment-clarification__fields select {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--surface);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .assessment-clarification__options label:has(input[aria-invalid="true"]),
+  .assessment-clarification__fields select[aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .assessment-clarification__options input:focus-visible,
+  .assessment-clarification__fields select:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 760px) {
+    .assessment-clarification__title h1 {
+      font-size: 48px;
+    }
+
+    .assessment-clarification__options,
+    .assessment-clarification__fields {
+      grid-template-columns: 1fr;
+    }
+
+    .assessment-clarification__fields label > span {
+      min-height: 0;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .assessment-clarification__meta {
+      flex-direction: column;
+      gap: 4px;
+    }
+  }
+}
