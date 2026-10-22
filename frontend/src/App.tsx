@@ -9,6 +9,7 @@ import { JusticeServicesPage } from "./pages/JusticeServicesPage";
 import { ServiceProfilePage } from "./pages/ServiceProfilePage";
 import { ResourcesPage } from "./pages/ResourcesPage";
 import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
+import { TermsOfUsePage } from "./pages/TermsOfUsePage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -32,6 +33,7 @@ function App() {
         <Route path="/services/:serviceId" element={<ServiceProfilePage />} />
         <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/privacy" element={<PrivacyNoticePage />} />
+        <Route path="/terms" element={<TermsOfUsePage />} />
       </Route>
       <Route path="/login" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
