@@ -1,0 +1,313 @@
+@layer components {
+  .preparation-checklist__title h1 {
+    font-size: 64px;
+  }
+
+  .preparation-checklist__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 290px;
+    padding: 40px 24px;
+    border-block: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .preparation-checklist__state > svg {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .preparation-checklist__state h2 {
+    max-width: 440px;
+    margin: 0;
+    font-size: 32px;
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  .preparation-checklist__state p {
+    max-width: 500px;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .preparation-checklist__spinner {
+    animation: preparation-checklist-spin 1s linear infinite;
+  }
+
+  .preparation-checklist__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.6fr);
+    align-items: start;
+    gap: 20px;
+  }
+
+  .preparation-checklist__tool {
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    overflow-wrap: anywhere;
+  }
+
+  .preparation-checklist__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .preparation-checklist__head > div {
+    min-width: 0;
+  }
+
+  .preparation-checklist__head h2 {
+    margin: 14px 0 4px;
+    font-size: 28px;
+    font-weight: 400;
+  }
+
+  .preparation-checklist__head p {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .preparation-checklist__count {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    align-content: center;
+    width: 78px;
+    height: 78px;
+    padding: 8px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+
+  .preparation-checklist__count small {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 400;
+  }
+
+  .preparation-checklist__progress {
+    display: block;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    margin: 22px 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 2px;
+    background: var(--line);
+    accent-color: var(--ink);
+  }
+
+  .preparation-checklist__progress::-webkit-progress-bar {
+    border-radius: 2px;
+    background: var(--line);
+  }
+
+  .preparation-checklist__progress::-webkit-progress-value {
+    border-radius: 2px;
+    background: var(--ink);
+  }
+
+  .preparation-checklist__progress::-moz-progress-bar {
+    border-radius: 2px;
+    background: var(--ink);
+  }
+
+  .preparation-checklist__items {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .preparation-checklist__items label {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 70px;
+    padding: 16px 8px;
+    border-block-start: 1px solid var(--line);
+    cursor: pointer;
+  }
+
+  .preparation-checklist__items label:has(input:checked) {
+    background: var(--teal-soft);
+  }
+
+  .preparation-checklist__items input {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    accent-color: var(--ink);
+    cursor: pointer;
+  }
+
+  .preparation-checklist__items label > span {
+    min-width: 0;
+  }
+
+  .preparation-checklist__items strong,
+  .preparation-checklist__items small {
+    display: block;
+  }
+
+  .preparation-checklist__items strong {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .preparation-checklist__items small {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .preparation-checklist__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .preparation-checklist__aside {
+    display: grid;
+    gap: 15px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .preparation-checklist__why {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--teal-soft);
+  }
+
+  .preparation-checklist__why svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .preparation-checklist__why h2 {
+    margin: 0 0 6px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .preparation-checklist__why p {
+    margin: 0;
+    color: var(--warning);
+    font-size: 13px;
+  }
+
+  .preparation-checklist__related {
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .preparation-checklist__related h2 {
+    margin: 0 0 12px;
+    font-size: 26px;
+    font-weight: 400;
+  }
+
+  .preparation-checklist__related p {
+    margin: 0 0 14px;
+  }
+
+  .preparation-checklist__related a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .preparation-checklist__related a svg {
+    flex-shrink: 0;
+  }
+
+  .preparation-checklist__navigation {
+    flex-wrap: wrap;
+  }
+
+  .preparation-checklist__items input:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .preparation-checklist__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @keyframes preparation-checklist-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .preparation-checklist__title h1 {
+      font-size: 48px;
+    }
+    .preparation-checklist__layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .preparation-checklist__tool {
+      padding: 20px;
+    }
+    .preparation-checklist__state {
+      padding: 32px 16px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .preparation-checklist__head {
+      flex-direction: column;
+    }
+    .preparation-checklist__count {
+      align-self: flex-end;
+    }
+    .preparation-checklist__buttons .btn {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preparation-checklist__spinner {
+      animation: none;
+    }
+  }
+}
