@@ -1,0 +1,212 @@
+@layer components {
+  .referral-request__title h1 {
+    font-size: 64px;
+  }
+
+  .referral-request__form {
+    display: grid;
+    gap: 24px;
+  }
+
+  .referral-request__section {
+    min-width: 0;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .referral-request__section h2 {
+    margin: 0 0 22px;
+    font-size: 28px;
+    font-weight: 400;
+  }
+
+  .referral-request__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 16px;
+    margin-bottom: 20px;
+  }
+
+  .referral-request__grid:last-child {
+    margin-bottom: 0;
+  }
+
+  .referral-request__field {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .referral-request__field input,
+  .referral-request__field select,
+  .referral-request__field textarea,
+  .referral-request__selected {
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    padding: 11px 13px;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    color: var(--ink);
+    background: var(--surface);
+    font: inherit;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  .referral-request__field input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  .referral-request__selected {
+    display: block;
+    color: var(--muted);
+    background: var(--teal-soft);
+    overflow-wrap: anywhere;
+  }
+
+  .referral-request__field textarea {
+    min-height: 160px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .referral-request__field [aria-invalid="true"] {
+    border-color: var(--danger);
+  }
+
+  .referral-request__count {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .referral-request__selection-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    min-height: 28px;
+    margin-bottom: 18px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .referral-request__selection-status svg {
+    flex-shrink: 0;
+  }
+
+  .referral-request__selection-status .btn {
+    min-height: 44px;
+    font-size: 13px;
+  }
+
+  .referral-request__privacy {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--warning);
+    background: var(--teal-soft);
+    font-size: 13px;
+  }
+
+  .referral-request__privacy svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .referral-request__privacy strong {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .referral-request__privacy p {
+    margin: 4px 0 0;
+  }
+
+  .referral-request__consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 44px;
+    color: var(--warning);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .referral-request__consent input {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    accent-color: var(--ink);
+    cursor: pointer;
+  }
+
+  .referral-request__privacy-link {
+    margin: 0;
+    font-size: 13px;
+  }
+
+  .referral-request__privacy-link a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .referral-request__form .assessment-entry__error {
+    margin: 0;
+  }
+  .referral-request__actions {
+    margin-top: 0;
+  }
+
+  .referral-request__field input:focus-visible,
+  .referral-request__field select:focus-visible,
+  .referral-request__field textarea:focus-visible,
+  .referral-request__consent input:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .referral-request__spinner {
+    animation: referral-request-spin 1s linear infinite;
+  }
+
+  @keyframes referral-request-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .referral-request__title h1 {
+      font-size: 48px;
+    }
+    .referral-request__grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .referral-request__privacy {
+      padding: 14px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .referral-request__spinner {
+      animation: none;
+    }
+  }
+}

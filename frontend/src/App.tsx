@@ -15,6 +15,7 @@ import { AssessmentClarificationPage } from "./pages/AssessmentClarificationPage
 import { AssessmentResultsPage } from "./pages/AssessmentResultsPage";
 import { PathwayDetailsPage } from "./pages/PathwayDetailsPage";
 import { PreparationChecklistPage } from "./pages/PreparationChecklistPage";
+import { ReferralRequestPage } from "./pages/ReferralRequestPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -65,6 +66,7 @@ function App() {
         path="/app/checklists/new"
         element={<PreparationChecklistPage />}
       />
+      <Route path="/app/referrals/new" element={<ReferralRequestPage />} />
     </Routes>
   );
 }
