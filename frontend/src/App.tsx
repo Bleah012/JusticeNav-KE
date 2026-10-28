@@ -12,6 +12,7 @@ import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
 import { TermsOfUsePage } from "./pages/TermsOfUsePage";
 import { AssessmentEntryPage } from "./pages/AssessmentEntryPage";
 import { AssessmentClarificationPage } from "./pages/AssessmentClarificationPage";
+import { AssessmentResultsPage } from "./pages/AssessmentResultsPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -45,6 +46,10 @@ function App() {
       <Route
         path="/app/assessments/clarify"
         element={<AssessmentClarificationPage />}
+      />
+      <Route
+        path="/app/assessments/results"
+        element={<AssessmentResultsPage />}
       />
     </Routes>
   );

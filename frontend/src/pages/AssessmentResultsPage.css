@@ -1,0 +1,210 @@
+@layer components {
+  .assessment-results__title h1 {
+    font-size: 64px;
+  }
+
+  .assessment-results__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    min-height: 290px;
+    padding: 40px 24px;
+    border-block: 1px solid var(--line);
+    text-align: center;
+  }
+
+  .assessment-results__state > svg {
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+
+  .assessment-results__state h2 {
+    max-width: 440px;
+    margin: 0;
+    font-size: 32px;
+    font-weight: 400;
+    text-wrap: balance;
+  }
+
+  .assessment-results__state p {
+    max-width: 500px;
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .assessment-results__state .btn {
+    margin-top: 4px;
+  }
+
+  .assessment-results__spinner {
+    animation: assessment-results-spin 1s linear infinite;
+  }
+
+  .assessment-results__list {
+    display: grid;
+    gap: 18px;
+  }
+
+  .assessment-results__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    overflow: hidden;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    background: var(--surface);
+    overflow-wrap: anywhere;
+  }
+
+  .assessment-results__main {
+    min-width: 0;
+    padding: 28px;
+  }
+
+  .assessment-results__name {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 25px 0;
+  }
+
+  .assessment-results__name > svg {
+    flex-shrink: 0;
+  }
+
+  .assessment-results__name > div {
+    min-width: 0;
+  }
+
+  .assessment-results__name h2 {
+    margin: 0 0 3px;
+    font-size: 32px;
+    font-weight: 400;
+  }
+
+  .assessment-results__name p,
+  .assessment-results__explanation p {
+    margin: 0;
+  }
+
+  .assessment-results__card h3 {
+    margin: 0 0 8px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+
+  .assessment-results__notice {
+    margin: 22px 0;
+    padding-left: 12px;
+    border-left: 2px solid var(--line);
+    color: var(--warning);
+    font-size: 13px;
+  }
+
+  .assessment-results__source {
+    margin: 0 0 18px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .assessment-results__source a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .assessment-results__source svg {
+    display: inline-block;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+
+  .assessment-results__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .assessment-results__details {
+    min-width: 0;
+    padding: 27px;
+    border-left: 1px solid var(--line);
+    background: var(--teal-soft);
+  }
+
+  .assessment-results__details section + section {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+
+  .assessment-results__details ul {
+    display: grid;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .assessment-results__details li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: var(--warning);
+    font-size: 13px;
+  }
+
+  .assessment-results__details li svg {
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .assessment-results__details p {
+    margin: 0;
+    color: var(--warning);
+    font-size: 13px;
+  }
+
+  .assessment-results__actions {
+    flex-wrap: wrap;
+  }
+
+  @keyframes assessment-results-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .assessment-results__title h1 {
+      font-size: 48px;
+    }
+
+    .assessment-results__card {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .assessment-results__main,
+    .assessment-results__details {
+      padding: 22px;
+    }
+
+    .assessment-results__details {
+      border-top: 1px solid var(--line);
+      border-left: 0;
+    }
+
+    .assessment-results__state {
+      padding: 32px 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .assessment-results__spinner {
+      animation: none;
+    }
+  }
+}
