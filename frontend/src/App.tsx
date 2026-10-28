@@ -14,6 +14,7 @@ import { AssessmentEntryPage } from "./pages/AssessmentEntryPage";
 import { AssessmentClarificationPage } from "./pages/AssessmentClarificationPage";
 import { AssessmentResultsPage } from "./pages/AssessmentResultsPage";
 import { PathwayDetailsPage } from "./pages/PathwayDetailsPage";
+import { PreparationChecklistPage } from "./pages/PreparationChecklistPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -59,6 +60,10 @@ function App() {
       <Route
         path="/app/assessments/results"
         element={<AssessmentResultsPage onViewPathway={handleViewPathway} />}
+      />
+      <Route
+        path="/app/checklists/new"
+        element={<PreparationChecklistPage />}
       />
     </Routes>
   );
