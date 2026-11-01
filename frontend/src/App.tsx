@@ -1,5 +1,6 @@
 import { Outlet, Route, Routes, useNavigate } from "react-router";
 import { PublicHeader } from "./components/PublicHeader";
+import { SeekerLayout } from "./components/SeekerLayout";
 import { HomePage } from "./pages/HomePage";
 import { SignInPage } from "./pages/SignInPage";
 import { SignUpPage } from "./pages/SignUpPage";
@@ -16,6 +17,9 @@ import { AssessmentResultsPage } from "./pages/AssessmentResultsPage";
 import { PathwayDetailsPage } from "./pages/PathwayDetailsPage";
 import { PreparationChecklistPage } from "./pages/PreparationChecklistPage";
 import { ReferralRequestPage } from "./pages/ReferralRequestPage";
+import { ReferralConfirmationPage } from "./pages/ReferralConfirmationPage";
+import { ReferralTrackingPage } from "./pages/ReferralTrackingPage";
+import { SeekerDashboardPage } from "./pages/SeekerDashboardPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -67,6 +71,24 @@ function App() {
         element={<PreparationChecklistPage />}
       />
       <Route path="/app/referrals/new" element={<ReferralRequestPage />} />
+      <Route
+        path="/app/referrals/:referralId/confirmation"
+        element={<ReferralConfirmationPage />}
+      />
+      <Route
+        element={
+          <SeekerLayout>
+            <Outlet />
+          </SeekerLayout>
+        }
+      >
+        <Route path="/app" element={<SeekerDashboardPage />} />
+        <Route path="/app/referrals" element={<ReferralTrackingPage />} />
+        <Route
+          path="/app/referrals/:referralId"
+          element={<ReferralTrackingPage />}
+        />
+      </Route>
     </Routes>
   );
 }
