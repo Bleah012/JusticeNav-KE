@@ -179,7 +179,7 @@ export function AdminOverviewPage({
             <h2 id="review-information-title">Information requiring review</h2>
             <p>Sources needing a verification review.</p>
           </div>
-          <Link to="/admin/services">View all</Link>
+          <Link to="/admin/verification">View all</Link>
         </div>
         {snapshot ? (
           snapshot.reviewServices.length ? (

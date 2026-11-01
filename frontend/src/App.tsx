@@ -30,6 +30,9 @@ import { AdminLayout } from "./components/AdminLayout";
 import { AdminOverviewPage } from "./pages/AdminOverviewPage";
 import { AdminServicesPage } from "./pages/AdminServicesPage";
 import { AdminPathwaysPage } from "./pages/AdminPathwaysPage";
+import { AdminReferralsPage } from "./pages/AdminReferralsPage";
+import { AdminVerificationPage } from "./pages/AdminVerificationPage";
+import { AdminAuditLogsPage } from "./pages/AdminAuditLogsPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -119,6 +122,9 @@ function App() {
         <Route path="/admin" element={<AdminOverviewPage />} />
         <Route path="/admin/services" element={<AdminServicesPage />} />
         <Route path="/admin/pathways" element={<AdminPathwaysPage />} />
+        <Route path="/admin/referrals" element={<AdminReferralsPage />} />
+        <Route path="/admin/verification" element={<AdminVerificationPage />} />
+        <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
         <Route path="/admin/*" element={<NotFoundPage admin />} />
       </Route>
     </Routes>
