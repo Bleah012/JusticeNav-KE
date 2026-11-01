@@ -15,16 +15,59 @@ import { Link, NavLink } from "react-router";
 import "./SeekerLayout.css";
 
 const navigation = [
-  { label: "Dashboard", to: "/app", icon: Home, end: true },
-  { label: "Find My Next Step", to: "/app/assessments/new", icon: Sparkles },
-  { label: "My Assessments", to: "/app/assessments", icon: FileText, end: true },
-  { label: "My Referrals", to: "/app/referrals", icon: Route },
-  { label: "Justice Services", to: "/services", icon: Building2 },
-  { label: "Checklists", to: "/app/checklists/new", icon: ClipboardCheck },
-  { label: "Resources", to: "/resources", icon: FileText },
-  { label: "Notifications", to: "/app/notifications", icon: Mail },
-  { label: "Profile", to: "/app/profile", icon: User },
-  { label: "Privacy & Security", icon: Lock },
+  {
+    label: "Dashboard",
+    to: "/app",
+    icon: Home,
+    end: true,
+  },
+  {
+    label: "Find My Next Step",
+    to: "/app/assessments/new",
+    icon: Sparkles,
+  },
+  {
+    label: "My Assessments",
+    to: "/app/assessments",
+    icon: FileText,
+    end: true,
+  },
+  {
+    label: "My Referrals",
+    to: "/app/referrals",
+    icon: Route,
+  },
+  {
+    label: "Justice Services",
+    to: "/services",
+    icon: Building2,
+  },
+  {
+    label: "Checklists",
+    to: "/app/checklists",
+    icon: ClipboardCheck,
+    end: true,
+  },
+  {
+    label: "Resources",
+    to: "/resources",
+    icon: FileText,
+  },
+  {
+    label: "Notifications",
+    to: "/app/notifications",
+    icon: Mail,
+  },
+  {
+    label: "Profile",
+    to: "/app/profile",
+    icon: User,
+  },
+  {
+    label: "Privacy & Security",
+    to: "/app/privacy-security",
+    icon: Lock,
+  },
 ];
 
 // Reuse the reference brand without inventing a signed-in identity.
@@ -59,33 +102,22 @@ function Brand() {
           strokeLinejoin="round"
         />
       </svg>
+
       <span>JusticeNav KE</span>
     </Link>
   );
 }
 
-// Keep unfinished destinations disabled instead of navigating to blank pages.
+// Share seeker destinations across desktop and mobile navigation.
 function Navigation() {
   return (
     <nav className="seeker-shell__nav" aria-label="Seeker navigation">
-      {navigation.map(({ label, to, icon: Icon, end }) =>
-        to ? (
-          <NavLink key={label} to={to} end={end}>
-            <Icon size={18} aria-hidden="true" />
-            <span>{label}</span>
-          </NavLink>
-        ) : (
-          <button
-            key={label}
-            type="button"
-            disabled
-            title="This page is not available yet."
-          >
-            <Icon size={18} aria-hidden="true" />
-            <span>{label}</span>
-          </button>
-        ),
-      )}
+      {navigation.map(({ label, to, icon: Icon, end }) => (
+        <NavLink key={label} to={to} end={end}>
+          <Icon size={18} aria-hidden="true" />
+          <span>{label}</span>
+        </NavLink>
+      ))}
     </nav>
   );
 }
@@ -97,26 +129,33 @@ export function SeekerLayout({ children }: { children: ReactNode }) {
       <a className="seeker-shell__skip" href="#main-content">
         Skip to content
       </a>
+
       <aside className="seeker-shell__sidebar">
         <Brand />
         <Navigation />
+
         <p className="seeker-shell__disclaimer">
           <Info size={18} aria-hidden="true" />
           JusticeNav KE provides navigation support, not legal advice.
         </p>
       </aside>
+
       <div className="seeker-shell__body">
         <header className="seeker-shell__topbar">
           <div className="seeker-shell__mobile-brand">
             <Brand />
           </div>
+
           <span className="seeker-shell__preview">Student prototype</span>
+
           <Link to="/login">Sign in</Link>
         </header>
+
         <details className="seeker-shell__mobile-nav">
           <summary>Menu</summary>
           <Navigation />
         </details>
+
         <main id="main-content" className="seeker-shell__content">
           {children}
         </main>

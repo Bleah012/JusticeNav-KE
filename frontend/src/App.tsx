@@ -23,6 +23,9 @@ import { SeekerDashboardPage } from "./pages/SeekerDashboardPage";
 import { MyAssessmentsPage } from "./pages/MyAssessmentsPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { PrivacySecurityPage } from "./pages/PrivacySecurityPage";
+import { MyChecklistsPage } from "./pages/MyChecklistsPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -55,6 +58,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyNoticePage />} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/pathways/:pathwayId" element={<PathwayDetailsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
       <Route path="/login" element={<SignInPage />} />
@@ -92,11 +96,14 @@ function App() {
         <Route path="/app/assessments" element={<MyAssessmentsPage />} />
         <Route path="/app/notifications" element={<NotificationsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
+        <Route path="/app/privacy-security" element={<PrivacySecurityPage />} />
+        <Route path="/app/checklists" element={<MyChecklistsPage />} />
         <Route path="/app/referrals" element={<ReferralTrackingPage />} />
         <Route
           path="/app/referrals/:referralId"
           element={<ReferralTrackingPage />}
         />
+        <Route path="/app/*" element={<NotFoundPage seeker />} />
       </Route>
     </Routes>
   );
