@@ -4,7 +4,13 @@ import "./SeekerPages.css";
 import "./SeekerTools.css";
 
 // Offer fixed safe destinations without echoing unknown URLs or private query text.
-export function NotFoundPage({ seeker = false }: { seeker?: boolean }) {
+export function NotFoundPage({
+  seeker = false,
+  admin = false,
+}: {
+  seeker?: boolean;
+  admin?: boolean;
+}) {
   return (
     <section
       className="seeker-tools__not-found"
@@ -18,8 +24,15 @@ export function NotFoundPage({ seeker = false }: { seeker?: boolean }) {
         one of the links below.
       </p>
       <div className="seeker-page__actions">
-        <Link className="btn btn-primary" to={seeker ? "/app" : "/"}>
-          {seeker ? "Return to dashboard" : "Back to home"}
+        <Link
+          className="btn btn-primary"
+          to={admin ? "/admin" : seeker ? "/app" : "/"}
+        >
+          {admin
+            ? "Return to overview"
+            : seeker
+              ? "Return to dashboard"
+              : "Back to home"}
         </Link>
         <Link className="btn btn-secondary" to="/services">
           Explore justice services
