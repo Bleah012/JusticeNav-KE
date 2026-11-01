@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Info, User } from "lucide-react";
-import { Link } from "react-router";
+import { AccountSettingsNav } from "../components/AccountSettingsNav";
 import { AccountDataState } from "../components/AccountDataState";
 import { Button } from "../components/ui/Button";
 import type { AccountData, AccountProfile } from "../types/accountData";
@@ -221,25 +221,7 @@ export function ProfilePage({
       </div>
 
       <div className="account-pages__settings">
-        <nav aria-label="Account settings sections">
-          <a href="#profile-personal-information">Personal information</a>
-
-          <a href="#profile-contact-details">Contact details</a>
-
-          <button
-            type="button"
-            disabled
-            title="Security settings are not available yet."
-          >
-            Security
-          </button>
-
-          <Link to="/privacy">Privacy &amp; data</Link>
-
-          <Link to="/app/notifications">Notifications</Link>
-
-          <a href="#profile-language">Language &amp; accessibility</a>
-        </nav>
+        <AccountSettingsNav current="profile" />
 
         {editable ? (
           <ProfileForm key={JSON.stringify(profile)} profile={profile} />

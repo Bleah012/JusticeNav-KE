@@ -1,0 +1,106 @@
+@layer components {
+  .account-pages__settings > nav a[aria-current="page"] {
+    color: var(--ink);
+    background: var(--teal-soft);
+    box-shadow: inset 2px 0 var(--ink);
+  }
+
+  .seeker-tools__settings-panels {
+    min-width: 0;
+  }
+  .seeker-tools__settings-panels > section {
+    scroll-margin-top: 24px;
+  }
+  .seeker-tools__settings-panels > section + section {
+    margin-top: 18px;
+  }
+
+  .seeker-tools__setting-row {
+    padding: 18px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-top: 1px solid var(--line);
+  }
+
+  .seeker-tools__setting-row > div {
+    min-width: 0;
+  }
+  .seeker-tools__setting-row h3 {
+    margin: 0;
+    font: inherit;
+    font-weight: 500;
+  }
+  .seeker-tools__setting-row p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .seeker-tools__setting-row > .btn {
+    flex-shrink: 0;
+  }
+  .seeker-tools__setting-row--danger h3 {
+    color: var(--danger);
+  }
+  .seeker-tools__notice-links {
+    margin: 22px 0 0;
+    color: var(--muted);
+  }
+  .seeker-tools__notice-links a {
+    color: var(--ink);
+    text-decoration: underline;
+  }
+
+  .seeker-tools__checklist-progress {
+    max-width: 420px;
+    margin: 14px 0;
+  }
+  .seeker-tools__checklist-progress p {
+    margin-bottom: 8px;
+  }
+  .seeker-tools__checklist-progress progress {
+    display: block;
+    width: 100%;
+    height: 8px;
+    accent-color: var(--ink);
+  }
+
+  .seeker-tools__not-found {
+    width: min(650px, calc(100% - 32px));
+    margin: auto;
+    padding: 80px 0;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
+  .seeker-tools__not-found > svg {
+    display: block;
+    margin: 0 auto 24px;
+    color: var(--muted);
+  }
+  .seeker-tools__not-found h1 {
+    font-size: 64px;
+    margin: 14px 0 18px;
+  }
+  .seeker-tools__not-found p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .seeker-tools__not-found a:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 760px) {
+    .seeker-tools__setting-row {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .seeker-tools__not-found {
+      padding: 56px 0;
+    }
+    .seeker-tools__not-found h1 {
+      font-size: 48px;
+    }
+  }
+}
