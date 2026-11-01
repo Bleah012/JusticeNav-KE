@@ -1,0 +1,164 @@
+@layer components {
+  .seeker-shell {
+    min-height: 100svh;
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+  }
+  .seeker-shell__sidebar {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow-y: auto;
+    padding: 24px 18px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+  }
+  .seeker-shell__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    font-size: 19px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .seeker-shell__brand svg {
+    flex: none;
+  }
+  .seeker-shell__nav {
+    display: grid;
+    gap: 4px;
+    margin: 32px 0;
+  }
+  .seeker-shell__nav a,
+  .seeker-shell__nav button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    text-decoration: none;
+  }
+  .seeker-shell__nav a:hover,
+  .seeker-shell__nav a.active {
+    background: var(--teal-soft);
+  }
+  .seeker-shell__nav a.active {
+    box-shadow: inset 2px 0 var(--ink);
+  }
+  .seeker-shell__nav button:disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+  .seeker-shell__disclaimer {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding: 12px;
+    border: 1px solid var(--line);
+    background: var(--teal-soft);
+    font-size: 12px;
+  }
+  .seeker-shell__disclaimer svg {
+    flex: none;
+    margin-top: 3px;
+  }
+  .seeker-shell__topbar {
+    min-height: 70px;
+    padding: 12px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .seeker-shell__topbar a {
+    color: var(--ink);
+  }
+  .seeker-shell__preview {
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .seeker-shell__body {
+    min-width: 0;
+  }
+  .seeker-shell__content {
+    max-width: 1420px;
+    padding: 38px;
+    margin: 0 auto;
+    overflow-wrap: anywhere;
+  }
+  .seeker-shell__mobile-brand,
+  .seeker-shell__mobile-nav {
+    display: none;
+  }
+  .seeker-shell__skip {
+    position: fixed;
+    top: -100px;
+    left: 16px;
+    z-index: 100;
+    padding: 12px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .seeker-shell__skip:focus {
+    top: 12px;
+  }
+  .seeker-shell a:focus-visible,
+  .seeker-shell button:focus-visible,
+  .seeker-shell summary:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+  }
+  @media (max-width: 1100px) {
+    .seeker-shell {
+      grid-template-columns: 230px minmax(0, 1fr);
+    }
+    .seeker-shell__content {
+      padding: 28px;
+    }
+  }
+  @media (max-width: 760px) {
+    .seeker-shell {
+      display: block;
+    }
+    .seeker-shell__sidebar,
+    .seeker-shell__preview {
+      display: none;
+    }
+    .seeker-shell__mobile-brand {
+      display: block;
+    }
+    .seeker-shell__brand {
+      font-size: 17px;
+    }
+    .seeker-shell__topbar {
+      min-height: 66px;
+      padding: 12px 16px;
+    }
+    .seeker-shell__mobile-nav {
+      display: block;
+      border-bottom: 1px solid var(--line);
+      padding: 0 16px;
+    }
+    .seeker-shell__mobile-nav summary {
+      padding: 12px 0;
+      cursor: pointer;
+    }
+    .seeker-shell__mobile-nav .seeker-shell__nav {
+      margin: 0 0 16px;
+    }
+    .seeker-shell__content {
+      padding: 28px 16px 48px;
+    }
+  }
+}
