@@ -26,6 +26,10 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { PrivacySecurityPage } from "./pages/PrivacySecurityPage";
 import { MyChecklistsPage } from "./pages/MyChecklistsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { AdminLayout } from "./components/AdminLayout";
+import { AdminOverviewPage } from "./pages/AdminOverviewPage";
+import { AdminServicesPage } from "./pages/AdminServicesPage";
+import { AdminPathwaysPage } from "./pages/AdminPathwaysPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -104,6 +108,18 @@ function App() {
           element={<ReferralTrackingPage />}
         />
         <Route path="/app/*" element={<NotFoundPage seeker />} />
+      </Route>
+      <Route
+        element={
+          <AdminLayout>
+            <Outlet />
+          </AdminLayout>
+        }
+      >
+        <Route path="/admin" element={<AdminOverviewPage />} />
+        <Route path="/admin/services" element={<AdminServicesPage />} />
+        <Route path="/admin/pathways" element={<AdminPathwaysPage />} />
+        <Route path="/admin/*" element={<NotFoundPage admin />} />
       </Route>
     </Routes>
   );
