@@ -20,9 +20,13 @@ const navigation = [
   { label: "Users", icon: Users },
   { label: "Justice Services", to: "/admin/services", icon: Building2 },
   { label: "Pathways", to: "/admin/pathways", icon: Route },
-  { label: "Referrals", icon: ClipboardList },
-  { label: "Content Verification", icon: ShieldCheck },
-  { label: "Audit Logs", icon: Clock },
+  { label: "Referrals", to: "/admin/referrals", icon: ClipboardList },
+  {
+    label: "Content Verification",
+    to: "/admin/verification",
+    icon: ShieldCheck,
+  },
+  { label: "Audit Logs", to: "/admin/audit-logs", icon: Clock },
 ];
 
 // Keep unfinished administrative destinations disabled rather than aliasing other pages.

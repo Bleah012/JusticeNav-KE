@@ -1,0 +1,62 @@
+@layer components {
+  .admin-operations__summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0 0 24px;
+  }
+  .admin-operations__summary article {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    min-width: 0;
+  }
+  .admin-operations__summary article > svg {
+    flex: none;
+    margin-top: 3px;
+  }
+  .admin-operations__summary h2 {
+    margin: 0;
+    font: inherit;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .admin-operations__summary strong {
+    display: block;
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 400;
+    overflow-wrap: anywhere;
+  }
+  .admin-operations__detail {
+    padding: 24px 28px 32px;
+    overflow-wrap: anywhere;
+  }
+  .admin-operations__note {
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+  .admin-operations__multiline {
+    white-space: pre-wrap;
+  }
+  .admin-operations__disabled-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .admin-operations__filter-error {
+    color: var(--danger);
+    margin: 20px 0;
+  }
+  @media (max-width: 760px) {
+    .admin-operations__summary {
+      grid-template-columns: 1fr;
+    }
+    .admin-operations__detail {
+      padding: 20px 16px 28px;
+    }
+  }
+}
