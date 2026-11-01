@@ -1,0 +1,92 @@
+@layer components {
+  .workspace-pages__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .workspace-pages__pathway-form {
+    display: grid;
+    gap: 22px;
+  }
+  .workspace-pages__pathway-form > section {
+    min-width: 0;
+  }
+  .workspace-pages__pathway-form small {
+    color: var(--muted);
+  }
+  .workspace-pages__step {
+    min-width: 0;
+    margin: 24px 0;
+    padding: 16px 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  .workspace-pages__step legend {
+    font-weight: 500;
+    padding: 0 8px 0 0;
+  }
+  .workspace-pages__pathway-form .admin-pages__field input:focus-visible,
+  .workspace-pages__pathway-form .admin-pages__field select:focus-visible,
+  .workspace-pages__pathway-form .admin-pages__field textarea:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .workspace-pages__assigned {
+    margin-top: 32px;
+    scroll-margin-top: 24px;
+  }
+  .workspace-pages__assigned > h2 {
+    font-size: 36px;
+    margin: 0 0 12px;
+  }
+  .workspace-pages__assigned > p {
+    color: var(--muted);
+    margin: 0 0 24px;
+  }
+  .workspace-pages__provider-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .workspace-pages__provider-list li {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 24px 0;
+    border-top: 1px solid var(--line);
+  }
+  .workspace-pages__provider-list li > div {
+    min-width: 0;
+  }
+  .workspace-pages__provider-list h3 {
+    font-size: 28px;
+    margin: 0 0 10px;
+    font-weight: 400;
+  }
+  .workspace-pages__provider-list p {
+    margin: 10px 0;
+  }
+  .workspace-pages__provider-list time {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .provider-shell a:focus-visible,
+  .provider-shell button:focus-visible,
+  .provider-shell input:focus-visible,
+  .provider-shell select:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  @media (max-width: 760px) {
+    .workspace-pages__provider-list li {
+      flex-direction: column;
+    }
+    .workspace-pages__actions {
+      justify-content: flex-start;
+    }
+  }
+}

@@ -33,6 +33,10 @@ import { AdminPathwaysPage } from "./pages/AdminPathwaysPage";
 import { AdminReferralsPage } from "./pages/AdminReferralsPage";
 import { AdminVerificationPage } from "./pages/AdminVerificationPage";
 import { AdminAuditLogsPage } from "./pages/AdminAuditLogsPage";
+import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { PathwayEditorPage } from "./pages/PathwayEditorPage";
+import { ProviderLayout } from "./components/ProviderLayout";
+import { ProviderDashboardPage } from "./pages/ProviderDashboardPage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -120,12 +124,28 @@ function App() {
         }
       >
         <Route path="/admin" element={<AdminOverviewPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/services" element={<AdminServicesPage />} />
         <Route path="/admin/pathways" element={<AdminPathwaysPage />} />
+        <Route path="/admin/pathways/new" element={<PathwayEditorPage />} />
+        <Route
+          path="/admin/pathways/:pathwayId/edit"
+          element={<PathwayEditorPage />}
+        />
         <Route path="/admin/referrals" element={<AdminReferralsPage />} />
         <Route path="/admin/verification" element={<AdminVerificationPage />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
         <Route path="/admin/*" element={<NotFoundPage admin />} />
+      </Route>
+      <Route
+        element={
+          <ProviderLayout>
+            <Outlet />
+          </ProviderLayout>
+        }
+      >
+        <Route path="/provider" element={<ProviderDashboardPage />} />
+        <Route path="/provider/*" element={<NotFoundPage provider />} />
       </Route>
     </Routes>
   );

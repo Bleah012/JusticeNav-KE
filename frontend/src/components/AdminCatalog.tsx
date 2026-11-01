@@ -101,7 +101,7 @@ export function AdminCatalog({
           >
             Add service
           </Button>
-        ) : (
+        ) : data.status === "forbidden" ? (
           <Button
             icon={Plus}
             disabled
@@ -109,6 +109,11 @@ export function AdminCatalog({
           >
             Create pathway
           </Button>
+        ) : (
+          <Link className="btn btn-primary" to="/admin/pathways/new">
+            Create pathway
+            <Plus size={18} aria-hidden="true" />
+          </Link>
         )}
       </header>
 
@@ -310,13 +315,12 @@ export function AdminCatalog({
                             Edit
                           </Button>
                         ) : (
-                          <Button
-                            variant="ghost"
-                            disabled
-                            title="Pathway editing is currently unavailable."
+                          <Link
+                            className="btn btn-ghost"
+                            to={`/admin/pathways/${encodeURIComponent(record.id)}/edit`}
                           >
-                            View
-                          </Button>
+                            Edit
+                          </Link>
                         )}
                         {record.verification !== "verified" && (
                           <Button
