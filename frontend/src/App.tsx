@@ -20,6 +20,9 @@ import { ReferralRequestPage } from "./pages/ReferralRequestPage";
 import { ReferralConfirmationPage } from "./pages/ReferralConfirmationPage";
 import { ReferralTrackingPage } from "./pages/ReferralTrackingPage";
 import { SeekerDashboardPage } from "./pages/SeekerDashboardPage";
+import { MyAssessmentsPage } from "./pages/MyAssessmentsPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
@@ -37,7 +40,7 @@ function PublicLayout() {
 function App() {
   const navigate = useNavigate();
 
-  // Open the public detail route only for the selected supplied result identifier.
+  // Open the public detail route for the selected supplied result identifier.
   function handleViewPathway(pathwayId: string) {
     navigate(`/pathways/${encodeURIComponent(pathwayId)}`);
   }
@@ -53,10 +56,12 @@ function App() {
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/pathways/:pathwayId" element={<PathwayDetailsPage />} />
       </Route>
+
       <Route path="/login" element={<SignInPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+
       <Route path="/app/assessments/new" element={<AssessmentEntryPage />} />
       <Route
         path="/app/assessments/clarify"
@@ -75,6 +80,7 @@ function App() {
         path="/app/referrals/:referralId/confirmation"
         element={<ReferralConfirmationPage />}
       />
+
       <Route
         element={
           <SeekerLayout>
@@ -83,6 +89,9 @@ function App() {
         }
       >
         <Route path="/app" element={<SeekerDashboardPage />} />
+        <Route path="/app/assessments" element={<MyAssessmentsPage />} />
+        <Route path="/app/notifications" element={<NotificationsPage />} />
+        <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/referrals" element={<ReferralTrackingPage />} />
         <Route
           path="/app/referrals/:referralId"
