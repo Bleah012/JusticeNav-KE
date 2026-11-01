@@ -5,7 +5,20 @@ understand possible justice pathways and prepare to seek assistance.
 
 ## Project Status
 
-Initial project setup. Application features are not implemented yet.
+The React frontend contains the public, account, assessment, seeker,
+administrator and provider page layouts, with local form validation.
+
+The FastAPI backend foundation provides process health and Firebase ID-token
+verification support. Firebase has not been configured or connected to the
+frontend yet. The identity endpoint denies unauthenticated requests and reports
+unavailable verification when configuration is missing.
+
+Application records, Firestore, classification, notifications and referral
+processing remain unconnected. The interface does not create successful
+operations or operational records to fill those gaps.
+
+See [backend setup and endpoint checks](backend/README.md). Frontend development
+commands are in [frontend/README.md](frontend/README.md).
 
 ## MVP Scope
 
@@ -40,7 +53,8 @@ Real organizations are not assumed to participate in referral processing.
 - Authentication and database: Firebase Authentication and Firestore.
 - Backend: Python and FastAPI.
 - AI baseline: scikit-learn, TF-IDF, and Logistic Regression.
-- Testing: Vitest, React Testing Library, Pytest, and Playwright.
+- Backend testing: Pytest and FastAPI TestClient; linting and formatting: Ruff.
+- Planned frontend automated tests: Vitest, React Testing Library and Playwright.
 - Version control and CI/CD: Git, GitHub, and GitHub Actions.
 - Planned hosting: Firebase Hosting and Render.
 

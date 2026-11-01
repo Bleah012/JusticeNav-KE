@@ -1,0 +1,63 @@
+"""FastAPI entry point; health is independent of Firebase configuration."""
+
+from typing import Annotated, Literal
+
+from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
+from .config import Settings
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"] = "ok"
+    service: Literal["justicenav-api"] = "justicenav-api"
+
+
+def create_app(
+    settings: Settings | None = None,
+    verifier: TokenVerifier | None = None,
+) -> FastAPI:
+    """Build an app with explicit settings and replaceable dependencies for tests."""
+    settings = settings if settings is not None else Settings()
+    app = FastAPI(
+        title="JusticeNav KE API",
+        version="0.1.0",
+        description="Backend foundation. Health is not a Firebase readiness check.",
+        docs_url="/docs" if settings.app_env != "production" else None,
+        redoc_url=None,
+        openapi_url="/openapi.json" if settings.app_env != "production" else None,
+    )
+    app.state.token_verifier = (
+        verifier if verifier is not None else FirebaseTokenVerifier(settings)
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[settings.frontend_origin],
+        allow_credentials=False,
+        allow_methods=["GET"],
+        allow_headers=["Authorization", "Content-Type"],
+    )
+
+    @app.middleware("http")
+    async def avoid_identity_caching(request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+    @app.get("/api/v1/health", response_model=HealthResponse, tags=["Health"])
+    def health() -> HealthResponse:
+        """Report process liveness only, without credentials or external requests."""
+        return HealthResponse()
+
+    @app.get("/api/v1/auth/me", response_model=CurrentUser, tags=["Authentication"])
+    def me(user: Annotated[CurrentUser, Depends(get_current_user)]) -> CurrentUser:
+        """Return minimal metadata for the identity verified on this request."""
+        return user
+
+    return app
+
+
+app = create_app()
