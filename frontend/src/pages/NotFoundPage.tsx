@@ -7,9 +7,11 @@ import "./SeekerTools.css";
 export function NotFoundPage({
   seeker = false,
   admin = false,
+  provider = false,
 }: {
   seeker?: boolean;
   admin?: boolean;
+  provider?: boolean;
 }) {
   return (
     <section
@@ -26,13 +28,15 @@ export function NotFoundPage({
       <div className="seeker-page__actions">
         <Link
           className="btn btn-primary"
-          to={admin ? "/admin" : seeker ? "/app" : "/"}
+          to={provider ? "/provider" : admin ? "/admin" : seeker ? "/app" : "/"}
         >
-          {admin
-            ? "Return to overview"
-            : seeker
-              ? "Return to dashboard"
-              : "Back to home"}
+          {provider
+            ? "Return to dashboard"
+            : admin
+              ? "Return to overview"
+              : seeker
+                ? "Return to dashboard"
+                : "Back to home"}
         </Link>
         <Link className="btn btn-secondary" to="/services">
           Explore justice services

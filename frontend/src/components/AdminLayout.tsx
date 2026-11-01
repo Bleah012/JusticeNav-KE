@@ -17,7 +17,7 @@ import "../pages/AdminPages.css";
 
 const navigation = [
   { label: "Overview", to: "/admin", icon: Home, end: true },
-  { label: "Users", icon: Users },
+  { label: "Users", to: "/admin/users", icon: Users },
   { label: "Justice Services", to: "/admin/services", icon: Building2 },
   { label: "Pathways", to: "/admin/pathways", icon: Route },
   { label: "Referrals", to: "/admin/referrals", icon: ClipboardList },
