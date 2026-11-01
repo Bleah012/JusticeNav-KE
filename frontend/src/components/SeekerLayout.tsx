@@ -17,13 +17,13 @@ import "./SeekerLayout.css";
 const navigation = [
   { label: "Dashboard", to: "/app", icon: Home, end: true },
   { label: "Find My Next Step", to: "/app/assessments/new", icon: Sparkles },
-  { label: "My Assessments", icon: FileText },
+  { label: "My Assessments", to: "/app/assessments", icon: FileText, end: true },
   { label: "My Referrals", to: "/app/referrals", icon: Route },
   { label: "Justice Services", to: "/services", icon: Building2 },
   { label: "Checklists", to: "/app/checklists/new", icon: ClipboardCheck },
   { label: "Resources", to: "/resources", icon: FileText },
-  { label: "Notifications", icon: Mail },
-  { label: "Profile", icon: User },
+  { label: "Notifications", to: "/app/notifications", icon: Mail },
+  { label: "Profile", to: "/app/profile", icon: User },
   { label: "Privacy & Security", icon: Lock },
 ];
 
