@@ -1,4 +1,23 @@
 @layer components {
+  .public-header__skip {
+    position: fixed;
+    top: -100px;
+    left: 16px;
+    z-index: 100;
+    padding: 12px;
+    max-width: calc(100% - 32px);
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .public-header__skip:focus {
+    top: 12px;
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .public-main {
+    scroll-margin-top: 80px;
+  }
+
   /* Match the approved black header and responsive navigation. */
   .public-header {
     position: sticky;

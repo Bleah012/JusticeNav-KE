@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Building2, ClipboardList, FileText, Home, Info } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 import "../pages/SeekerPages.css";
 import "../pages/AdminPages.css";
@@ -65,14 +66,13 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
           <span className="seeker-shell__preview">Provider preview</span>
           <Link to="/login">Sign in</Link>
         </header>
-        <details className="seeker-shell__mobile-nav">
-          <summary>Menu</summary>
+        <WorkspaceMenu>
           <ProviderNavigation />
           <Link className="admin-pages__user-link" to="/">
             View public site
           </Link>
-        </details>
-        <main id="main-content" className="seeker-shell__content">
+        </WorkspaceMenu>
+        <main id="main-content" className="seeker-shell__content" tabIndex={-1}>
           <div className="seeker-page__notice">
             <Info size={20} aria-hidden="true" />
             <p>

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 
 const navigation = [
@@ -114,12 +115,11 @@ export function SeekerLayout({ children }: { children: ReactNode }) {
           <Link to="/login">Sign in</Link>
         </header>
 
-        <details className="seeker-shell__mobile-nav">
-          <summary>Menu</summary>
+        <WorkspaceMenu>
           <Navigation />
-        </details>
+        </WorkspaceMenu>
 
-        <main id="main-content" className="seeker-shell__content">
+        <main id="main-content" className="seeker-shell__content" tabIndex={-1}>
           {children}
         </main>
       </div>

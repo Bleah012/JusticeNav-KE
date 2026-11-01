@@ -287,7 +287,16 @@ export function HomePage() {
               Designed around data minimisation and responsible handling of user
               information.
             </p>
-            <ul className="home-privacy__principles" role="list">
+            <p>
+              Planned safeguards. Authentication, access controls and account
+              data-management services are not connected in this student
+              prototype. Use non-sensitive test inputs only.
+            </p>
+            <ul
+              className="home-privacy__principles"
+              role="list"
+              aria-label="Planned safeguards"
+            >
               {[
                 "Secure authentication",
                 "Privacy-focused design",
