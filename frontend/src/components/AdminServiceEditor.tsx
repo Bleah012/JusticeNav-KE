@@ -76,11 +76,15 @@ export function AdminServiceEditor({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const opener = document.activeElement;
     const dialog = dialogRef.current;
     if (dialog && !dialog.open) dialog.showModal();
     dialog?.querySelector<HTMLInputElement>("input[name='title']")?.focus();
     return () => {
       if (dialog?.open) dialog.close();
+      // React may remove the dialog before native close can restore its opener.
+      if (opener instanceof HTMLElement && opener.isConnected)
+        opener.focus({ preventScroll: true });
     };
   }, []);
 

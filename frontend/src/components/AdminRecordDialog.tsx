@@ -15,11 +15,15 @@ export function AdminRecordDialog({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
+    const opener = document.activeElement;
     const dialog = ref.current;
     if (dialog && !dialog.open) dialog.showModal();
     dialog?.querySelector<HTMLButtonElement>("button")?.focus();
     return () => {
       if (dialog?.open) dialog.close();
+      // Return keyboard users to the invoking control after React unmounts the modal.
+      if (opener instanceof HTMLElement && opener.isConnected)
+        opener.focus({ preventScroll: true });
     };
   }, []);
   return (

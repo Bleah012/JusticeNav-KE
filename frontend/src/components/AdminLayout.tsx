@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 import "../pages/SeekerPages.css";
 import "../pages/AdminPages.css";
@@ -82,14 +83,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <span className="seeker-shell__preview">Administrative preview</span>
           <Link to="/login">Sign in</Link>
         </header>
-        <details className="seeker-shell__mobile-nav">
-          <summary>Menu</summary>
+        <WorkspaceMenu>
           <AdminNavigation />
           <Link className="admin-pages__user-link" to="/app">
             Switch to user view
           </Link>
-        </details>
-        <main id="main-content" className="seeker-shell__content">
+        </WorkspaceMenu>
+        <main id="main-content" className="seeker-shell__content" tabIndex={-1}>
           <div className="seeker-page__notice" id="admin-prototype-note">
             <Info size={20} aria-hidden="true" />
             <p>
