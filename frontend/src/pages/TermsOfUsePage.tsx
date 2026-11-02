@@ -78,8 +78,8 @@ export function TermsOfUsePage() {
             <p>
               The current frontend contains page layouts, navigation and form
               validation. Firebase authentication is available when configured.
-              The application database, AI classification and referral processing
-              are not connected. A
+              Firestore can store the signed-in user's profile when configured.
+              Saved assessments, AI classification and referral processing remain unconnected. A
               visible button or form does not mean that its underlying service
               is available.
             </p>

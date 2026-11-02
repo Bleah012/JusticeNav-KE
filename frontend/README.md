@@ -35,8 +35,9 @@ origin and would require matching Firebase-domain and backend CORS settings.
 ## Authentication flow
 
 - Registration creates a real Firebase account and attempts a display-name update.
-  The optional phone field is disabled; there is no phone verification or profile
-  database. The agreement checkbox is local validation, not a saved acceptance record.
+  The optional registration phone field is disabled. Profile data is saved separately
+  from the Profile page; no phone verification is connected. The agreement checkbox
+  is local validation, not a saved acceptance record.
 - Sign-in uses Firebase email/password authentication. Google sign-in and
   long-term Remember me are disabled. Auth state uses Firebase's tab-session
   persistence. Sign out explicitly on shared devices; browser session restoration
@@ -84,7 +85,7 @@ into chat, screenshots, Git, analytics or server logs.
 
 ```powershell
 npm.cmd --prefix frontend run lint
-node --test frontend/tests/auth.test.cjs
+node --test frontend/tests/auth.test.cjs frontend/tests/profile.test.cjs
 npm.cmd --prefix frontend run build
 npm.cmd --prefix frontend audit
 ```
@@ -104,3 +105,48 @@ imports `firebase/app` and `firebase/auth` only, not Firestore or Analytics.
 References: [password authentication](https://firebase.google.com/docs/auth/web/password-auth),
 [persistence](https://firebase.google.com/docs/auth/web/auth-state-persistence),
 [custom email handlers](https://firebase.google.com/docs/auth/custom-email-handler).
+
+## Connected Profile page
+
+The existing `/app/profile` page loads and saves the signed-in user's application
+profile through authenticated GET/PUT `/api/v1/profile/me`. The backend's verified UID
+selects the record. The browser never connects directly to Firestore or sends an
+editable UID, role, email or password in the profile request body.
+
+The page preserves its approved form and navigation. Full name, optional international
+phone number and English/Kiswahili preference are writable. The email comes from the
+matching Firebase Auth user and is read-only. Photo changes remain disabled. A saved
+name does not update Firebase Auth's display name; language selection does not translate
+the current interface.
+
+Opening a new account's Profile page does not create data. It shows an explicit unsaved
+state, using the real Auth display name as an editable initial value when available.
+Saving requires explicit submission and shows success only after a valid API response.
+Load failures offer retry. Edits remain in the form after a save failure; a stale revision
+or uncertain response requires Reload profile before another save. Reloading replaces
+unsaved edits, as stated beside the control. Concurrent saves cannot silently overwrite
+a newer revision. Switching accounts or leaving the page discards stale in-flight results.
+
+### Local browser checks
+
+Use a dedicated development account and non-sensitive input. Keep both servers running.
+Navigate within the signed-in tab; Firebase session persistence is per tab.
+
+1. Open `/app/profile`. In browser Network, GET `/api/v1/profile/me` should return
+   200 with `profile: null` for a new profile, without creating a document.
+2. Complete Full name and Preferred language, leaving the optional phone blank.
+   Select Save changes. Confirm PUT returns 200, revision 1 and the saved message.
+   Never share Authorization headers, tokens or private response screenshots.
+3. Refresh the same tab. The saved values should reload. Edit and save again; revision
+   should increment. Empty name and malformed phone should show validation errors.
+4. For a conflict check, independently sign into the same development account in a
+   second tab and load Profile in both. Save an edit in the first tab, then save the
+   stale second form. It should receive 409, preserve the draft and request a reload.
+5. Sign out and sign in with a different development account if available. It must not
+   receive the previous account's profile. Signing back into the first account restores
+   its own saved profile. This is real profile storage, not seeded demonstration data.
+
+The profile Node tests use fake tokens and network/storage models only. They verify
+request boundaries, owner/revision checks, no automatic writes, stale-response cleanup,
+conflicts, timeouts and truthful save states. CI runs both auth and profile test files.
+Live database save/reload and visual browser review are separate manual checks.

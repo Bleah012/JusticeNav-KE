@@ -13,8 +13,9 @@ verification support. Firebase email/password authentication is integrated with 
 frontend and requires local Firebase and backend credential configuration. The identity endpoint denies unauthenticated requests and reports
 unavailable verification when configuration is missing.
 
-Application records, Firestore, classification, notifications and referral
-processing remain unconnected. The interface does not create successful
+Own-profile persistence uses the authenticated FastAPI backend and the default
+Firestore database when configured. Saved assessments, classification, notifications
+and referral processing remain unconnected. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development

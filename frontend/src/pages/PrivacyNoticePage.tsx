@@ -72,7 +72,7 @@ export function PrivacyNoticePage() {
               JusticeNav KE is a software engineering student project. This
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
-              is connected when configured. The application database, AI
+              is connected when configured. Firestore profile storage is available when configured. Saved assessments, AI
               classification and referral processing are not connected.
             </p>
             <p>
@@ -88,8 +88,12 @@ export function PrivacyNoticePage() {
               Authentication and attempts to save your name as a Firebase display name.
               Sign-in and password recovery also contact Firebase. The JusticeNav API
               receives a Firebase ID token to verify identity and role; it does not
-              receive your password. The optional phone field is disabled and is not submitted.
-              Other profile and assessment forms still use local validation without saving.
+              receive your password. The optional phone field on registration is disabled and is not submitted.
+              Saving the Profile page sends your name, optional phone number and language
+              preference to the authenticated API, which stores them in Firestore with
+              your verified user ID, saved revision and backend-generated timestamps.
+              The profile does not store a password or change a sign-in email or role.
+              Assessment and referral forms still use local validation without saving.
             </p>
             <p>
               Your browser or password manager may retain information through
@@ -122,8 +126,11 @@ export function PrivacyNoticePage() {
             <h2 id="privacy-external-title">External services</h2>
             <p>Google Firebase processes authentication requests and stores the test
               account. Firebase may process network and security information under its
-              own service terms. Creating an account is a real cloud operation even
-              though the justice-navigation services remain a student prototype.</p>
+              own service terms. Creating an account and saving a profile are real cloud operations even
+              though the justice-navigation services remain a student prototype.
+              The development profile database uses the location selected in the
+              Firebase console. Profile storage location does not establish where
+              Firebase Authentication or every other service processes information.</p>
             <p>
               The landing page currently loads its photo from images.pexels.com.
               Loading that image contacts Pexels, which can receive your IP
@@ -168,7 +175,7 @@ export function PrivacyNoticePage() {
           <section id="privacy-future" aria-labelledby="privacy-future-title">
             <h2 id="privacy-future-title">Planned data use</h2>
             <p>
-              Planned account and assessment services will change how
+              Additional account and assessment services will change how
               information is handled. This notice must be updated before those
               services receive real user information, including any information
               shared in the school-project referral demonstration.
