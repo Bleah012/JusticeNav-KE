@@ -72,7 +72,7 @@ export function PrivacyNoticePage() {
               JusticeNav KE is a software engineering student project. This
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
-              is connected when configured. Firestore profile storage is available when configured. Saved assessments, AI
+              is connected when configured. Firestore profile and assessment storage are available when configured. AI
               classification and referral processing are not connected.
             </p>
             <p>
@@ -93,7 +93,12 @@ export function PrivacyNoticePage() {
               preference to the authenticated API, which stores them in Firestore with
               your verified user ID, saved revision and backend-generated timestamps.
               The profile does not store a password or change a sign-in email or role.
-              Assessment and referral forms still use local validation without saving.
+              Continue and Save & exit on assessment pages send your description or
+              clarification answers to the authenticated API for storage in Firestore,
+              with your verified user ID, assessment reference, saved progress, revision
+              and backend timestamps. These entries are available only through own-account
+              endpoints. Leaving a form without saving discards its edits.
+              Referral forms still use local validation without saving.
             </p>
             <p>
               Your browser or password manager may retain information through
@@ -126,7 +131,7 @@ export function PrivacyNoticePage() {
             <h2 id="privacy-external-title">External services</h2>
             <p>Google Firebase processes authentication requests and stores the test
               account. Firebase may process network and security information under its
-              own service terms. Creating an account and saving a profile are real cloud operations even
+              own service terms. Creating an account and saving a profile or assessment are real cloud operations even
               though the justice-navigation services remain a student prototype.
               The development profile database uses the location selected in the
               Firebase console. Profile storage location does not establish where

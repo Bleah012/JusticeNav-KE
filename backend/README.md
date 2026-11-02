@@ -101,8 +101,8 @@ future record query or update; they are not implemented by `/auth/me`.
 
 Firebase signup/sign-in/password recovery and protected frontend workspaces
 are connected. The own-profile endpoints below use Firestore when configured.
-Saved assessments, source-backed records, classification, notifications and
-demonstration referral processing remain separate work.
+Source-backed records, classification, notifications and demonstration referral
+processing remain separate work. Assessment draft persistence is described below.
 
 Tests use isolated verifier/SDK mocks. Their `unit-*` identity strings are
 test fixtures only, not Firebase accounts, saved cases or demo operational
@@ -183,3 +183,55 @@ References: [create a database](https://firebase.google.com/docs/firestore/quick
 [database locations](https://firebase.google.com/docs/firestore/locations),
 [rules and server access](https://firebase.google.com/docs/firestore/security/rules-conditions),
 [transactions](https://firebase.google.com/docs/firestore/manage-data/transactions).
+
+## Saved assessments
+
+The same default Firestore database and backend credentials now store private
+assessment drafts. No new dependencies, browser rules, database or billing change
+is required. All endpoints require the existing verified Firebase bearer identity.
+
+| Method | Endpoint | Behavior |
+| --- | --- | --- |
+| GET | `/api/v1/assessments` | Own metadata only, default 20 and maximum 50 records; optional `status` and `after` cursor. |
+| GET | `/api/v1/assessments/{identifier}` | Own description, answers and saved progress; missing/foreign record is 404. |
+| PUT | `/api/v1/assessments/{identifier}` | Explicitly create or update an own assessment using a revision check. |
+
+Identifiers are 32 lowercase hexadecimal characters, generated once by the browser
+for each new form. Repeating a create for the same identifier cannot create another
+record. A transaction checks `expectedRevision` (0 for creation), increments the
+saved revision, preserves creation time and supplies a backend UTC update time.
+Concurrent/stale writes return 409. A lost response is uncertain: reload the saved
+version or check My Assessments before another attempt.
+
+Description writes accept `step: "describe"`, a nonblank string of up to 1,500
+characters, boolean `proceed` and integer `expectedRevision`. Save & exit stores a
+Draft; Continue stores Needs clarification. Changing the saved description clears
+earlier answers. An unchanged description retains them. Clarification writes accept
+`step: "clarify"`, `answers`, `proceed` and the revision. Answers use the fixed codes
+`consumer`/`money-debt`/`other`, `recent`/`months`/`older`/`unsure`, and
+`yes`/`no`/`unsure`; unanswered values are null. Save & exit permits partial answers;
+Continue requires all three. Complete answers produce Awaiting pathways, never
+Results ready or a classification. Clients cannot submit UID, roles, status,
+timestamps, classifications or pathways. Validation errors do not echo input.
+
+Records live under `assessmentOwners/{sha256(uid)}/assessments/{identifier}`. Only
+the verified backend UID selects the parent. The parent need not contain a profile
+document. This hash prevents interpreting UID path characters; it is not encryption.
+The Admin SDK uses IAM and bypasses client rules, so API ownership checks are required.
+No provider/admin cross-account assessment endpoints are introduced.
+
+Listing queries only that owner's subcollection, orders by document reference and
+uses a saved document snapshot as its pagination cursor. Status equality uses the
+standard single-field index. No application-wide scan or collection-group query is
+used. Responses contain only identifier, status, revision and dates, with an opaque
+`nextCursor`; they omit descriptions, answers and UID. Page order is stable reference
+order, not a promise of latest activity first. GET and list never create records.
+Missing/foreign cursors are 404; denied/unreachable storage or malformed saved
+records are generic 503. Existing API no-store headers and CORS GET/PUT apply.
+
+Tests use mocked storage and verifier dependencies, including bounded queries,
+ownership isolation, create retries, partial answers, changed descriptions, invalid
+inputs and concurrent revisions. No tests create live cloud assessments.
+
+References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions),
+[snapshot query cursors](https://firebase.google.com/docs/firestore/query-data/query-cursors).

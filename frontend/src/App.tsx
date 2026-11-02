@@ -42,11 +42,11 @@ import { RouteNavigation } from "./components/RouteNavigation";
 // Share public navigation without placing it above standalone account pages.
 function PublicLayout() {
   return (<>
-   <PublicHeader />
-   <main id="main-content" className="public-main" tabIndex={-1}>
-    <Outlet />
-   </main>
-  </>);
+  <PublicHeader />
+  <main id="main-content" className="public-main" tabIndex={-1}>
+  <Outlet />
+  </main>
+ </>);
 }
 // Match each URL to its page inside the existing BrowserRouter.
 function App() {
@@ -56,71 +56,73 @@ function App() {
     navigate(`/pathways/${encodeURIComponent(pathwayId)}`);
   }
   return (<>
-   <RouteNavigation />
-   <Routes>
-    <Route element={<PublicLayout />}>
-     <Route path="/" element={<HomePage />}/>
-     <Route path="/services" element={<JusticeServicesPage />}/>
-     <Route path="/services/:serviceId" element={<ServiceProfilePage />}/>
-     <Route path="/resources" element={<ResourcesPage />}/>
-     <Route path="/privacy" element={<PrivacyNoticePage />}/>
-     <Route path="/terms" element={<TermsOfUsePage />}/>
-     <Route path="/pathways/:pathwayId" element={<PathwayDetailsPage />}/>
-     <Route path="*" element={<NotFoundPage />}/>
-    </Route>
+  <RouteNavigation />
+  <Routes>
+  <Route element={<PublicLayout />}>
+   <Route path="/" element={<HomePage />}/>
+   <Route path="/services" element={<JusticeServicesPage />}/>
+   <Route path="/services/:serviceId" element={<ServiceProfilePage />}/>
+   <Route path="/resources" element={<ResourcesPage />}/>
+   <Route path="/privacy" element={<PrivacyNoticePage />}/>
+   <Route path="/terms" element={<TermsOfUsePage />}/>
+   <Route path="/pathways/:pathwayId" element={<PathwayDetailsPage />}/>
+   <Route path="*" element={<NotFoundPage />}/>
+  </Route>
 
-    <Route path="/login" element={<SignInPage />}/>
-    <Route path="/signup" element={<SignUpPage />}/>
-    <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
-    <Route path="/reset-password" element={<ResetPasswordPage />}/>
+  <Route path="/login" element={<SignInPage />}/>
+  <Route path="/signup" element={<SignUpPage />}/>
+  <Route path="/forgot-password" element={<ForgotPasswordPage />}/>
+  <Route path="/reset-password" element={<ResetPasswordPage />}/>
 
-    <Route element={<RequireSession />}>
-     <Route path="/app/assessments/new" element={<AssessmentEntryPage />}/>
-     <Route path="/app/assessments/clarify" element={<AssessmentClarificationPage />}/>
-     <Route path="/app/assessments/results" element={<AssessmentResultsPage onViewPathway={handleViewPathway}/>}/>
-     <Route path="/app/checklists/new" element={<PreparationChecklistPage />}/>
-     <Route path="/app/referrals/new" element={<ReferralRequestPage />}/>
-     <Route path="/app/referrals/:referralId/confirmation" element={<ReferralConfirmationPage />}/>
+  <Route element={<RequireSession />}>
+   <Route path="/app/assessments/new" element={<AssessmentEntryPage />}/>
+   <Route path="/app/assessments/clarify" element={<AssessmentClarificationPage />}/>
+   <Route path="/app/assessments/:assessmentId/describe" element={<AssessmentEntryPage />}/>
+   <Route path="/app/assessments/:assessmentId/clarify" element={<AssessmentClarificationPage />}/>
+   <Route path="/app/assessments/results" element={<AssessmentResultsPage onViewPathway={handleViewPathway}/>}/>
+   <Route path="/app/checklists/new" element={<PreparationChecklistPage />}/>
+   <Route path="/app/referrals/new" element={<ReferralRequestPage />}/>
+   <Route path="/app/referrals/:referralId/confirmation" element={<ReferralConfirmationPage />}/>
 
-     <Route element={<SeekerLayout>
-        <Outlet />
-       </SeekerLayout>}>
-      <Route path="/app" element={<SeekerDashboardPage />}/>
-      <Route path="/app/assessments" element={<MyAssessmentsPage />}/>
-      <Route path="/app/notifications" element={<NotificationsPage />}/>
-      <Route path="/app/profile" element={<ProfilePage />}/>
-      <Route path="/app/privacy-security" element={<PrivacySecurityPage />}/>
-      <Route path="/app/checklists" element={<MyChecklistsPage />}/>
-      <Route path="/app/referrals" element={<ReferralTrackingPage />}/>
-      <Route path="/app/referrals/:referralId" element={<ReferralTrackingPage />}/>
-      <Route path="/app/*" element={<NotFoundPage seeker/>}/>
-    </Route>
-    </Route>
-    <Route element={<RequireSession roles={["admin"]}/>}>
-     <Route element={<AdminLayout>
-        <Outlet />
-       </AdminLayout>}>
-      <Route path="/admin" element={<AdminOverviewPage />}/>
-      <Route path="/admin/users" element={<AdminUsersPage />}/>
-      <Route path="/admin/services" element={<AdminServicesPage />}/>
-      <Route path="/admin/pathways" element={<AdminPathwaysPage />}/>
-      <Route path="/admin/pathways/new" element={<PathwayEditorPage />}/>
-      <Route path="/admin/pathways/:pathwayId/edit" element={<PathwayEditorPage />}/>
-      <Route path="/admin/referrals" element={<AdminReferralsPage />}/>
-      <Route path="/admin/verification" element={<AdminVerificationPage />}/>
-      <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />}/>
-      <Route path="/admin/*" element={<NotFoundPage admin/>}/>
-    </Route>
-    </Route>
-    <Route element={<RequireSession roles={["provider"]}/>}>
-     <Route element={<ProviderLayout>
-        <Outlet />
-       </ProviderLayout>}>
-      <Route path="/provider" element={<ProviderDashboardPage />}/>
-      <Route path="/provider/*" element={<NotFoundPage provider/>}/>
-    </Route>
-    </Route>
-   </Routes>
-   </>);
+   <Route element={<SeekerLayout>
+    <Outlet />
+    </SeekerLayout>}>
+   <Route path="/app" element={<SeekerDashboardPage />}/>
+   <Route path="/app/assessments" element={<MyAssessmentsPage />}/>
+   <Route path="/app/notifications" element={<NotificationsPage />}/>
+   <Route path="/app/profile" element={<ProfilePage />}/>
+   <Route path="/app/privacy-security" element={<PrivacySecurityPage />}/>
+   <Route path="/app/checklists" element={<MyChecklistsPage />}/>
+   <Route path="/app/referrals" element={<ReferralTrackingPage />}/>
+   <Route path="/app/referrals/:referralId" element={<ReferralTrackingPage />}/>
+   <Route path="/app/*" element={<NotFoundPage seeker/>}/>
+  </Route>
+  </Route>
+  <Route element={<RequireSession roles={["admin"]}/>}>
+   <Route element={<AdminLayout>
+    <Outlet />
+    </AdminLayout>}>
+   <Route path="/admin" element={<AdminOverviewPage />}/>
+   <Route path="/admin/users" element={<AdminUsersPage />}/>
+   <Route path="/admin/services" element={<AdminServicesPage />}/>
+   <Route path="/admin/pathways" element={<AdminPathwaysPage />}/>
+   <Route path="/admin/pathways/new" element={<PathwayEditorPage />}/>
+   <Route path="/admin/pathways/:pathwayId/edit" element={<PathwayEditorPage />}/>
+   <Route path="/admin/referrals" element={<AdminReferralsPage />}/>
+   <Route path="/admin/verification" element={<AdminVerificationPage />}/>
+   <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />}/>
+   <Route path="/admin/*" element={<NotFoundPage admin/>}/>
+  </Route>
+  </Route>
+  <Route element={<RequireSession roles={["provider"]}/>}>
+   <Route element={<ProviderLayout>
+    <Outlet />
+    </ProviderLayout>}>
+   <Route path="/provider" element={<ProviderDashboardPage />}/>
+   <Route path="/provider/*" element={<NotFoundPage provider/>}/>
+  </Route>
+  </Route>
+  </Routes>
+  </>);
 }
 export default App;

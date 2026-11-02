@@ -14,8 +14,9 @@ frontend and requires local Firebase and backend credential configuration. The i
 unavailable verification when configuration is missing.
 
 Own-profile persistence uses the authenticated FastAPI backend and the default
-Firestore database when configured. Saved assessments, classification, notifications
-and referral processing remain unconnected. The interface does not create successful
+Firestore database when configured. Assessment descriptions and clarification
+answers can also be saved, listed and reopened for the signed-in account.
+Classification, notifications and referral processing remain unconnected. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development

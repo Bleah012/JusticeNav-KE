@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from .assessments import AssessmentStore, FirestoreAssessmentStore
+from .assessments import router as assessment_router
 from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
 from .config import Settings
 from .profiles import FirestoreProfileStore, ProfileStore
@@ -24,13 +26,14 @@ def create_app(
     settings: Settings | None = None,
     verifier: TokenVerifier | None = None,
     profile_store: ProfileStore | None = None,
+    assessment_store: AssessmentStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
     app = FastAPI(
         title="JusticeNav KE API",
         version="0.1.0",
-        description="Firebase authentication and own-profile persistence. Health checks process liveness only.",
+        description="Firebase authentication, profiles and private assessment drafts. Health checks process liveness only.",
         docs_url="/docs" if settings.app_env != "production" else None,
         redoc_url=None,
         openapi_url="/openapi.json" if settings.app_env != "production" else None,
@@ -42,12 +45,25 @@ def create_app(
         profile_store if profile_store is not None else FirestoreProfileStore(settings)
     )
     app.include_router(profile_router)
+    app.state.assessment_store = (
+        assessment_store
+        if assessment_store is not None
+        else FirestoreAssessmentStore(settings)
+    )
+    app.include_router(assessment_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/assessments"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid assessment input. Check the description, answers and saved revision."
+                },
+            )
         if request.url.path == "/api/v1/profile/me":
             return JSONResponse(
                 status_code=422,
