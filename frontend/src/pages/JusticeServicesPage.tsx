@@ -26,7 +26,7 @@ export type DirectoryService = {
   eligibility: string | null;
   accessMethods: readonly string[];
   deliveryModes: readonly string[];
-  sourceReview: { checkedOn: string } | null;
+  sourceReview: { checkedOn: string; sources: readonly { name: string; url: string }[] } | null;
 };
 
 export type DirectoryData =
@@ -162,10 +162,12 @@ export function JusticeServicesPage({
         <span>Justice services</span>
         <h1>Find a justice service</h1>
         <p>
-          Search verified services by the help you need, your location or how
+          Search justice services by the help you need, your location or how
           you want to access support.
         </p>
       </header>
+
+      <p className="catalog-source-note">Initial listings use official published sources. A check date records this project’s source review, not a guarantee of current availability or eligibility. Confirm details directly with the organisation.</p>
 
       <form
         className="justice-directory__search"
@@ -330,7 +332,7 @@ export function JusticeServicesPage({
                         {service.sourceReview && (
                           <span className="justice-directory__verified">
                             <ShieldCheck size={14} aria-hidden="true" />
-                            Verified source
+                            Official source
                           </span>
                         )}
                         <span>{service.serviceType}</span>
@@ -356,7 +358,7 @@ export function JusticeServicesPage({
                         {service.sourceReview && (
                           <span>
                             <Clock3 size={14} aria-hidden="true" />
-                            Verified {service.sourceReview.checkedOn}
+                            Source checked {service.sourceReview.checkedOn}
                           </span>
                         )}
                       </div>
@@ -379,7 +381,7 @@ export function JusticeServicesPage({
             <MapPin size={32} aria-hidden="true" />
           </div>
           <h2>Map unavailable</h2>
-          <p>Location information is not available.</p>
+          <p>An interactive map is not connected. Use the service profile and official source for location details.</p>
         </aside>
       </div>
     </div>

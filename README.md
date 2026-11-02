@@ -16,7 +16,9 @@ unavailable verification when configuration is missing.
 Own-profile persistence uses the authenticated FastAPI backend and the default
 Firestore database when configured. Assessment descriptions and clarification
 answers can also be saved, listed and reopened for the signed-in account.
-Classification, notifications and referral processing remain unconnected. The interface does not create successful
+The public service directory and resource library use a versioned catalogue of
+reviewed official sources served through FastAPI. Classification, notifications
+and referral processing remain unconnected. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development
@@ -75,7 +77,9 @@ Optional prototype features are not automatically part of the MVP.
 
 Training data and Kenyan evaluation examples will be documented separately.
 Dataset permissions and suitability must be checked before use.
-Official Kenyan sources will support pathway and service information.
+Official Kenyan sources support the initial public service and resource catalogue.
+See [public catalogue source notes](docs/public-catalog-sources.md). Pathway matching
+and classification remain separate work.
 
 ## Development Rules
 

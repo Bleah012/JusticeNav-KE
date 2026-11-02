@@ -73,7 +73,9 @@ export function PrivacyNoticePage() {
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
               is connected when configured. Firestore profile and assessment storage are available when configured. AI
-              classification and referral processing are not connected.
+              classification and referral processing are not connected. The public directory
+              and resource library load published institutional information from the
+              JusticeNav API without sending a bearer token or cookies.
             </p>
             <p>
               Information and navigation support, not legal advice. JusticeNav

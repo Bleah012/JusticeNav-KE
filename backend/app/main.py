@@ -12,6 +12,8 @@ from pydantic import BaseModel
 from .assessments import AssessmentStore, FirestoreAssessmentStore
 from .assessments import router as assessment_router
 from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
+from .catalog import CatalogStore
+from .catalog import router as catalog_router
 from .config import Settings
 from .profiles import FirestoreProfileStore, ProfileStore
 from .profiles import router as profile_router
@@ -27,6 +29,7 @@ def create_app(
     verifier: TokenVerifier | None = None,
     profile_store: ProfileStore | None = None,
     assessment_store: AssessmentStore | None = None,
+    catalog_store: CatalogStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -51,6 +54,10 @@ def create_app(
         else FirestoreAssessmentStore(settings)
     )
     app.include_router(assessment_router)
+    app.state.catalog_store = (
+        catalog_store if catalog_store is not None else CatalogStore()
+    )
+    app.include_router(catalog_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(

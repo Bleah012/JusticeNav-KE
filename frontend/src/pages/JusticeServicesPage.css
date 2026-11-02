@@ -1,4 +1,6 @@
 @layer components {
+  .catalog-source-note { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 24px; overflow-wrap: anywhere; }
+
   .justice-directory {
     width: min(1420px, calc(100% - 64px));
     margin-inline: auto;

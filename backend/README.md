@@ -235,3 +235,41 @@ inputs and concurrent revisions. No tests create live cloud assessments.
 
 References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions),
 [snapshot query cursors](https://firebase.google.com/docs/firestore/query-data/query-cursors).
+
+## Public service and resource catalogue
+
+Anonymous GET `/api/v1/services`, `/api/v1/services/{serviceId}` and
+`/api/v1/resources` serve the initial checked public catalogue. These routes do
+not verify a Firebase token, contact Firestore/publishers, write cloud records or
+depend on private configuration. Existing private endpoints retain their guards.
+
+`app/public_catalog.json` contains three service profiles and six resource links,
+with stable identifiers, official sources and project check dates. It is versioned
+source data rather than invented operational records or an automatic web scrape.
+Changes are reviewed through Git; the existing administrator preview does not edit
+or publish this catalogue. Publisher pages may change after the recorded check.
+
+The API validates the entire file against a bounded, strict schema before serving
+it. Duplicate identifiers/categories, unsupported schema versions, unknown fields,
+malformed dates and unsafe/off-list source URLs are rejected. Approved hosts are
+the Judiciary, CAK and NLAS domains explicitly listed in `catalog.py`. Links use
+HTTPS without credentials, query strings, fragments or custom ports. Adding another
+publisher requires reviewing and updating both backend and frontend allowlists.
+
+The directory response contains public summary fields and source-review metadata;
+the detail response contains the matching public profile. Resource responses include
+publisher names, URLs, categories and source check dates. Nullable contact fields
+remain null when not included; the API never invents hours, eligibility, coordinates,
+guaranteed assistance or delivery of a referral. Case-specific matching is not run.
+
+The complete bounded catalogue is returned in one request (maximum 50 services and
+100 resources; file-size cap 256 KiB). Search, filters, categories and sorting operate
+in the browser. They are not sent to the catalogue endpoints. A valid unknown service
+is 404; a missing/malformed catalogue is generic 503, including for service details,
+so unavailable data is not disguised as a missing record. Explicit empty published
+arrays are legitimate 200 responses. Existing no-store and configured-origin CORS apply.
+
+No new dependencies, Firebase setup, browser rules, indexes or billing change is
+required. Include `app/public_catalog.json` alongside Python sources when packaging
+the backend. Tests read this local public JSON and use no live publisher requests.
+See [source notes](../docs/public-catalog-sources.md) for provenance and limitations.
