@@ -51,7 +51,7 @@ origin and would require matching Firebase-domain and backend CORS settings.
   A new account without a custom role is a seeker. There is no client-side role picker.
   The guards improve navigation; backend authorization remains mandatory on every
   future endpoint, including ownership and provider-membership/assignment checks.
-- Signing in does not populate saved assessments, counts, resources or referrals.
+- Signing in does not create an assessment or populate dashboard counts, resources or referrals.
   Their unavailable states remain until the relevant data services are implemented.
 
 The API must run with the same Firebase project and backend-only credentials;
@@ -85,7 +85,7 @@ into chat, screenshots, Git, analytics or server logs.
 
 ```powershell
 npm.cmd --prefix frontend run lint
-node --test frontend/tests/auth.test.cjs frontend/tests/profile.test.cjs
+node --test frontend/tests/auth.test.cjs frontend/tests/profile.test.cjs frontend/tests/assessments.test.cjs
 npm.cmd --prefix frontend run build
 npm.cmd --prefix frontend audit
 ```
@@ -150,3 +150,45 @@ The profile Node tests use fake tokens and network/storage models only. They ver
 request boundaries, owner/revision checks, no automatic writes, stale-response cleanup,
 conflicts, timeouts and truthful save states. CI runs both auth and profile test files.
 Live database save/reload and visual browser review are separate manual checks.
+
+## Saved assessment flow
+
+- `/app/assessments/new` opens an unsaved description. It does not write automatically.
+  Continue saves before opening clarification; Save & exit saves before returning to
+  My Assessments. A description must contain 1–1,500 characters.
+- `/app/assessments/:assessmentId/describe` reloads a saved description. Changing it
+  clears earlier answers only after saving; leaving without saving discards edits.
+- `/app/assessments/:assessmentId/clarify` restores saved answers and progress.
+  Save & exit permits partial answers. Continue requires all three answers and saves
+  before showing the existing pathway-unavailable page. No AI call or match is made.
+- `/app/assessments` loads own metadata, filters by saved status and supports the next
+  page/first page controls. Records reopen at Describe for Draft and Clarify otherwise.
+  The list uses a short opaque reference as its title rather than exposing a private
+  description. Complete answers are Awaiting pathways, not Results ready.
+- Legacy `/app/assessments/clarify` without an identifier offers My Assessments;
+  missing saved records show an error rather than an empty form that creates data.
+
+Descriptions and answers never enter URLs, browser-managed application storage or
+logs. Only opaque references, fixed status filters and pagination cursors enter URLs.
+The existing SDK session persistence is unchanged. Account/route changes abort reads
+and writes and ignore obsolete results. The server cannot cancel an already committed
+write, so uncertain outcomes request a reload instead of claiming failure or retrying
+automatically. Conflicts preserve the visible draft until explicit reload; this reload
+replaces unsaved edits. There is no background autosave, automatic submit or fake result.
+
+Manual verification after restarting the servers:
+
+1. Sign in with a development account and open New assessment in that same tab.
+2. Enter non-sensitive text. Use Save & exit and confirm a Draft appears in My Assessments.
+3. Reopen it, edit the description and select Continue. Refresh Clarify and confirm
+   the saved record opens. Answer one question and Save & exit; reopen to confirm it.
+4. Complete the other questions and Continue. The existing results page truthfully
+   reports unavailable pathway processing. My Assessments shows Awaiting pathways.
+5. Reopen, go Back to Describe, change/save the description, and confirm old answers
+   are cleared. Status filters should reflect the saved progress.
+6. With a second development account, confirm that the first account's records do not
+   appear or open. In two independently signed-in tabs for the same account, load the
+   same record, save one, then save the stale other form: expect 409 with draft retained.
+
+All test tokens and records in the Node suite are isolated fixtures. Browser/live cloud
+checks remain user-run. Never share bearer headers, tokens or private descriptions.

@@ -33,13 +33,13 @@ export type AssessmentResultsData =
 const unavailableResults: AssessmentResultsData = { status: "unavailable" };
 const notices = {
   unavailable:
-    "No saved assessment or pathway results are loaded. Assessment processing and saving are currently unavailable.",
+    "Pathway processing and pathway results are currently unavailable. Review your saved descriptions and answers in My Assessments.",
   loading:
-    "Assessment results are being loaded. Saving is currently unavailable.",
+    "Pathway results are being loaded.",
   error:
-    "Assessment results could not be loaded. Saving is currently unavailable.",
+    "Pathway results could not be loaded.",
   ready:
-    "Saving is currently unavailable. These results are navigation information, not legal advice.",
+    "These results are navigation information, not legal advice.",
 };
 
 // Only create external links for public HTTPS addresses without embedded credentials.
@@ -255,7 +255,7 @@ export function AssessmentResultsPage({
       </section>
 
       <div className="assessment-entry__actions assessment-results__actions">
-        <Link className="btn btn-ghost" to="/app/assessments/clarify">
+        <Link className="btn btn-ghost" to="/app/assessments">
           Back
         </Link>
         <Link className="btn btn-secondary" to="/services">

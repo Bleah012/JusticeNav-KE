@@ -87,8 +87,8 @@ jobs:
       - name: Check frontend code
         run: npm run lint
 
-      - name: Check authentication and profile boundaries
-        run: node --test tests/auth.test.cjs tests/profile.test.cjs
+      - name: Check authentication, profile and assessment boundaries
+        run: node --test tests/auth.test.cjs tests/profile.test.cjs tests/assessments.test.cjs
 
       - name: Build frontend
         run: npm run build
