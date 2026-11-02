@@ -1,3 +1,5 @@
+import { useAuth } from "../auth/useAuth";
+import { workspaceFor } from "../auth/session";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Link, NavLink } from "react-router";
@@ -6,6 +8,9 @@ import "./PublicHeader.css";
 
 // Render the approved public header with accessible mobile navigation.
 export function PublicHeader() {
+  const { session } = useAuth();
+  const accountPath = session.status === "ready" ? workspaceFor(session.identity.role) : "/login";
+  const accountLabel = session.status === "ready" ? "Dashboard" : session.hasSession ? "Account" : "Sign in";
   const [open, setOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const menuRef = useRef<HTMLButtonElement>(null);
@@ -103,10 +108,10 @@ export function PublicHeader() {
             </a>
             <Link
               className="public-header__mobile-action"
-              to="/login"
+              to={accountPath}
               onClick={closeMenu}
             >
-              Sign in
+              {accountLabel}
             </Link>
             <Link
               className="btn btn-primary public-header__mobile-action"
@@ -117,8 +122,8 @@ export function PublicHeader() {
             </Link>
           </nav>
           <div className="public-header__actions">
-            <Link className="public-header__signin" to="/login">
-              Sign in
+            <Link className="public-header__signin" to={accountPath}>
+              {accountLabel}
             </Link>
             <Link
               className="btn btn-primary public-header__start"

@@ -288,9 +288,9 @@ export function HomePage() {
               information.
             </p>
             <p>
-              Planned safeguards. Authentication, access controls and account
-              data-management services are not connected in this student
-              prototype. Use non-sensitive test inputs only.
+              Firebase authentication is available when configured. Account
+              data-management services and saved assessments are not connected
+              in this student prototype. Use a dedicated test account only.
             </p>
             <ul
               className="home-privacy__principles"

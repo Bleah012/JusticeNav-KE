@@ -71,9 +71,9 @@ export function PrivacyNoticePage() {
             <p>
               JusticeNav KE is a software engineering student project. This
               draft describes the current frontend prototype, not a fully
-              operating justice service. Authentication, the application
-              database, AI classification and referral processing are not
-              connected.
+              operating justice service. Firebase email/password authentication
+              is connected when configured. The application database, AI
+              classification and referral processing are not connected.
             </p>
             <p>
               Information and navigation support, not legal advice. JusticeNav
@@ -84,16 +84,18 @@ export function PrivacyNoticePage() {
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">
             <h2 id="privacy-forms-title">Information you enter</h2>
             <p>
-              Account forms contain fields for a name, email address, passwords
-              and an optional phone number. The current application uses entries
-              for on-page validation; it does not submit these fields to a
-              JusticeNav backend or save them in an application database.
+              Registration sends your email address and password to Google Firebase
+              Authentication and attempts to save your name as a Firebase display name.
+              Sign-in and password recovery also contact Firebase. The JusticeNav API
+              receives a Firebase ID token to verify identity and role; it does not
+              receive your password. The optional phone field is disabled and is not submitted.
+              Other profile and assessment forms still use local validation without saving.
             </p>
             <p>
               Your browser or password manager may retain information through
-              its own settings. Do not use real passwords, identification
-              numbers, PINs, financial details or confidential dispute
-              information when testing this prototype.
+              its own settings. Use a dedicated test email address you control and a
+              unique password you do not use elsewhere. Do not enter identification
+              numbers, PINs, financial details or confidential dispute information.
             </p>
           </section>
 
@@ -107,8 +109,9 @@ export function PrivacyNoticePage() {
             </p>
             <p>
               Password-reset links may contain a reset code. Treat those links
-              as private. The prototype does not verify reset codes or change
-              passwords.
+              as private. The reset page verifies the code with Firebase before
+              requesting a password change. A successful reset changes the Firebase
+              account password. Do not share reset links, screenshots of codes or tokens.
             </p>
           </section>
 
@@ -117,6 +120,10 @@ export function PrivacyNoticePage() {
             aria-labelledby="privacy-external-title"
           >
             <h2 id="privacy-external-title">External services</h2>
+            <p>Google Firebase processes authentication requests and stores the test
+              account. Firebase may process network and security information under its
+              own service terms. Creating an account is a real cloud operation even
+              though the justice-navigation services remain a student prototype.</p>
             <p>
               The landing page currently loads its photo from images.pexels.com.
               Loading that image contacts Pexels, which can receive your IP
@@ -142,9 +149,12 @@ export function PrivacyNoticePage() {
             <h2 id="privacy-storage-title">Storage and tracking</h2>
             <p>
               The current application has no added advertising or analytics
-              integration and does not write application-managed cookies, local
-              storage or session storage. This statement does not cover browser
-              extensions or third-party websites.
+              integration. Firebase stores authentication state, including tokens, in
+              browser session storage for the current tab and clears that session on
+              explicit sign-out. Browser session restoration may affect how long the
+              tab remains available. This is not account deletion or revocation of all
+              sessions. No assessment or referral is saved in browser storage by this app.
+              This statement does not cover browser extensions or third-party websites.
             </p>
             <p>
               Development servers and future hosting providers may process

@@ -5,41 +5,37 @@ import { Link } from "react-router";
 import { Button } from "../components/ui/Button";
 import "./SignInPage.css";
 import "./SignUpPage.css";
+import { register } from "../auth/firebaseClient";
+import { useAuth } from "../auth/useAuth";
+import { useAuthAction } from "../auth/useAuthAction";
+import { SessionPanel } from "../components/AuthSession";
 
-const messages = {
-  name: "Enter your full name.",
-  mismatch: "Passwords do not match.",
-  unavailable:
-    "Account creation is currently unavailable. Please try again later.",
-};
-
-// Validate account details without creating or persisting an account.
+// Validate locally before requesting a real Firebase development account.
 export function SignUpPage() {
+  const { session } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [error, setError] = useState<keyof typeof messages | null>(null);
+  const { busy, error, setError, message, run } = useAuthAction();
   const nameRef = useRef<HTMLInputElement>(null);
   const confirmationRef = useRef<HTMLInputElement>(null);
-
-  // Reject blank names and mismatched passwords before reporting unavailable signup.
+  const locked = busy || Boolean(message);
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    if (locked) return;
     if (!nameRef.current?.value.trim()) {
-      setError("name");
-      nameRef.current?.focus();
-      return;
+      setError("Enter your full name."); nameRef.current?.focus(); return;
     }
-
     if (password !== confirmation) {
-      setError("mismatch");
-      confirmationRef.current?.focus();
-      return;
+      setError("Passwords do not match."); confirmationRef.current?.focus(); return;
     }
-
-    setError("unavailable");
+    const fields = new FormData(event.currentTarget);
+    void run(async () => {
+      const result = await register(String(fields.get("email") ?? ""), password, nameRef.current?.value ?? "");
+      setPassword(""); setConfirmation("");
+      return result;
+    });
   }
 
   return (
@@ -107,10 +103,11 @@ export function SignUpPage() {
           Back to home
         </Link>
 
+        {(session.hasSession || session.status === "loading" || session.status === "unconfigured" || session.status === "error") && !busy && !message ? <section className="sign-in__form"><h1>Start your justice journey</h1><SessionPanel /></section> : (
         <form
           className="sign-in__form"
           onSubmit={handleSubmit}
-          onInput={() => setError(null)}
+          onInput={() => setError("")}
           aria-labelledby="sign-up-title"
         >
           <span className="sign-in__badge">Create your account</span>
@@ -126,8 +123,9 @@ export function SignUpPage() {
               type="text"
               autoComplete="name"
               placeholder="Enter your full name"
-              aria-invalid={error === "name" || undefined}
-              aria-describedby={error === "name" ? "sign-up-error" : undefined}
+              aria-invalid={error === "Enter your full name." || undefined}
+              aria-describedby={error === "Enter your full name." ? "sign-up-error" : undefined}
+              disabled={locked}
               required
             />
           </div>
@@ -142,6 +140,7 @@ export function SignUpPage() {
               autoCapitalize="none"
               spellCheck={false}
               placeholder="you@example.com"
+              disabled={locked}
               required
             />
           </div>
@@ -157,7 +156,8 @@ export function SignUpPage() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                required
+                disabled={locked}
+              required
               />
               <button
                 className="sign-in__password-toggle"
@@ -188,11 +188,12 @@ export function SignUpPage() {
                 placeholder="Enter password again"
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                aria-invalid={error === "mismatch" || undefined}
+                aria-invalid={error === "Passwords do not match." || undefined}
                 aria-describedby={
-                  error === "mismatch" ? "sign-up-error" : undefined
+                  error === "Passwords do not match." ? "sign-up-error" : undefined
                 }
-                required
+                disabled={locked}
+              required
               />
               <button
                 className="sign-in__password-toggle"
@@ -228,14 +229,18 @@ export function SignUpPage() {
               inputMode="tel"
               autoComplete="tel"
               placeholder="+254..."
+              disabled
+              aria-describedby="signup-phone-note"
             />
           </div>
 
+          <p className="auth-help" id="signup-phone-note">Phone-number collection is not connected. This field is not submitted.</p>
           <div className="sign-up__agreement">
             <input
               id="sign-up-agreement"
               name="agreement"
               type="checkbox"
+              disabled={locked}
               required
             />
             <label htmlFor="sign-up-agreement">
@@ -244,14 +249,15 @@ export function SignUpPage() {
             </label>
           </div>
 
+          {message && <p className="auth-feedback" role="status">{message} <Link to="/app">Continue to my account</Link></p>}
           {error && (
             <p className="sign-in__error" id="sign-up-error" role="alert">
-              {messages[error]}
+              {error}
             </p>
           )}
 
-          <Button type="submit" full>
-            Create account
+          <Button type="submit" full disabled={locked || session.status === "loading" || session.status === "unconfigured"}>
+            {busy ? "Creating account…" : "Create account"}
           </Button>
 
           <div className="sign-in__divider" aria-hidden="true">
@@ -272,10 +278,12 @@ export function SignUpPage() {
           </p>
 
           <p className="sign-up__notice">
-            Only provide information necessary to use the service. Do not submit
-            highly sensitive information unless required.
+            Use a dedicated test email address you control and a unique password.
+            Registration sends your email, password and display name to Firebase.
+            Saved assessments and referrals are not connected.
           </p>
         </form>
+        )}
       </main>
     </div>
   );

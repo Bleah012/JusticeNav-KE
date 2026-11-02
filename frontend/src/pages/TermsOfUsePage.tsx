@@ -77,8 +77,9 @@ export function TermsOfUsePage() {
             </p>
             <p>
               The current frontend contains page layouts, navigation and form
-              validation. Authentication, the application database, AI
-              classification and referral processing are not connected. A
+              validation. Firebase authentication is available when configured.
+              The application database, AI classification and referral processing
+              are not connected. A
               visible button or form does not mean that its underlying service
               is available.
             </p>
@@ -104,9 +105,10 @@ export function TermsOfUsePage() {
           <section id="terms-testing" aria-labelledby="terms-testing-title">
             <h2 id="terms-testing-title">Responsible testing</h2>
             <p>
-              During development, test the interface without entering real
-              passwords, identification numbers, PINs, financial details or
-              confidential information about yourself or anyone else.
+              During development, use a dedicated test email address you control and
+              a unique password you do not use elsewhere. Do not enter identification
+              numbers, PINs, financial details or confidential information about
+              yourself or anyone else.
             </p>
             <ul>
               <li>
@@ -124,8 +126,10 @@ export function TermsOfUsePage() {
             </ul>
             <p>
               The sign-up agreement checkbox currently supports on-page form
-              validation. The form does not create an account or submit an
-              agreement record to a backend.
+              validation. Registration creates a real Firebase account when configured,
+              but it does not submit a contractual acceptance record to the JusticeNav API.
+              Signing in does not establish eligibility, create a saved assessment or
+              send a referral to an institution.
             </p>
           </section>
 

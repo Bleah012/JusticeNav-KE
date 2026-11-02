@@ -9,8 +9,8 @@ The React frontend contains the public, account, assessment, seeker,
 administrator and provider page layouts, with local form validation.
 
 The FastAPI backend foundation provides process health and Firebase ID-token
-verification support. Firebase has not been configured or connected to the
-frontend yet. The identity endpoint denies unauthenticated requests and reports
+verification support. Firebase email/password authentication is integrated with the
+frontend and requires local Firebase and backend credential configuration. The identity endpoint denies unauthenticated requests and reports
 unavailable verification when configuration is missing.
 
 Application records, Firestore, classification, notifications and referral
@@ -54,7 +54,7 @@ Real organizations are not assumed to participate in referral processing.
 - Backend: Python and FastAPI.
 - AI baseline: scikit-learn, TF-IDF, and Logistic Regression.
 - Backend testing: Pytest and FastAPI TestClient; linting and formatting: Ruff.
-- Planned frontend automated tests: Vitest, React Testing Library and Playwright.
+- Frontend authentication boundary tests: Node test runner with mocked SDK/network operations.
 - Version control and CI/CD: Git, GitHub, and GitHub Actions.
 - Planned hosting: Firebase Hosting and Render.
 

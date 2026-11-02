@@ -1,0 +1,12 @@
+@layer components {
+  .auth-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .auth-actions button { color: inherit; background: transparent; border: 1px solid currentColor; padding: 8px 12px; font: inherit; cursor: pointer; }
+  .auth-actions button:disabled { opacity: .6; cursor: wait; }
+  .auth-actions a:focus-visible, .auth-actions button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+  .auth-panel { display: grid; gap: 16px; padding: 20px; border: 1px solid #aebbb3; background: #eaf4ed; color: #111; border-radius: 8px; overflow-wrap: anywhere; }
+  .auth-panel > .btn { justify-self: start; }
+  .auth-gate { width: min(720px, calc(100% - 40px)); margin: 64px auto; display: grid; gap: 24px; }
+  .auth-gate h1 { font-size: clamp(36px, 6vw, 64px); }
+  .auth-feedback { border: 1px solid #aebbb3; background: #eaf4ed; color: #111; padding: 16px; border-radius: 4px; }
+  .auth-help { font-size: 14px; color: #656565; }
+}

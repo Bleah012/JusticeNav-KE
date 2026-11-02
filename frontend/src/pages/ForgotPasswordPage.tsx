@@ -1,20 +1,19 @@
-import { useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, Check } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "../components/ui/Button";
 import "./SignInPage.css";
+import "../components/AuthSession.css";
+import { requestReset } from "../auth/firebaseClient";
+import { useAuthAction } from "../auth/useAuthAction";
 
-// Present account recovery without pretending to send a password-reset email.
+// Request recovery without revealing whether a submitted address has an account.
 export function ForgotPasswordPage() {
-  const [error, setError] = useState("");
-
-  // Keep recovery unavailable until Firebase email delivery is connected.
+  const { busy, error, setError, message, run } = useAuthAction();
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(
-      "Password reset is currently unavailable. Please try again later.",
-    );
+    const fields = new FormData(event.currentTarget);
+    void run(() => requestReset(String(fields.get("email") ?? "")));
   }
 
   return (
@@ -103,18 +102,20 @@ export function ForgotPasswordPage() {
               placeholder="you@example.com"
               aria-describedby={error ? "recovery-error" : undefined}
               onInput={() => setError("")}
+              disabled={busy}
               required
             />
           </div>
 
+          {message && <p className="auth-feedback" role="status">{message}</p>}
           {error && (
             <p className="sign-in__error" id="recovery-error" role="alert">
               {error}
             </p>
           )}
 
-          <Button type="submit" full>
-            Send reset link
+          <Button type="submit" full disabled={busy}>
+            {busy ? "Requesting link…" : "Send reset link"}
           </Button>
 
           <p className="sign-in__switch">
