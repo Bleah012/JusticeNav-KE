@@ -9,6 +9,7 @@ def isolated_environment(monkeypatch):
         "FIREBASE_PROJECT_ID",
         "GOOGLE_APPLICATION_CREDENTIALS",
         "FIREBASE_AUTH_EMULATOR_HOST",
+        "FIRESTORE_EMULATOR_HOST",
         "FRONTEND_ORIGIN",
         "APP_ENV",
     ):

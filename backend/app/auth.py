@@ -40,35 +40,40 @@ class CurrentUser(BaseModel):
     email_verified: bool = Field(alias="emailVerified")
 
 
+def get_firebase_app(settings: Settings) -> firebase_admin.App:
+    """Share lazy, backend-only Firebase initialization across API services."""
+    project = settings.firebase_project_id
+    # Emulator tokens are unsigned. This foundation has no emulator bypass.
+    if not project or os.environ.get("FIREBASE_AUTH_EMULATOR_HOST"):
+        raise VerificationUnavailable
+    try:
+        with _firebase_lock:
+            name = f"justicenav-{project}"
+            try:
+                return firebase_admin.get_app(name)
+            except ValueError:
+                credential_path = settings.google_application_credentials
+                credential = (
+                    credentials.Certificate(credential_path)
+                    if credential_path
+                    else credentials.ApplicationDefault()
+                )
+                return firebase_admin.initialize_app(
+                    credential,
+                    options={"projectId": project},
+                    name=name,
+                )
+    except (GoogleAuthError, OSError, ValueError) as exc:
+        raise VerificationUnavailable from exc
+
+
 class FirebaseTokenVerifier:
     def __init__(self, settings: Settings):
         self.settings = settings
 
     def _get_app(self) -> firebase_admin.App:
         """Initialize the Admin SDK lazily using backend-only credentials."""
-        project = self.settings.firebase_project_id
-        # Emulator tokens are unsigned. This foundation has no emulator bypass.
-        if not project or os.environ.get("FIREBASE_AUTH_EMULATOR_HOST"):
-            raise VerificationUnavailable
-        try:
-            with _firebase_lock:
-                name = f"justicenav-{project}"
-                try:
-                    return firebase_admin.get_app(name)
-                except ValueError:
-                    credential_path = self.settings.google_application_credentials
-                    credential = (
-                        credentials.Certificate(credential_path)
-                        if credential_path
-                        else credentials.ApplicationDefault()
-                    )
-                    return firebase_admin.initialize_app(
-                        credential,
-                        options={"projectId": project},
-                        name=name,
-                    )
-        except (GoogleAuthError, OSError, ValueError) as exc:
-            raise VerificationUnavailable from exc
+        return get_firebase_app(self.settings)
 
     def verify(self, token: str) -> Mapping[str, object]:
         """Require SDK signature/project/expiry checks and revocation checking."""

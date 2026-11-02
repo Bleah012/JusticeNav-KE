@@ -288,9 +288,9 @@ export function HomePage() {
               information.
             </p>
             <p>
-              Firebase authentication is available when configured. Account
-              data-management services and saved assessments are not connected
-              in this student prototype. Use a dedicated test account only.
+              Firebase authentication and profile saving are available when configured.
+              Saved assessments, referral processing and account deletion remain
+              unavailable in this student prototype. Use a dedicated test account only.
             </p>
             <ul
               className="home-privacy__principles"

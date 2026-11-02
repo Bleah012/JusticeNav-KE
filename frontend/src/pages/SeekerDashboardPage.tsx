@@ -152,7 +152,7 @@ export function SeekerDashboardPage({
                 ? "Loading your dashboard information."
                 : data.status === "error"
                   ? "Your dashboard could not be loaded."
-                  : "Account information, saved assessments and referral records are currently unavailable. AI processing and application-data saving are not connected."}
+                  : "Saved assessments, referral records and journey statistics are currently unavailable. Your personal information can be managed on the Profile page. AI processing is not connected."}
           </p>
           {data.status === "error" && data.retry && (
             <Button variant="secondary" onClick={data.retry}>
