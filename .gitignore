@@ -20,6 +20,8 @@ __pycache__/
 !**/.env.example
 
 # Private credentials
+/credentials/
+firebase-admin.json
 *service-account*.json
 *firebase-adminsdk*.json
 *.pem

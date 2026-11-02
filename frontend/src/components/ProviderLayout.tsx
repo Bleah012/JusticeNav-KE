@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Building2, ClipboardList, FileText, Home, Info } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { SessionActions } from "./AuthSession";
 import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 import "../pages/SeekerPages.css";
@@ -32,7 +33,7 @@ function ProviderNavigation() {
   );
 }
 
-// This preview does not authenticate a provider or establish a service membership.
+// A verified provider role does not establish membership of a service or access to a referral.
 export function ProviderLayout({ children }: { children: ReactNode }) {
   const { pathname, hash } = useLocation();
   useEffect(() => {
@@ -64,7 +65,7 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
             <AppBrand />
           </div>
           <span className="seeker-shell__preview">Provider preview</span>
-          <Link to="/login">Sign in</Link>
+          <SessionActions />
         </header>
         <WorkspaceMenu>
           <ProviderNavigation />
@@ -76,7 +77,7 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice">
             <Info size={20} aria-hidden="true" />
             <p>
-              Provider preview only. Authentication, service membership and
+              Provider workspace preview. Service membership and
               referral processing are not connected. No status changes or
               responses are sent.
             </p>

@@ -1,44 +1,54 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, Check, Eye, EyeOff } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
 import { Button } from "../components/ui/Button";
 import "./SignInPage.css";
+import "../components/AuthSession.css";
+import { authError, checkReset, finishReset } from "../auth/firebaseClient";
+import { useAuthAction } from "../auth/useAuthAction";
 
-const messages = {
-  mismatch: "Passwords do not match.",
-  missingLink:
-    "Open the password reset link from your email, or request a new link.",
-  unavailable:
-    "Password reset is currently unavailable. Please try again later.",
-};
-
-// Display reset-password fields without verifying a link or changing credentials.
+// Validate the one-time code with the configured Firebase project before accepting a password.
 export function ResetPasswordPage() {
-  const [searchParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const [completed, setCompleted] = useState("");
+  const code = params.getAll("oobCode").length === 1 && params.get("mode") === "resetPassword" ? params.get("oobCode") ?? "" : "";
+  return <ResetPasswordForm key={code} code={code} completed={completed} onComplete={setCompleted} />;
+}
+
+// Remount when the link changes so a previous code cannot enable a different form.
+function ResetPasswordForm({ code, completed, onComplete }: { code: string; completed: string; onComplete: (message: string) => void }) {
+  const [, setSearchParams] = useSearchParams();
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [error, setError] = useState<keyof typeof messages | null>(null);
+  const { busy, error, setError, message, run } = useAuthAction();
   const confirmationRef = useRef<HTMLInputElement>(null);
-
-  // Parameter presence does not establish that a reset code is valid or unexpired.
-  const hasResetParameters =
-    searchParams.get("mode") === "resetPassword" &&
-    Boolean(searchParams.get("oobCode")?.trim());
-
-  // Validate matching fields but never claim that a password was changed.
+  const [verification, setVerification] = useState({ valid: false, message: code ? "Checking your reset link…" : "Open the password reset link from your email, or request a new link." });
+  useEffect(() => {
+    let current = true;
+    if (code && !completed) void checkReset(code).then(() => {
+      if (current) setVerification({ valid: true, message: "Your reset link is valid. Choose a new password." });
+    }).catch((cause) => {
+      if (current) setVerification({ valid: false, message: authError(cause) });
+    });
+    return () => { current = false; };
+  }, [code, completed]);
+  const canReset = Boolean(code) && verification.valid && !busy && !message && !completed;
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+    if (!canReset) return;
     if (password !== confirmation) {
-      setError("mismatch");
-      confirmationRef.current?.focus();
-      return;
+      setError("Passwords do not match."); confirmationRef.current?.focus(); return;
     }
-
-    setError(hasResetParameters ? "unavailable" : "missingLink");
+    void run(async () => {
+      const result = await finishReset(code, password);
+      setPassword(""); setConfirmation("");
+      onComplete(result);
+      setSearchParams({}, { replace: true });
+      return result;
+    });
   }
 
   return (
@@ -109,12 +119,14 @@ export function ResetPasswordPage() {
         <form
           className="sign-in__form"
           onSubmit={handleSubmit}
-          onInput={() => setError(null)}
+          onInput={() => setError("")}
           aria-labelledby="reset-title"
         >
           <span className="sign-in__badge">Account recovery</span>
           <h1 id="reset-title">Reset your password</h1>
           <p>Choose a new password and confirm it below.</p>
+          <p className="auth-feedback" role="status">{completed || message || verification.message}</p>
+          {completed && <Link to="/login">Sign in</Link>}
 
           <div className="sign-in__field">
             <label htmlFor="reset-password">New password</label>
@@ -127,6 +139,7 @@ export function ResetPasswordPage() {
                 placeholder="Enter your new password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                disabled={!canReset}
                 required
               />
               <button
@@ -158,10 +171,11 @@ export function ResetPasswordPage() {
                 placeholder="Enter password again"
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                aria-invalid={error === "mismatch" || undefined}
+                aria-invalid={error === "Passwords do not match." || undefined}
                 aria-describedby={
-                  error === "mismatch" ? "reset-error" : undefined
+                  error === "Passwords do not match." ? "reset-error" : undefined
                 }
+                disabled={!canReset}
                 required
               />
               <button
@@ -191,12 +205,12 @@ export function ResetPasswordPage() {
 
           {error && (
             <p className="sign-in__error" id="reset-error" role="alert">
-              {messages[error]}
+              {error}
             </p>
           )}
 
-          <Button type="submit" full>
-            Reset password
+          <Button type="submit" full disabled={!canReset}>
+            {busy ? "Resetting password…" : "Reset password"}
           </Button>
 
           <p className="sign-in__switch">

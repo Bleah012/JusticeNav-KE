@@ -1,20 +1,26 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowLeft, Check, Eye, EyeOff } from "lucide-react";
-import { Link } from "react-router";
+import { Link, Navigate } from "react-router";
 import { Button } from "../components/ui/Button";
 import "./SignInPage.css";
+import { useAuth } from "../auth/useAuth";
+import { signIn } from "../auth/firebaseClient";
+import { workspaceFor } from "../auth/session";
+import { useAuthAction } from "../auth/useAuthAction";
+import { SessionPanel } from "../components/AuthSession";
 
-// Present the sign-in form without granting access before Firebase is connected.
+// Sign in with Firebase, then wait for the backend to verify identity and role.
 export function SignInPage() {
+  const { session } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-
-  // Report unavailable authentication without storing or transmitting credentials.
+  const { busy, error, message, run } = useAuthAction();
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("Sign-in is currently unavailable. Please try again later.");
+    const fields = new FormData(event.currentTarget);
+    void run(() => signIn(String(fields.get("email") ?? ""), String(fields.get("password") ?? "")));
   }
+  if (session.status === "ready") return <Navigate to={workspaceFor(session.identity.role)} replace />;
 
   return (
     <div className="sign-in">
@@ -81,6 +87,7 @@ export function SignInPage() {
           Back to home
         </Link>
 
+        {session.hasSession || session.status === "loading" || session.status === "unconfigured" || session.status === "error" ? <section className="sign-in__form"><h1>Sign in to JusticeNav KE</h1><SessionPanel /></section> : (
         <form
           className="sign-in__form"
           onSubmit={handleSubmit}
@@ -100,6 +107,7 @@ export function SignInPage() {
               autoCapitalize="none"
               spellCheck={false}
               placeholder="you@example.com"
+              disabled={busy}
               required
             />
           </div>
@@ -113,7 +121,8 @@ export function SignInPage() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 placeholder="Enter your password"
-                required
+                disabled={busy}
+              required
               />
               <button
                 type="button"
@@ -132,22 +141,24 @@ export function SignInPage() {
             </div>
           </div>
 
+          <p className="auth-help">Your sign-in session is stored for this browser tab. Use a dedicated test account and a password you do not use elsewhere.</p>
           <div className="sign-in__options">
-            <label title="Available when authentication is connected">
+            <label title="This application uses the current tab session only">
               <input type="checkbox" name="remember" disabled />
               Remember me
             </label>
             <Link to="/forgot-password">Forgot password?</Link>
           </div>
 
+          {message && <p className="auth-feedback" role="status">{message}</p>}
           {error && (
             <p className="sign-in__error" role="alert">
               {error}
             </p>
           )}
 
-          <Button type="submit" full>
-            Sign in
+          <Button type="submit" full disabled={busy}>
+            {busy ? "Signing in…" : "Sign in"}
           </Button>
 
           <div className="sign-in__divider" aria-hidden="true">
@@ -167,6 +178,7 @@ export function SignInPage() {
             New to JusticeNav KE? <Link to="/signup">Create account</Link>
           </p>
         </form>
+        )}
       </main>
     </div>
   );

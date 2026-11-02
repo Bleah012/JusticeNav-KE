@@ -11,12 +11,13 @@ import "@fontsource/cormorant-garamond/500.css";
 
 import "./index.css";
 import App from "./App.tsx";
+import { AuthProvider } from "./auth/AuthProvider";
 
 // Mount the application with development checks and browser routing.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <AuthProvider><App /></AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 );

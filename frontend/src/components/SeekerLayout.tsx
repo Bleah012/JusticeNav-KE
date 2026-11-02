@@ -11,8 +11,9 @@ import {
   Sparkles,
   User,
 } from "lucide-react";
-import { Link, NavLink } from "react-router";
+import { NavLink } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { SessionActions } from "./AuthSession";
 import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 
@@ -86,7 +87,7 @@ function Navigation() {
   );
 }
 
-// This shell is a frontend preview; it does not authenticate or authorize users.
+// Render seeker pages after the route guard verifies the application session.
 export function SeekerLayout({ children }: { children: ReactNode }) {
   return (
     <div className="seeker-shell">
@@ -112,7 +113,7 @@ export function SeekerLayout({ children }: { children: ReactNode }) {
 
           <span className="seeker-shell__preview">Student prototype</span>
 
-          <Link to="/login">Sign in</Link>
+          <SessionActions />
         </header>
 
         <WorkspaceMenu>

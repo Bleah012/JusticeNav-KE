@@ -87,6 +87,9 @@ jobs:
       - name: Check frontend code
         run: npm run lint
 
+      - name: Check authentication boundaries
+        run: node --test tests/auth.test.cjs
+
       - name: Build frontend
         run: npm run build
 

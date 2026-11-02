@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, NavLink } from "react-router";
 import { AppBrand } from "./AppBrand";
+import { SessionActions } from "./AuthSession";
 import { WorkspaceMenu } from "./WorkspaceMenu";
 import "./SeekerLayout.css";
 import "../pages/SeekerPages.css";
@@ -56,7 +57,7 @@ function AdminNavigation() {
   );
 }
 
-// Preview navigation provides no administrator authorization or access to private data.
+// The route guard verifies the administrator role; management data is still unavailable.
 export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="seeker-shell admin-shell">
@@ -81,7 +82,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <AppBrand />
           </div>
           <span className="seeker-shell__preview">Administrative preview</span>
-          <Link to="/login">Sign in</Link>
+          <SessionActions />
         </header>
         <WorkspaceMenu>
           <AdminNavigation />
@@ -93,8 +94,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice" id="admin-prototype-note">
             <Info size={20} aria-hidden="true" />
             <p>
-              Administrative preview only. Authentication, administrator role
-              checks and management services are not connected. No changes are
+              Administrative management preview. Your account role is checked
+              by the API. Management services are not connected. No changes are
               saved, published, archived or verified.
             </p>
           </div>
