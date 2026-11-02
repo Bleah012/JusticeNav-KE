@@ -91,6 +91,8 @@ export function ResourcesPage({
         </p>
       </header>
 
+      <p className="catalog-source-note">These links open official publishers’ websites. Source check dates describe this project’s review and do not guarantee that information remains current.</p>
+
       <fieldset className="resources-page__categories">
         <legend className="justice-directory__sr-only">
           Resource categories
@@ -192,7 +194,7 @@ export function ResourcesPage({
                         </div>
                         <span className="resources-page__badge">
                           {resource.source.checkedOn
-                            ? "Verified information"
+                            ? "Official source"
                             : "Information"}
                         </span>
                         <h2>{resource.title}</h2>
@@ -201,7 +203,7 @@ export function ResourcesPage({
                           <span>Source</span>
                           <strong>{resource.source.name}</strong>
                           {resource.source.checkedOn && (
-                            <small>Verified {resource.source.checkedOn}</small>
+                            <small>Source checked {resource.source.checkedOn}</small>
                           )}
                         </div>
                         {href ? (

@@ -85,7 +85,7 @@ into chat, screenshots, Git, analytics or server logs.
 
 ```powershell
 npm.cmd --prefix frontend run lint
-node --test frontend/tests/auth.test.cjs frontend/tests/profile.test.cjs frontend/tests/assessments.test.cjs
+node --test frontend/tests/auth.test.cjs frontend/tests/profile.test.cjs frontend/tests/assessments.test.cjs frontend/tests/catalog.test.cjs
 npm.cmd --prefix frontend run build
 npm.cmd --prefix frontend audit
 ```
@@ -192,3 +192,43 @@ Manual verification after restarting the servers:
 
 All test tokens and records in the Node suite are isolated fixtures. Browser/live cloud
 checks remain user-run. Never share bearer headers, tokens or private descriptions.
+
+## Connected public catalogue
+
+The existing Justice Services, Service Profile and Resources pages now load real
+public records from FastAPI. Their existing search, URL filters, sorting, categories,
+links and responsive styles remain. Public routes work signed out and do not require
+configured Firebase Authentication. The configured `VITE_API_BASE_URL` is reused.
+
+Public requests use GET with no bearer token, cookies, body, search text or referrer;
+redirects are rejected and requests are bounded by a timeout. The client checks
+schema versions, field types, bounds, unique IDs, source URLs, calendar dates and
+detail-identifier matches before rendering. Old requests are cancelled/ignored when
+a page, identifier or StrictMode lifecycle changes. Failures offer explicit retry;
+only a confirmed detail 404 becomes Service not found, and empty published data is
+distinct from unavailable storage. No fallback demo records are shown.
+
+Source badges say Official source and Source checked. Dates refer to this project's
+review of the publisher's page, not institutional endorsement or a freshness promise.
+Profiles expose the exact source links used for their records. Missing contact data
+prompts confirmation with the official source. The map remains unavailable because
+no geocoding/map service is connected. Referral controls remain disabled.
+
+The initial service catalogue includes Judiciary Small Claims Court information,
+CAK Consumer Protection and NLAS Legal Aid, with six official resource links. The NLAS
+profile retains its published scope limitation. No assessment description or answer
+is used to rank these public records, and no legal eligibility decision is made.
+See [source notes](../docs/public-catalog-sources.md).
+
+Manual checks with both servers running:
+
+1. Open `/services` while signed out; expect three services and GET 200.
+2. Search `CAK`, filter/sort and clear filters. Refresh to confirm URL state remains.
+3. View a service, check its source links/check date and inspect known versus missing
+   contact fields. An unknown `/services/not-a-listed-service` should show not found.
+4. Open `/resources`; expect six records. Exercise every category and an external
+   Read more link. External sources open in a new tab, without submitting a request.
+5. Stop the backend and reload a public page; expect an error, not empty results.
+   Restart the backend and select Try again to confirm recovery.
+6. Confirm phone-width layout, keyboard focus and links. Public catalogue requests
+   in Network should contain no Authorization header. Private APIs still require it.

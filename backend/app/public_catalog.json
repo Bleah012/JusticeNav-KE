@@ -1,0 +1,215 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-11-02",
+  "services": [
+    {
+      "id": "small-claims-courts",
+      "name": "Small Claims Courts — Judiciary of Kenya",
+      "serviceType": "Court",
+      "location": "Kenya — court stations vary",
+      "description": "Judiciary information on Small Claims Courts and the civil claims they can consider.",
+      "eligibility": "Confirm jurisdiction with the court",
+      "accessMethods": ["Official website"],
+      "deliveryModes": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-02",
+        "sources": [
+          {
+            "name": "Judiciary — Small Claims Court",
+            "url": "https://judiciary.go.ke/small-claims-court/"
+          },
+          {
+            "name": "Judiciary — Small Claims Court forms",
+            "url": "https://judiciary.go.ke/small-claims-court-forms/"
+          }
+        ]
+      },
+      "about": "The Judiciary publishes court scope and form links.",
+      "offeredServices": [
+        "Claims involving goods or services",
+        "Claims concerning money held or received"
+      ],
+      "whoMayQualify": "Confirm current jurisdiction and requirements with the relevant court.",
+      "accessSteps": [
+        {
+          "title": "Read the court overview",
+          "description": "Confirm requirements with the relevant registry."
+        },
+        {
+          "title": "Check the official forms",
+          "description": "Ask which current forms apply."
+        }
+      ],
+      "officialWebsite": "https://judiciary.go.ke/small-claims-court/",
+      "contact": {
+        "access": "Use the Judiciary’s court information and forms.",
+        "coverage": "Confirm the relevant Small Claims Court station with the Judiciary.",
+        "hours": null,
+        "address": null,
+        "phone": null,
+        "email": null
+      }
+    },
+    {
+      "id": "cak-consumer-protection",
+      "name": "Competition Authority of Kenya — Consumer Protection",
+      "serviceType": "Consumer protection",
+      "location": "Nairobi",
+      "description": "CAK receives complaints about matters such as misleading representations and unsafe or defective goods.",
+      "eligibility": "Consumer complaints within CAK’s mandate",
+      "accessMethods": ["Email", "Telephone", "Post", "Office visit"],
+      "deliveryModes": ["Remote", "In-person"],
+      "sourceReview": {
+        "checkedOn": "2026-11-02",
+        "sources": [
+          {
+            "name": "CAK — Consumer Protection",
+            "url": "https://www.cak.go.ke/consumer-protection"
+          },
+          {
+            "name": "CAK — Forms and Guidelines",
+            "url": "https://www.cak.go.ke/mandate/Consumer-Protection/Forms-Guidelines"
+          }
+        ]
+      },
+      "about": "Public information on CAK’s complaint process.",
+      "offeredServices": [
+        "Review of consumer protection complaints",
+        "Consumer complaint information"
+      ],
+      "whoMayQualify": "CAK determines whether a complaint falls within its consumer protection mandate.",
+      "accessSteps": [
+        {
+          "title": "Check CAK’s complaint information",
+          "description": "Review its published scope."
+        },
+        {
+          "title": "Use the official form and channel",
+          "description": "Supply the information CAK requests."
+        }
+      ],
+      "officialWebsite": "https://www.cak.go.ke/consumer-protection",
+      "contact": {
+        "access": "Email, telephone, post or office visit as published by CAK.",
+        "coverage": null,
+        "hours": null,
+        "address": "CBK Pension Towers, 15th Floor, Harambee Avenue, Nairobi.",
+        "phone": "+254 20 2628233",
+        "email": "complain@cak.go.ke"
+      }
+    },
+    {
+      "id": "nlas-legal-aid",
+      "name": "National Legal Aid Service",
+      "serviceType": "Legal aid",
+      "location": "Kenya — confirm the relevant NLAS office",
+      "description": "Official NLAS information on eligibility and legal aid applications.",
+      "eligibility": "Assessment by NLAS",
+      "accessMethods": ["Application form", "Official website"],
+      "deliveryModes": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-02",
+        "sources": [
+          {
+            "name": "NLAS — Legal Aid",
+            "url": "https://www.nlas.go.ke/legal-aid"
+          },
+          {
+            "name": "NLAS — FAQs",
+            "url": "https://www.nlas.go.ke/faqs"
+          }
+        ]
+      },
+      "about": "Legal aid is subject to NLAS assessment.",
+      "offeredServices": ["Legal aid application information"],
+      "whoMayQualify": "NLAS assesses eligibility. Its guidance excludes certain civil matters, including debt recovery.",
+      "accessSteps": [
+        {
+          "title": "Read NLAS guidance",
+          "description": "Check the published scope and exclusions."
+        },
+        {
+          "title": "Contact NLAS",
+          "description": "Confirm application requirements directly."
+        }
+      ],
+      "officialWebsite": "https://www.nlas.go.ke/legal-aid",
+      "contact": {
+        "access": "Use NLAS application instructions.",
+        "coverage": null,
+        "hours": null,
+        "address": null,
+        "phone": null,
+        "email": "info@nlas.go.ke"
+      }
+    }
+  ],
+  "resources": [
+    {
+      "id": "judiciary-small-claims-overview",
+      "title": "Small Claims Court overview",
+      "description": "Official court overview and scope information. Confirm current jurisdiction and requirements with the relevant court.",
+      "categories": ["civil"],
+      "source": {
+        "name": "Judiciary of Kenya",
+        "url": "https://judiciary.go.ke/small-claims-court/",
+        "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "judiciary-small-claims-guide",
+      "title": "Small Claims Court step-by-step guide",
+      "description": "The Judiciary’s published procedural guide. Confirm current filing requirements with the relevant registry.",
+      "categories": ["self-representation", "preparation", "civil"],
+      "source": {
+        "name": "Judiciary of Kenya",
+        "url": "https://judiciary.go.ke/mall-claims-courts-step-by-step-guide/",
+        "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "judiciary-small-claims-forms",
+      "title": "Small Claims Court forms",
+      "description": "Official court forms page. Check which current form applies before preparing a filing.",
+      "categories": ["preparation", "self-representation", "civil"],
+      "source": {
+        "name": "Judiciary of Kenya",
+        "url": "https://judiciary.go.ke/small-claims-court-forms/",
+        "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "cak-consumer-complaint-information",
+      "title": "Consumer complaint information",
+      "description": "CAK’s explanation of complaint channels and its consumer complaint review process.",
+      "categories": ["consumer"],
+      "source": {
+        "name": "Competition Authority of Kenya",
+        "url": "https://www.cak.go.ke/consumer-protection",
+        "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "cak-consumer-forms-guidelines",
+      "title": "Consumer complaint forms and guidelines",
+      "description": "Published complaint form and guidance links. Check the current instructions on CAK’s website.",
+      "categories": ["consumer", "preparation"],
+      "source": {
+        "name": "Competition Authority of Kenya",
+        "url": "https://www.cak.go.ke/mandate/Consumer-Protection/Forms-Guidelines",
+        "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "nlas-legal-aid-guidance",
+      "title": "Legal aid eligibility and applications",
+      "description": "NLAS information on applying, eligibility and excluded matters, including debt recovery. NLAS determines whether assistance can be provided.",
+      "categories": ["preparation"],
+      "source": {
+        "name": "National Legal Aid Service",
+        "url": "https://www.nlas.go.ke/legal-aid",
+        "checkedOn": "2026-11-02"
+      }
+    }
+  ]
+}

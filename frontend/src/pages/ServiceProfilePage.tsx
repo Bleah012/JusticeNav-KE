@@ -140,9 +140,9 @@ export function ServiceProfilePage({
                 <>
                   <span className="service-profile__badge">
                     <ShieldCheck size={15} aria-hidden="true" />
-                    Verified source
+                    Official source
                   </span>
-                  <span>Last verified: {service.sourceReview.checkedOn}</span>
+                  <span>Source checked: {service.sourceReview.checkedOn}</span>
                 </>
               ) : (
                 <span>Source review information is not available.</span>
@@ -165,7 +165,7 @@ export function ServiceProfilePage({
                 >
                   <h2 id="service-about">About</h2>
                   <p>
-                    {service.about || "Information has not been published."}
+                    {service.about || "Information is not listed here."}
                   </p>
                 </section>
 
@@ -181,7 +181,7 @@ export function ServiceProfilePage({
                       ))}
                     </ul>
                   ) : (
-                    <p>Service details have not been published.</p>
+                    <p>Service details are not listed here.</p>
                   )}
                 </section>
 
@@ -221,6 +221,8 @@ export function ServiceProfilePage({
                   )}
                 </section>
 
+                {service.sourceReview && <section className="service-profile__section" aria-labelledby="service-sources"><h2 id="service-sources">Sources</h2><ul>{service.sourceReview.sources.map((source) => { const href = publicWebsite(source.url); return href ? <li key={href}><a href={href} target="_blank" rel="noopener noreferrer">{source.name} <ExternalLink size={14} aria-hidden="true" /></a></li> : null; })}</ul><p>The check date records this project’s review of published information. Confirm current details directly with the organisation.</p></section>}
+
                 <div className="service-profile__notice">
                   <Info size={20} aria-hidden="true" />
                   <p>
@@ -238,11 +240,11 @@ export function ServiceProfilePage({
                 <dl>
                   <div>
                     <dt>Access</dt>
-                    <dd>{service.contact.access || "Not published"}</dd>
+                    <dd>{service.contact.access || "Confirm with official source"}</dd>
                   </div>
                   <div>
                     <dt>Coverage</dt>
-                    <dd>{service.contact.coverage || "Not published"}</dd>
+                    <dd>{service.contact.coverage || "Confirm with official source"}</dd>
                   </div>
                   <div>
                     <dt>Hours</dt>
@@ -252,15 +254,15 @@ export function ServiceProfilePage({
                   </div>
                   <div>
                     <dt>Address</dt>
-                    <dd>{service.contact.address || "Not published"}</dd>
+                    <dd>{service.contact.address || "Confirm with official source"}</dd>
                   </div>
                   <div>
                     <dt>Phone</dt>
-                    <dd>{service.contact.phone || "Not published"}</dd>
+                    <dd>{service.contact.phone || "Confirm with official source"}</dd>
                   </div>
                   <div>
                     <dt>Email</dt>
-                    <dd>{service.contact.email || "Not published"}</dd>
+                    <dd>{service.contact.email || "Confirm with official source"}</dd>
                   </div>
                 </dl>
                 <Button

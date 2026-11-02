@@ -6,9 +6,7 @@ import { SignInPage } from "./pages/SignInPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
-import { JusticeServicesPage } from "./pages/JusticeServicesPage";
-import { ServiceProfilePage } from "./pages/ServiceProfilePage";
-import { ResourcesPage } from "./pages/ResourcesPage";
+import { PublicServicesPage, PublicServiceProfilePage, PublicResourcesPage } from "./components/PublicCatalogPages";
 import { PrivacyNoticePage } from "./pages/PrivacyNoticePage";
 import { TermsOfUsePage } from "./pages/TermsOfUsePage";
 import { AssessmentEntryPage } from "./pages/AssessmentEntryPage";
@@ -60,9 +58,9 @@ function App() {
   <Routes>
   <Route element={<PublicLayout />}>
    <Route path="/" element={<HomePage />}/>
-   <Route path="/services" element={<JusticeServicesPage />}/>
-   <Route path="/services/:serviceId" element={<ServiceProfilePage />}/>
-   <Route path="/resources" element={<ResourcesPage />}/>
+   <Route path="/services" element={<PublicServicesPage />}/>
+   <Route path="/services/:serviceId" element={<PublicServiceProfilePage />}/>
+   <Route path="/resources" element={<PublicResourcesPage />}/>
    <Route path="/privacy" element={<PrivacyNoticePage />}/>
    <Route path="/terms" element={<TermsOfUsePage />}/>
    <Route path="/pathways/:pathwayId" element={<PathwayDetailsPage />}/>

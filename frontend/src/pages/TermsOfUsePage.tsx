@@ -136,13 +136,13 @@ export function TermsOfUsePage() {
           <section id="terms-sources" aria-labelledby="terms-sources-title">
             <h2 id="terms-sources-title">Sources and availability</h2>
             <p>
-              The directory and resource library currently show an unavailable
-              state because published records have not been connected. That
-              state does not mean that no relevant services or resources exist.
+              The directory and resource library show an initial catalogue drawn from
+                official published sources. It is not a complete list of relevant
+                organisations or resources, and listing does not establish a partnership.
             </p>
             <p>
-              When source-backed information is added, any displayed review date
-              will describe when the project checked that information, not a
+              Any displayed source check date describes when the project reviewed
+                the published information, not a
               guarantee that it remains current. Confirm contact details,
               opening hours, charges, requirements and eligibility directly with
               the organisation concerned before relying on them.
