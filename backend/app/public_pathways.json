@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-11-03",
+  "pathways": [
+    {
+      "id": "cak-consumer-complaint",
+      "title": "CAK consumer complaint information",
+      "category": "Consumer protection",
+      "serviceId": "cak-consumer-protection",
+      "overview": "CAK publishes a process for consumer complaints.",
+      "whoMayUse": "CAK considers complaints within its consumer-protection mandate.",
+      "matters": ["Misleading representations", "Unsafe or defective goods"],
+      "requirements": [
+        "Review the complaint form and supply relevant complaint information."
+      ],
+      "startingSteps": [
+        {
+          "title": "Review the official guidance",
+          "description": null
+        },
+        {
+          "title": "Contact CAK through a published channel",
+          "description": "Use the official source for current instructions."
+        }
+      ],
+      "nextStages": [
+        "CAK may request missing information and assess the complaint."
+      ],
+      "sourceReview": {
+        "checkedOn": "2026-11-03",
+        "sources": [
+          {
+            "name": "CAK: Consumer Protection",
+            "url": "https://www.cak.go.ke/consumer-protection"
+          }
+        ]
+      },
+      "preparation": [
+        {
+          "id": "read-scope",
+          "label": "Review the published complaint scope",
+          "note": "Check whether the published guidance addresses your issue."
+        },
+        {
+          "id": "review-form",
+          "label": "Review the consumer complaint form",
+          "note": "Check the information requested by CAK; do not upload documents here."
+        },
+        {
+          "id": "check-channel",
+          "label": "Confirm a current contact channel",
+          "note": "Use the official CAK page before contacting the service."
+        }
+      ]
+    },
+    {
+      "id": "small-claims-information",
+      "title": "Small Claims Court information",
+      "category": "Civil claims",
+      "serviceId": "small-claims-courts",
+      "overview": "Published court information describes certain civil claims.",
+      "whoMayUse": "Confirm current jurisdiction and requirements with the court; a category selection cannot establish eligibility.",
+      "matters": [
+        "Contracts for goods or services",
+        "Contracts involving money held or received"
+      ],
+      "requirements": [
+        "Check current jurisdiction, forms and filing instructions with the Judiciary."
+      ],
+      "startingSteps": [
+        {
+          "title": "Review the court overview",
+          "description": null
+        },
+        {
+          "title": "Consult the official forms page",
+          "description": "Confirm current filing instructions with the relevant court."
+        }
+      ],
+      "nextStages": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-03",
+        "sources": [
+          {
+            "name": "Judiciary: Small Claims Court",
+            "url": "https://judiciary.go.ke/small-claims-court/"
+          },
+          {
+            "name": "Judiciary: Small Claims Court forms",
+            "url": "https://judiciary.go.ke/small-claims-court-forms/"
+          }
+        ]
+      },
+      "preparation": [
+        {
+          "id": "read-jurisdiction",
+          "label": "Review current court jurisdiction",
+          "note": "Confirm claim type and applicable limits using the official overview."
+        },
+        {
+          "id": "review-forms",
+          "label": "Review the official forms",
+          "note": "Confirm the appropriate form and required information with the court."
+        },
+        {
+          "id": "confirm-filing",
+          "label": "Confirm current filing instructions",
+          "note": "This checklist does not file a claim or preserve a deadline."
+        }
+      ]
+    },
+    {
+      "id": "nlas-application-information",
+      "title": "NLAS legal aid application information",
+      "category": "Legal aid",
+      "serviceId": "nlas-legal-aid",
+      "overview": "NLAS publishes application and eligibility guidance.",
+      "whoMayUse": "NLAS assesses eligibility. Its listed exclusions include debt recovery.",
+      "matters": ["Legal aid application information"],
+      "requirements": [
+        "Check NLAS eligibility and income-evidence requirements."
+      ],
+      "startingSteps": [
+        {
+          "title": "Read the eligibility guidance",
+          "description": null
+        },
+        {
+          "title": "Use NLAS application instructions",
+          "description": null
+        }
+      ],
+      "nextStages": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-03",
+        "sources": [
+          {
+            "name": "NLAS: Legal Aid",
+            "url": "https://www.nlas.go.ke/legal-aid"
+          }
+        ]
+      },
+      "preparation": [
+        {
+          "id": "read-eligibility",
+          "label": "Review eligibility and exclusions",
+          "note": "Debt recovery is among the published exclusions."
+        },
+        {
+          "id": "check-evidence",
+          "label": "Check income-evidence requirements",
+          "note": "Confirm with NLAS what evidence applies; do not upload it here."
+        },
+        {
+          "id": "review-application",
+          "label": "Review official application instructions",
+          "note": "Opening this checklist does not apply for aid."
+        }
+      ]
+    }
+  ]
+}

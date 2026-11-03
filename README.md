@@ -78,8 +78,10 @@ Optional prototype features are not automatically part of the MVP.
 Training data and Kenyan evaluation examples will be documented separately.
 Dataset permissions and suitability must be checked before use.
 Official Kenyan sources support the initial public service and resource catalogue.
-See [public catalogue source notes](docs/public-catalog-sources.md). Pathway matching
-and classification remain separate work.
+See [public catalogue source notes](docs/public-catalog-sources.md). Saved issue categories now select a small, documented set of public pathway links.
+This fixed navigation rule is not AI classification or an eligibility decision.
+See [pathway guidance notes](docs/pathway-guidance-sources.md). Checklist ticks are
+page-local; saved checklists and referral delivery remain separate work.
 
 ## Development Rules
 

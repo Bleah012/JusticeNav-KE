@@ -81,6 +81,7 @@ export function PrivacyNoticePage() {
               Information and navigation support, not legal advice. JusticeNav
               KE does not represent the organisations named on its pages.
             </p>
+            <p>Pathway navigation reads the signed-in account's saved issue category to select general information links. It does not analyse the description. Public pathway and preparation requests carry no bearer token. Checklist ticks remain in page memory and are discarded on refresh or departure; no checklist is saved.</p>
           </section>
 
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">
