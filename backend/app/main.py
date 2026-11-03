@@ -15,6 +15,8 @@ from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current
 from .catalog import CatalogStore
 from .catalog import router as catalog_router
 from .config import Settings
+from .pathways import PathwayStore
+from .pathways import router as pathway_router
 from .profiles import FirestoreProfileStore, ProfileStore
 from .profiles import router as profile_router
 
@@ -30,6 +32,7 @@ def create_app(
     profile_store: ProfileStore | None = None,
     assessment_store: AssessmentStore | None = None,
     catalog_store: CatalogStore | None = None,
+    pathway_store: PathwayStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -58,6 +61,10 @@ def create_app(
         catalog_store if catalog_store is not None else CatalogStore()
     )
     app.include_router(catalog_router)
+    app.state.pathway_store = (
+        pathway_store if pathway_store is not None else PathwayStore()
+    )
+    app.include_router(pathway_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(

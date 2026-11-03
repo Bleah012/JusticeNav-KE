@@ -101,8 +101,9 @@ future record query or update; they are not implemented by `/auth/me`.
 
 Firebase signup/sign-in/password recovery and protected frontend workspaces
 are connected. The own-profile endpoints below use Firestore when configured.
-Source-backed records, classification, notifications and demonstration referral
-processing remain separate work. Assessment draft persistence is described below.
+Public source-backed catalogue and pathway reads are connected as described below.
+AI classification, notifications and demonstration referral processing remain
+separate work. Assessment draft persistence is described below.
 
 Tests use isolated verifier/SDK mocks. Their `unit-*` identity strings are
 test fixtures only, not Firebase accounts, saved cases or demo operational
@@ -134,10 +135,10 @@ The Firebase Admin SDK bypasses these rules and uses IAM. Every API profile oper
 therefore selects its document from the verified bearer identity, regardless of any
 client UID, role header or query parameter. Browser code never initializes Firestore.
 
-| Method | URL | Behavior |
-| --- | --- | --- |
-| GET | `/api/v1/profile/me` | Own saved profile, or `{"profile": null}` if none exists; does not write. |
-| PUT | `/api/v1/profile/me` | Validate and atomically create/update the authenticated user's profile. |
+| Method | URL                  | Behavior                                                                  |
+| ------ | -------------------- | ------------------------------------------------------------------------- |
+| GET    | `/api/v1/profile/me` | Own saved profile, or `{"profile": null}` if none exists; does not write. |
+| PUT    | `/api/v1/profile/me` | Validate and atomically create/update the authenticated user's profile.   |
 
 Both methods require the existing Firebase bearer token. The request body accepts
 only `fullName` (trimmed, 1–120 characters, no control characters), optional `phone`
@@ -190,11 +191,11 @@ The same default Firestore database and backend credentials now store private
 assessment drafts. No new dependencies, browser rules, database or billing change
 is required. All endpoints require the existing verified Firebase bearer identity.
 
-| Method | Endpoint | Behavior |
-| --- | --- | --- |
-| GET | `/api/v1/assessments` | Own metadata only, default 20 and maximum 50 records; optional `status` and `after` cursor. |
-| GET | `/api/v1/assessments/{identifier}` | Own description, answers and saved progress; missing/foreign record is 404. |
-| PUT | `/api/v1/assessments/{identifier}` | Explicitly create or update an own assessment using a revision check. |
+| Method | Endpoint                           | Behavior                                                                                    |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| GET    | `/api/v1/assessments`              | Own metadata only, default 20 and maximum 50 records; optional `status` and `after` cursor. |
+| GET    | `/api/v1/assessments/{identifier}` | Own description, answers and saved progress; missing/foreign record is 404.                 |
+| PUT    | `/api/v1/assessments/{identifier}` | Explicitly create or update an own assessment using a revision check.                       |
 
 Identifiers are 32 lowercase hexadecimal characters, generated once by the browser
 for each new form. Repeating a create for the same identifier cannot create another
@@ -273,3 +274,37 @@ No new dependencies, Firebase setup, browser rules, indexes or billing change is
 required. Include `app/public_catalog.json` alongside Python sources when packaging
 the backend. Tests read this local public JSON and use no live publisher requests.
 See [source notes](../docs/public-catalog-sources.md) for provenance and limitations.
+
+## Source-backed pathway guidance
+
+Public read-only endpoints:
+
+- `GET /api/v1/pathways`
+- `GET /api/v1/pathways/{pathwayId}`
+- `GET /api/v1/pathways/{pathwayId}/preparation`
+
+Records are versioned in `app/public_pathways.json`. Official source links and
+project check dates accompany each guide and its preparation prompts. Public
+reads do not require a token or call Firestore. Missing or invalid catalogues
+return 503; a genuinely unknown identifier returns 404. No map or cloud seed is
+added. Linked service IDs must exist in the public service catalogue.
+
+`GET /api/v1/assessments/{assessmentId}/pathways` verifies the Firebase token and
+reads only that owner's saved assessment. Partial clarification returns 409,
+missing/foreign ownership returns 404, and malformed ownership/storage returns 503. Results include the owner, reference and saved revision, but never the
+private description. Reads do not save records or change their status/revision.
+
+Method `selected-category-v1` is an explicit editorial mapping:
+
+- Consumer: CAK complaint information, then Small Claims Court information.
+- Money / Debt: Small Claims Court information.
+- Something else: no automatic links; general browsing remains available.
+
+No description analysis, timeline/contact inference, scores, jurisdiction checks,
+eligibility decisions or AI model are involved. NLAS is browse-only and retains
+its debt-recovery exclusion. Existing `awaiting-pathways` is a storage progress
+value meaning that clarification is complete; it is not a saved classification.
+Results are recomputed on reads from the current public guides. No migration,
+Firestore index, rule change, dependency installation or cloud write is needed.
+
+See `../docs/pathway-guidance-sources.md` for provenance and review boundaries.

@@ -182,8 +182,9 @@ Manual verification after restarting the servers:
 2. Enter non-sensitive text. Use Save & exit and confirm a Draft appears in My Assessments.
 3. Reopen it, edit the description and select Continue. Refresh Clarify and confirm
    the saved record opens. Answer one question and Save & exit; reopen to confirm it.
-4. Complete the other questions and Continue. The existing results page truthfully
-   reports unavailable pathway processing. My Assessments shows Awaiting pathways.
+4. Complete the other questions and Continue. The owner-scoped results route
+   shows published links based only on the saved category. My Assessments retains
+   the storage progress label Awaiting pathways; it is not a saved classification.
 5. Reopen, go Back to Describe, change/save the description, and confirm old answers
    are cleared. Status filters should reflect the saved progress.
 6. With a second development account, confirm that the first account's records do not
@@ -232,3 +233,27 @@ Manual checks with both servers running:
    Restart the backend and select Try again to confirm recovery.
 6. Confirm phone-width layout, keyboard focus and links. Public catalogue requests
    in Network should contain no Authorization header. Private APIs still require it.
+
+## Connected pathway pages
+
+Continue from saved clarification opens `/app/assessments/:assessmentId/results`.
+The fixed category rule is explained on the page. The private request includes an
+ephemeral token and opaque assessment reference; no description, answers, UID query
+or request body is sent. Identity is checked again after token retrieval and after
+reading the response. Components are keyed by owner and assessment so departed
+account responses cannot restore old information. Read timeouts, explicit retry,
+missing assessments and incomplete clarification have distinct states.
+
+The generic `/app/assessments/results` route offers general browsing and a link to
+My Assessments. Its three guides are explicitly not personalised results.
+`/pathways/:pathwayId` is public and includes the related real service profile,
+official sources, review date and a working Create my checklist link.
+`/app/checklists/new?pathwayId=...` requires sign-in and loads public preparation
+prompts. Ticks and progress exist only in React memory and reset on page departure
+or refresh. Save checklist and Continue to referral remain disabled. No uploads,
+saved checklist record, referral, document validation or deadline protection occurs.
+An optional validated assessment reference preserves the return link only; it does
+not change the public data request or establish ownership/eligibility.
+
+Run `node --test tests/auth.test.cjs tests/profile.test.cjs tests/assessments.test.cjs tests/catalog.test.cjs tests/pathways.test.cjs`
+from the frontend folder. See the bundle guide for browser acceptance checks.

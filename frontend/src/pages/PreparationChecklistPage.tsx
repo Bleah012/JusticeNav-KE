@@ -7,24 +7,20 @@ import {
   LoaderCircle,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router";
+import type { Preparation } from "../pathways/pathwayApi";
+import { validId } from "../assessments/assessmentApi";
+import { PathwaySources } from "../components/PathwaySources";
 import { AssessmentLayout } from "../components/AssessmentLayout";
 import { Button } from "../components/ui/Button";
 import "./PreparationChecklistPage.css";
 
 // Requirements must come from reviewed pathway data; these are not saved user records.
-export type PreparationRequirements = {
-  pathwayId: string;
-  pathwayTitle: string;
-  items: readonly {
-    id: string;
-    label: string;
-    note: string | null;
-  }[];
-};
+export type PreparationRequirements = Preparation;
 
 export type PreparationChecklistData =
   | { status: "unavailable" }
   | { status: "loading" }
+  | { status: "not-found" }
   | { status: "error"; retry?: () => void }
   | { status: "ready"; requirements: PreparationRequirements };
 
@@ -80,7 +76,7 @@ function ChecklistEditor({
             <h2 id="preparation-list-title">
               {requirements.pathwayTitle} preparation
             </h2>
-            <p>Based on the selected pathway requirements.</p>
+            <p>Review prompts based on official sources; not a complete filing checklist.</p>
           </div>
           <output
             className="preparation-checklist__count"
@@ -177,6 +173,8 @@ export function PreparationChecklistPage({
 }) {
   const [searchParams] = useSearchParams();
   const requestedPathwayId = searchParams.get("pathwayId");
+  const assessmentId = searchParams.get("assessmentId");
+  const back = validId(assessmentId) ? `/app/assessments/${assessmentId}/results` : "/app/assessments/results";
   const requirements =
     checklist.status === "ready" &&
     checklist.requirements.pathwayId === requestedPathwayId &&
@@ -216,9 +214,12 @@ export function PreparationChecklistPage({
           <div className="preparation-checklist__state" role="status">
             <ClipboardCheck size={30} aria-hidden="true" />
             <h2>Checklist information is currently unavailable.</h2>
-            <p>Please check again later.</p>
+            <p>Choose a pathway before opening its preparation checklist.</p>
           </div>
         )}
+
+        {status === "not-found" && <div className="preparation-checklist__state" role="status"><h2>Pathway not found</h2><p>Select a listed pathway before preparing.</p><Link to="/app/assessments/results">Explore pathway information</Link></div>}
+        {requirements && <PathwaySources review={requirements.sourceReview}/>}
 
         {status === "loading" && (
           <div className="preparation-checklist__state" role="status">
@@ -264,7 +265,7 @@ export function PreparationChecklistPage({
       </div>
 
       <div className="assessment-entry__actions preparation-checklist__navigation">
-        <Link className="btn btn-ghost" to="/app/assessments/results">
+        <Link className="btn btn-ghost" to={back}>
           Back to pathway results
         </Link>
         <Link className="btn btn-secondary" to="/services">

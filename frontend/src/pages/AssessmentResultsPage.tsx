@@ -1,267 +1,35 @@
-import {
-  AlertCircle,
-  Building2,
-  Check,
-  ExternalLink,
-  Info,
-  LoaderCircle,
-  Route as RouteIcon,
-  Sparkles,
-} from "lucide-react";
+import { Building2, Info, LoaderCircle, Route as RouteIcon } from "lucide-react";
 import { Link } from "react-router";
 import { AssessmentLayout } from "../components/AssessmentLayout";
 import { Button } from "../components/ui/Button";
+import type { Navigation } from "../pathways/pathwayApi";
 import "./AssessmentResultsPage.css";
 
-// Only supplied assessment results may populate the recommendation template.
-export type PathwayRecommendation = {
-  id: string;
-  title: string;
-  category: string;
-  explanation: string | null;
-  reasons: readonly string[];
-  informationNeeded: readonly string[];
-  source: { name: string; url: string } | null;
-};
-
 export type AssessmentResultsData =
-  | { status: "unavailable" }
-  | { status: "loading" }
-  | { status: "error"; retry?: () => void }
-  | { status: "ready"; pathways: readonly PathwayRecommendation[] };
+  | { status: "loading" | "not-found" | "incomplete" }
+  | { status: "error"; retry: () => void }
+  | { status: "ready"; navigation: Navigation };
 
-const unavailableResults: AssessmentResultsData = { status: "unavailable" };
-const notices = {
-  unavailable:
-    "Pathway processing and pathway results are currently unavailable. Review your saved descriptions and answers in My Assessments.",
-  loading:
-    "Pathway results are being loaded.",
-  error:
-    "Pathway results could not be loaded.",
-  ready:
-    "These results are navigation information, not legal advice.",
-};
-
-// Only create external links for public HTTPS addresses without embedded credentials.
-function sourceLink(value: string) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password
-      ? url.href
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-// Render supplied results without inferring matches from URL parameters or sample data.
-export function AssessmentResultsPage({
-  results = unavailableResults,
-  onViewPathway,
-}: {
-  results?: AssessmentResultsData;
-  onViewPathway?: (pathwayId: string) => void;
-}) {
-  const pathways = results.status === "ready" ? results.pathways : [];
-  const hasResults = results.status === "ready" && pathways.length > 0;
-
-  return (
-    <AssessmentLayout step={3}>
-      <div className="assessment-entry__title assessment-results__title">
-        <span className="assessment-entry__badge">
-          <Sparkles size={14} aria-hidden="true" />
-          Navigation result
-        </span>
-        <h1>Potentially relevant pathways</h1>
-        {hasResults && (
-          <p>
-            Based on the information you provided, these pathways may be
-            relevant.
-          </p>
-        )}
-      </div>
-
-      <div
-        className="assessment-entry__prototype"
-        id="assessment-prototype-note"
-        role="note"
-      >
-        <Info size={18} aria-hidden="true" />
-        <p>{notices[results.status]}</p>
-      </div>
-
-      <section
-        className="assessment-results"
-        aria-label="Pathway results"
-        aria-busy={results.status === "loading"}
-      >
-        {results.status === "unavailable" && (
-          <div className="assessment-results__state" role="status">
-            <RouteIcon size={30} aria-hidden="true" />
-            <h2>Pathway results are currently unavailable.</h2>
-            <p>Please check again later.</p>
-          </div>
-        )}
-
-        {results.status === "loading" && (
-          <div className="assessment-results__state" role="status">
-            <LoaderCircle
-              className="assessment-results__spinner"
-              size={30}
-              aria-hidden="true"
-            />
-            <h2>Loading pathway results.</h2>
-            <p>Please wait.</p>
-          </div>
-        )}
-
-        {results.status === "error" && (
-          <div className="assessment-results__state" role="alert">
-            <AlertCircle size={30} aria-hidden="true" />
-            <h2>We could not load your pathway results.</h2>
-            <p>No results are being displayed.</p>
-            {results.retry && (
-              <Button variant="secondary" onClick={results.retry}>
-                Try again
-              </Button>
-            )}
-          </div>
-        )}
-
-        {results.status === "ready" && pathways.length === 0 && (
-          <div className="assessment-results__state" role="status">
-            <RouteIcon size={30} aria-hidden="true" />
-            <h2>No pathways to display.</h2>
-            <p>
-              This assessment has no pathway results to display. This does not
-              determine your legal eligibility or mean that no help is
-              available.
-            </p>
-          </div>
-        )}
-
-        {hasResults && (
-          <div className="assessment-results__list">
-            {pathways.map((pathway, index) => {
-              const officialSource = pathway.source
-                ? sourceLink(pathway.source.url)
-                : null;
-
-              return (
-                <article className="assessment-results__card" key={pathway.id}>
-                  <div className="assessment-results__main">
-                    <span className="assessment-entry__badge">
-                      {index === 0
-                        ? "Potentially relevant pathway"
-                        : "Another option"}
-                    </span>
-                    <div className="assessment-results__name">
-                      <Building2 size={28} aria-hidden="true" />
-                      <div>
-                        <h2>{pathway.title}</h2>
-                        <p>{pathway.category}</p>
-                      </div>
-                    </div>
-
-                    {pathway.explanation && (
-                      <div className="assessment-results__explanation">
-                        <h3>Why this may be relevant</h3>
-                        <p>{pathway.explanation}</p>
-                      </div>
-                    )}
-
-                    <p className="assessment-results__notice">
-                      This is navigation information, not legal advice.
-                      Eligibility and jurisdiction should be confirmed using the
-                      official source.
-                    </p>
-
-                    <div className="assessment-results__source">
-                      {officialSource && pathway.source ? (
-                        <a
-                          href={officialSource}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {pathway.source.name}
-                          <ExternalLink size={14} aria-hidden="true" />
-                        </a>
-                      ) : (
-                        <span>Official source link unavailable.</span>
-                      )}
-                    </div>
-
-                    <div className="assessment-results__buttons">
-                      <Button
-                        disabled={!onViewPathway}
-                        title={
-                          onViewPathway
-                            ? undefined
-                            : "Pathway details are currently unavailable."
-                        }
-                        onClick={() => onViewPathway?.(pathway.id)}
-                      >
-                        View pathway
-                      </Button>
-                      {index === 0 && (
-                        <Button
-                          variant="secondary"
-                          disabled
-                          title="Pathway comparison is currently unavailable."
-                        >
-                          Compare options
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  <aside className="assessment-results__details">
-                    <section>
-                      <h3>Why we suggested this</h3>
-                      {pathway.reasons.length > 0 ? (
-                        <ul role="list">
-                          {pathway.reasons.map((reason, reasonIndex) => (
-                            <li key={`${pathway.id}-reason-${reasonIndex}`}>
-                              <Check size={16} aria-hidden="true" />
-                              <span>{reason}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No explanation was provided with this result.</p>
-                      )}
-                    </section>
-                    <section>
-                      <h3>Information still needed</h3>
-                      {pathway.informationNeeded.length > 0 ? (
-                        <ul role="list">
-                          {pathway.informationNeeded.map((item, itemIndex) => (
-                            <li key={`${pathway.id}-needed-${itemIndex}`}>
-                              <Info size={16} aria-hidden="true" />
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No further information is listed in this result.</p>
-                      )}
-                    </section>
-                  </aside>
-                </article>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      <div className="assessment-entry__actions assessment-results__actions">
-        <Link className="btn btn-ghost" to="/app/assessments">
-          Back
-        </Link>
-        <Link className="btn btn-secondary" to="/services">
-          Explore justice services
-        </Link>
-      </div>
-    </AssessmentLayout>
-  );
+export function AssessmentResultsPage({ assessmentId, results }: { assessmentId: string; results: AssessmentResultsData }) {
+  const navigation = results.status === "ready" ? results.navigation : null;
+  const label = navigation ? { consumer: "Consumer", "money-debt": "Money / Debt", other: "Something else" }[navigation.selectedIssue] : null;
+  return <AssessmentLayout step={3}>
+    <div className="assessment-entry__title assessment-results__title"><span className="assessment-entry__badge">Navigation result</span><h1>Potentially relevant pathways</h1>{navigation && <p>Information linked to your saved {label} selection.</p>}</div>
+    <div className="assessment-entry__prototype" id="assessment-prototype-note" role="note"><Info size={18} aria-hidden="true"/><p>These links use only the issue category you selected. Your description, timeframe and contact answer are not analysed. No AI, eligibility decision, deadline check or institutional referral is performed.</p></div>
+    <section className="assessment-results" aria-label="Pathway results" aria-busy={results.status === "loading"}>
+      {results.status === "loading" && <div className="assessment-results__state" role="status"><LoaderCircle size={30} aria-hidden="true"/><h2>Loading pathway information.</h2></div>}
+      {results.status === "error" && <div className="assessment-results__state" role="alert"><h2>We could not load your pathway information.</h2><p>No results are displayed. Check your session and API connection, then retry.</p><Button variant="secondary" onClick={results.retry}>Try again</Button></div>}
+      {results.status === "not-found" && <div className="assessment-results__state" role="status"><h2>Assessment not found</h2><p>No saved assessment could be opened for your account.</p></div>}
+      {results.status === "incomplete" && <div className="assessment-results__state" role="status"><h2>Complete your clarification answers</h2><p>Save all three answers before exploring category-based links.</p><Link className="btn btn-primary" to={`/app/assessments/${assessmentId}/clarify`}>Continue clarification</Link></div>}
+      {navigation && <>
+        <p className="catalog-source-note">Based on saved revision {navigation.revision}. Order is editorial, not a ranking of suitability. Source review: {navigation.checkedOn}. <Link to={`/app/assessments/${assessmentId}/clarify`}>Review or change answers</Link></p>
+        {!navigation.pathways.length && <div className="assessment-results__state" role="status"><RouteIcon size={30} aria-hidden="true"/><h2>No category-based links to display.</h2><p>Something else has no automatic mapping in this version. This does not mean no help exists.</p><Link className="btn btn-secondary" to="/app/assessments/results">Explore general pathway information</Link></div>}
+        <div className="assessment-results__list">{navigation.pathways.map(({ pathway, reason }) => <article className="assessment-results__card" key={pathway.id}>
+          <div className="assessment-results__main"><span className="assessment-entry__badge">Category-based information</span><div className="assessment-results__name"><Building2 size={28} aria-hidden="true"/><div><h2>{pathway.title}</h2><p>{pathway.category}</p></div></div><div className="assessment-results__explanation"><h3>Why this is shown</h3><p>{reason}</p></div><p className="assessment-results__notice">{pathway.whoMayUse}</p><div className="assessment-results__source">{pathway.sourceReview.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer">{source.name}</a>)}</div><div className="assessment-results__buttons"><Link className="btn btn-primary" to={`/pathways/${pathway.id}?assessmentId=${assessmentId}`}>View pathway</Link></div></div>
+          <aside className="assessment-results__details"><h3>Before proceeding</h3><p>Confirm current scope and requirements with the official source. This is navigation information, not legal advice.</p></aside>
+        </article>)}</div>
+      </>}
+    </section>
+    <div className="assessment-entry__actions assessment-results__actions"><Link className="btn btn-ghost" to="/app/assessments">My Assessments</Link><Link className="btn btn-secondary" to="/services">Explore justice services</Link></div>
+  </AssessmentLayout>;
 }

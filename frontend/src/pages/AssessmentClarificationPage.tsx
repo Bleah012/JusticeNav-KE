@@ -17,7 +17,7 @@ type Editor = ReturnType<typeof useAssessmentRecord>;
 function ClarificationHeading() {
   return <>
   <div className="assessment-entry__title assessment-clarification__title"><h1>Help us understand your situation</h1><p>Your answers help us show more relevant information.</p></div>
-  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>These fixed questions are not AI-generated. Save &amp; exit saves partial answers; Continue saves all three answers. Use non-sensitive development inputs. Pathway processing is not connected.</p></div>
+  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>These fixed questions are not AI-generated. Save &amp; exit saves partial answers; Continue saves all three answers. Use non-sensitive development inputs. Continue opens published links based only on your saved issue category; your description is not analysed.</p></div>
  </>;
 }
 function ClarificationForm({ editor, id }: {
@@ -51,7 +51,7 @@ function ClarificationForm({ editor, id }: {
     setError(null);
     const saved = await resource.mutate((previous, signal) => api.save(id, { step: "clarify", answers, proceed: !exit }, previous?.revision ?? 0, signal));
     if (saved)
-      navigate(exit ? "/app/assessments" : "/app/assessments/results");
+      navigate(exit ? "/app/assessments" : `/app/assessments/${id}/results`);
   }
   return <>
   <div className="assessment-clarification__meta" id="clarification-progress-label"><span>{answeredCount} of 3 questions answered on this page</span><strong>{Math.round(answeredCount / 3 * 100)}% complete</strong></div>

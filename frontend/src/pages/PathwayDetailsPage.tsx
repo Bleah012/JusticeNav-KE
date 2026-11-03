@@ -2,37 +2,20 @@ import {
   AlertCircle,
   ArrowLeft,
   Check,
-  ExternalLink,
   Info,
   LoaderCircle,
   Route as RouteIcon,
-  ShieldCheck,
 } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
+import type { Pathway } from "../pathways/pathwayApi";
+import { validId } from "../assessments/assessmentApi";
+import { PathwaySources } from "../components/PathwaySources";
 import { Button } from "../components/ui/Button";
 import "./JusticeServicesPage.css";
 import "./PathwayDetailsPage.css";
 
 // Public pathway fields must come from reviewed records, not assessment guesses.
-export type PathwayDetails = {
-  id: string;
-  title: string;
-  overview: string | null;
-  whoMayUse: string | null;
-  matters: readonly string[];
-  requirements: readonly string[];
-  startingSteps: readonly { title: string; description: string | null }[];
-  nextStages: readonly string[];
-  source: {
-    name: string;
-    url: string;
-    review: {
-      status: "verified" | "needs-review" | "expired";
-      checkedOn: string;
-    } | null;
-  } | null;
-  image?: { path: string; alt: string; caption: string } | null;
-};
+export type PathwayDetails = Pathway;
 
 export type PathwayDetailsData =
   | { status: "unavailable" }
@@ -43,46 +26,6 @@ export type PathwayDetailsData =
   | { status: "ready"; pathway: PathwayDetails };
 
 const unavailablePathway: PathwayDetailsData = { status: "unavailable" };
-
-// Reject unsafe source addresses before creating external links.
-function officialSource(value: string | undefined) {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password
-      ? url.href
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-// Display only a valid, supplied calendar date without inventing a review timestamp.
-function sourceReviewDate(value: string | undefined) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const parsed = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(parsed.getTime()) &&
-    parsed.toISOString().slice(0, 10) === value
-    ? value
-    : null;
-}
-
-// Restrict editorial photos to approved local assets without adding third-party requests.
-function localImagePath(value: string | undefined) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
-  try {
-    const url = new URL(value, "https://justicenav.invalid");
-    return url.origin === "https://justicenav.invalid" &&
-      url.pathname.startsWith("/images/pathways/") &&
-      /\.(avif|gif|jpe?g|png|webp)$/i.test(url.pathname) &&
-      !url.search &&
-      !url.hash
-      ? url.pathname
-      : null;
-  } catch {
-    return null;
-  }
-}
 
 // Render only the requested public pathway and distinguish missing data from a confirmed 404.
 export function PathwayDetailsPage({
@@ -97,16 +40,15 @@ export function PathwayDetailsPage({
       : null;
   const status =
     details.status === "ready" && !pathway ? "unavailable" : details.status;
-  const sourceUrl = officialSource(pathway?.source?.url);
-  const checkedOn = sourceReviewDate(pathway?.source?.review?.checkedOn);
-  const verified = Boolean(
-    sourceUrl && checkedOn && pathway?.source?.review?.status === "verified",
-  );
-  const imagePath = localImagePath(pathway?.image?.path);
+  const [params] = useSearchParams();
+  const assessmentId = params.get("assessmentId");
+  const context = validId(assessmentId) ? assessmentId : null;
+  const back = context ? `/app/assessments/${context}/results` : "/app/assessments/results";
+  const checklistLink = pathway ? `/app/checklists/new?pathwayId=${pathway.id}${context ? `&assessmentId=${context}` : ""}` : "";
 
   return (
     <div className="justice-directory pathway-details">
-      <Link className="pathway-details__back" to="/app/assessments/results">
+      <Link className="pathway-details__back" to={back}>
         <ArrowLeft size={18} aria-hidden="true" />
         Back to pathway results
       </Link>
@@ -119,13 +61,8 @@ export function PathwayDetailsPage({
         </div>
         {pathway && (
           <div className="pathway-details__actions">
-            <Button
-              disabled
-              title="Checklist creation is currently unavailable."
-            >
-              Create my checklist
-            </Button>
-            <Link className="btn btn-secondary" to="/services">
+            <Link className="btn btn-primary" to={checklistLink}>Create my checklist</Link>
+            <Link className="btn btn-secondary" to={`/services/${pathway.serviceId}`}>
               Find related services
             </Link>
           </div>
@@ -178,50 +115,16 @@ export function PathwayDetailsPage({
 
         {pathway && (
           <>
-            <div className="pathway-details__verification">
-              {verified ? (
-                <>
-                  <span className="pathway-details__badge">
-                    <ShieldCheck size={15} aria-hidden="true" />
-                    Verified information
-                  </span>
-                  <span>Source verified: {checkedOn}</span>
-                </>
-              ) : (
-                <span>Current source verification is not available.</span>
-              )}
-              {sourceUrl ? (
-                <a href={sourceUrl} target="_blank" rel="noopener noreferrer">
-                  View official source{" "}
-                  <ExternalLink size={16} aria-hidden="true" />
-                </a>
-              ) : (
-                <span>Official source link unavailable.</span>
-              )}
-            </div>
-
+            <PathwaySources review={pathway.sourceReview}/>
             <div className="pathway-details__layout">
               <article
                 className="pathway-details__article"
                 aria-label="Pathway details"
               >
-                {imagePath && pathway.image && (
-                  <figure className="pathway-details__photo">
-                    <img
-                      src={imagePath}
-                      width="1200"
-                      height="640"
-                      loading="lazy"
-                      alt={pathway.image.alt}
-                    />
-                    <figcaption>{pathway.image.caption}</figcaption>
-                  </figure>
-                )}
-
                 <section aria-labelledby="pathway-overview">
                   <h2 id="pathway-overview">What is this pathway?</h2>
                   <p>
-                    {pathway.overview || "Information has not been published."}
+                    {pathway.overview || "Information is not listed in this guide."}
                   </p>
                 </section>
 
@@ -229,7 +132,7 @@ export function PathwayDetailsPage({
                   <h2 id="pathway-eligibility">Who may use it?</h2>
                   <p>
                     {pathway.whoMayUse ||
-                      "Eligibility information has not been published. Confirm current requirements with the official source."}
+                      "Eligibility information is not listed in this guide. Confirm current requirements with the official source."}
                   </p>
                 </section>
 
@@ -245,7 +148,7 @@ export function PathwayDetailsPage({
                     </ul>
                   ) : (
                     <p>
-                      Information about matters handled has not been published.
+                      Further matters are not listed in this guide.
                     </p>
                   )}
                 </section>
@@ -263,7 +166,7 @@ export function PathwayDetailsPage({
                     </ul>
                   ) : (
                     <p>
-                      Requirements have not been published. Confirm them with
+                      Further requirements are not listed in this guide. Confirm them with
                       the official source.
                     </p>
                   )}
@@ -285,7 +188,7 @@ export function PathwayDetailsPage({
                     </ol>
                   ) : (
                     <p>
-                      Starting steps have not been published. Use the official
+                      Further steps are not listed in this guide. Use the official
                       source for current instructions.
                     </p>
                   )}
@@ -304,7 +207,7 @@ export function PathwayDetailsPage({
                     </ol>
                   ) : (
                     <p>
-                      Process information has not been published. No case status
+                      Further process information is not listed in this guide. No case status
                       or outcome is implied.
                     </p>
                   )}
@@ -327,13 +230,7 @@ export function PathwayDetailsPage({
               >
                 <h2 id="pathway-next-actions">Your next steps</h2>
                 <p>Prepare before approaching this pathway.</p>
-                <Button
-                  full
-                  disabled
-                  title="Checklist creation is currently unavailable."
-                >
-                  Create my checklist
-                </Button>
+                <Link className="btn btn-primary btn-full" to={checklistLink}>Create my checklist</Link>
                 <Button
                   variant="secondary"
                   full
@@ -343,8 +240,7 @@ export function PathwayDetailsPage({
                   Start referral
                 </Button>
                 <p className="pathway-details__action-status">
-                  Checklist creation and referral submission are unavailable. No
-                  referral is sent to an institution.
+                  Checklist ticks are local to the preparation page. No referral is sent to an institution.
                 </p>
               </aside>
             </div>
