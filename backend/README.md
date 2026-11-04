@@ -308,3 +308,38 @@ Results are recomputed on reads from the current public guides. No migration,
 Firestore index, rule change, dependency installation or cloud write is needed.
 
 See `../docs/pathway-guidance-sources.md` for provenance and review boundaries.
+
+## Private saved checklists
+
+Authenticated endpoints:
+
+- `GET /api/v1/checklists/templates/{pathwayId}`: current versioned source template;
+  this read creates no account record.
+- `GET /api/v1/checklists?status=complete&after={opaqueId}&limit=20`: owner summaries,
+  with optional status/cursor; maximum limit 50.
+- `GET /api/v1/checklists/{checklistId}`: owner's saved source snapshot and progress.
+- `PUT /api/v1/checklists/{checklistId}`: explicit create/update with pathwayId,
+  templateVersion, checkedIds and expectedRevision. Other fields are rejected.
+
+Storage is `checklistOwners/{sha256(uid)}/checklists/{32-hex-reference}` in the
+existing default Firestore database. The API derives the owner from the verified
+Firebase token and uses a transaction to read the saved revision before create/set.
+Create uses expectedRevision 0 plus the loaded template hash. Updated public source
+items reject an outdated create with 409. Updates use the immutable saved snapshot;
+no live public catalogue is required to reopen or update an existing checklist.
+Unknown or duplicate tick IDs are rejected; status/counts come from validated items.
+Source snapshots include public labels, notes, official links and project review dates.
+
+Stale revisions and template mismatches return 409; missing owner-scoped references
+return 404; invalid inputs return generic 422; storage failures return generic 503.
+Validation never echoes rejected fields. Reads do not create records. Repeated creates
+with the same opaque ID do not duplicate or overwrite a saved checklist. Lists omit
+owner IDs, tick IDs and source-item details. No browser Firestore SDK or rule change,
+new dependency, cloud seed or data migration is required. Rules continue denying
+browser database access; Admin SDK IAM and these API owner checks govern access.
+
+The browser blocks duplicate submits and uncertain retries until reload. A timeout
+cannot establish whether a server commit occurred; the same ID is retained for
+recovery. No delete, referral, notification, upload or institutional verification is
+added. Saved ticks are preparation progress only. The adapter follows the existing
+transaction pattern; see [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions).

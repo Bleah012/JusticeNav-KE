@@ -50,10 +50,12 @@ guides; it never returns the narrative, writes results, changes status or increm
 revision. Complete clarification is required. Current guides are used on each read,
 so results are not a historical snapshot. Refresh to see newly saved answers.
 
-Checklist ticks live only in React page memory. Refreshing, leaving or changing the
-selected guide discards them. There is no document upload, evidence validation,
-saved checklist, filing, institutional delivery or referral submission. Existing
-My Checklists remains unavailable until private checklist persistence is built.
+Checklist ticks remain unsaved until Save checklist or Save & exit confirms an
+account write. The saved record retains a snapshot of source items and review dates
+from creation. My Checklists lists and reopens the owner's saved progress. Reading
+a guide/list/record does not create a checklist. Public guide changes do not silently
+change saved item meanings or reassign ticks. No document upload, evidence validation,
+filing, institutional delivery or referral submission is implemented.
 
 To update a guide, review every affected source and field, retain stable IDs and
 unknowns, update actual review dates, explain material changes in the PR and run

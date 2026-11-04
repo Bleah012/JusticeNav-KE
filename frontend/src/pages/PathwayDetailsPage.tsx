@@ -240,7 +240,7 @@ export function PathwayDetailsPage({
                   Start referral
                 </Button>
                 <p className="pathway-details__action-status">
-                  Checklist ticks are local to the preparation page. No referral is sent to an institution.
+                  Save your preparation ticks to reopen them in My Checklists. No referral is sent to an institution.
                 </p>
               </aside>
             </div>

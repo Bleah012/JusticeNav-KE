@@ -23,6 +23,7 @@ import { MyAssessmentsPage } from "./pages/MyAssessmentsPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { PrivacySecurityPage } from "./pages/PrivacySecurityPage";
+import { PreparationChecklistPage } from "./pages/PreparationChecklistPage";
 import { MyChecklistsPage } from "./pages/MyChecklistsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { AdminLayout } from "./components/AdminLayout";
@@ -40,7 +41,6 @@ import { RequireSession } from "./components/AuthSession";
 import { RouteNavigation } from "./components/RouteNavigation";
 import {
   ConnectedPathwayDetailsPage,
-  ConnectedPreparationPage,
   ConnectedAssessmentResultsPage,
 } from "./components/PathwayGuidancePages";
 // Share public navigation without placing it above standalone account pages.
@@ -107,9 +107,10 @@ function App() {
             path="/app/assessments/results"
             element={<ConnectedAssessmentResultsPage />}
           />
+          <Route path="/app/checklists/:checklistId" element={<PreparationChecklistPage />} />
           <Route
             path="/app/checklists/new"
-            element={<ConnectedPreparationPage />}
+            element={<PreparationChecklistPage />}
           />
           <Route path="/app/referrals/new" element={<ReferralRequestPage />} />
           <Route
