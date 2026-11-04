@@ -73,7 +73,7 @@ export function PrivacyNoticePage() {
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
               is connected when configured. Firestore profile and assessment storage are available when configured. AI
-              classification and referral processing are not connected. The public directory
+              classification and institutional referral delivery are not connected. The public directory
               and resource library load published institutional information from the
               JusticeNav API without sending a bearer token or cookies.
             </p>
@@ -101,7 +101,7 @@ export function PrivacyNoticePage() {
               with your verified user ID, assessment reference, saved progress, revision
               and backend timestamps. These entries are available only through own-account
               endpoints. Leaving a form without saving discards its edits.
-              Referral forms still use local validation without saving.
+              Save referral request stores your entered name, email, optional phone, contact preference, description, a snapshot of the selected public pathway and service, acknowledgement version and server timestamps in Firestore under your verified account. These fields are sent to the JusticeNav API in the request body, not in the page URL. The URL may contain an opaque request reference. Confirmation and tracking read your own saved record; they do not contact an institution, verify contact details or send email or SMS. No referral editing, deletion or retention automation is connected.
             </p>
             <p>
               Your browser or password manager may retain information through

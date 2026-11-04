@@ -147,12 +147,12 @@ export function SeekerDashboardPage({
         <div>
           <p>
             {snapshot
-              ? "School-project demonstration only. Referral records do not confirm institutional delivery. AI processing and saving through the current forms remain unavailable."
+              ? "School-project demonstration only. Referral records do not confirm institutional delivery. AI processing and institutional referral delivery remain unavailable."
               : data.status === "loading"
                 ? "Loading your dashboard information."
                 : data.status === "error"
                   ? "Your dashboard could not be loaded."
-                  : "Your saved descriptions and answers can be reviewed in My Assessments. Referral records and journey statistics are currently unavailable. Your personal information can be managed on the Profile page. AI processing is not connected."}
+                  : "Your saved descriptions and answers can be reviewed in My Assessments. Open My Referrals to review your saved project requests. Journey statistics are currently unavailable. Your personal information can be managed on the Profile page. AI processing is not connected."}
           </p>
           {data.status === "error" && data.retry && (
             <Button variant="secondary" onClick={data.retry}>
@@ -256,7 +256,7 @@ export function SeekerDashboardPage({
               <p>
                 {snapshot && snapshot.referral === null
                   ? "No referral is selected for this dashboard."
-                  : "Referral information is currently unavailable."}
+                  : "Open My Referrals to review saved requests."}
               </p>
               <Link className="btn btn-secondary btn-full" to="/app/referrals">
                 My Referrals

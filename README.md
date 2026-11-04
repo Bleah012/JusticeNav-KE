@@ -19,7 +19,7 @@ answers can also be saved, listed and reopened for the signed-in account.
 Preparation checklists persist source-item snapshots and explicit progress saves.
 The public service directory and resource library use a versioned catalogue of
 reviewed official sources served through FastAPI. Classification, notifications
-and referral processing remain unconnected. The interface does not create successful
+and institutional referral delivery remain unconnected. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development
@@ -91,3 +91,8 @@ Important functions receive brief purpose comments.
 Tests are added alongside implementation.
 Secrets, personal data, and large datasets must not be committed.
 Production deployment requires passing checks and explicit approval.
+
+
+## Private saved project requests
+
+Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. Provider processing, status changes, notifications and institutional delivery remain unconnected.
