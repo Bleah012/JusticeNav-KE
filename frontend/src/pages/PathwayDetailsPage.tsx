@@ -231,14 +231,7 @@ export function PathwayDetailsPage({
                 <h2 id="pathway-next-actions">Your next steps</h2>
                 <p>Prepare before approaching this pathway.</p>
                 <Link className="btn btn-primary btn-full" to={checklistLink}>Create my checklist</Link>
-                <Button
-                  variant="secondary"
-                  full
-                  disabled
-                  title="Referral submission is currently unavailable."
-                >
-                  Start referral
-                </Button>
+                <Link className="btn btn-secondary btn-full" to={`/app/referrals/new?pathwayId=${pathway.id}`}>Start referral</Link>
                 <p className="pathway-details__action-status">
                   Save your preparation ticks to reopen them in My Checklists. No referral is sent to an institution.
                 </p>

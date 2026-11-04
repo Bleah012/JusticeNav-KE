@@ -213,7 +213,7 @@ Source badges say Official source and Source checked. Dates refer to this projec
 review of the publisher's page, not institutional endorsement or a freshness promise.
 Profiles expose the exact source links used for their records. Missing contact data
 prompts confirmation with the official source. The map remains unavailable because
-no geocoding/map service is connected. Referral controls remain disabled.
+no geocoding/map service is connected. Referral entry links open private project request forms; they do not contact institutions.
 
 The initial service catalogue includes Judiciary Small Claims Court information,
 CAK Consumer Protection and NLAS Legal Aid, with six official resource links. The NLAS
@@ -251,8 +251,7 @@ official sources, review date and a working Create my checklist link.
 `/app/checklists/new?pathwayId=...` requires sign-in and loads a versioned checklist
 template. Save checklist or Save & exit explicitly saves progress. My Checklists
 reopens `/app/checklists/:checklistId` with the saved ticks and source snapshot.
-Only unsaved changes are lost on refresh or departure. Continue to referral stays
-disabled. No upload, evidence validation, filing or deadline protection is performed.
+Only unsaved changes are lost on refresh or departure. Continue to referral opens the project request form for that pathway. Saving a referral request is a separate, explicit action; unsaved checklist ticks are not saved by following the link. No upload, evidence validation, filing or deadline protection is performed.
 An optional validated assessment reference preserves the return link only; it does
 not change the public data request or establish ownership/eligibility.
 
@@ -281,3 +280,14 @@ Run all six suites:
 `node --test tests/auth.test.cjs tests/profile.test.cjs tests/assessments.test.cjs tests/catalog.test.cjs tests/pathways.test.cjs tests/checklists.test.cjs`.
 Browser acceptance: save partial ticks, refresh and reopen, complete and filter,
 untick/save, test two-tab revision conflict and another account's inaccessible ID.
+
+
+## Saved referral requests
+
+`/app/referrals/new` chooses a real public pathway; `?pathwayId=...` resolves its related service from the API. Service entry points can filter the chooser with `?serviceId=...`. The selected service and pathway cannot be freely supplied in the form. Save referral request sends validated fields in an authenticated PUT body. Only public pathway/service references and an opaque `requestId` enter URLs. No request fields are put in browser storage.
+
+One random request ID is kept before sending. Confirmed saves navigate to `/app/referrals/{id}/confirmation`; that page must GET the owned record before showing success. Refreshing or retrying the form checks the same request ID. Unknown write outcomes block another save until reload; use My Referrals to recover an existing record. A duplicate create never overwrites or creates a second record with that ID. Starting a separate new form deliberately creates a separate request intent.
+
+`/app/referrals` lists only the account's summary records with cursor pagination; `/app/referrals/{id}` reads the private details. The only history event is the server-recorded project save. Missing, forbidden or failed reads never display success or fake empty results. API and resource lifecycles discard late responses after account/page changes. Authentication and configured backend/Firestore are required. No new environment settings or dependencies are needed.
+
+The current project saves contact details and a description; it does **not** deliver them to the organisation, send notifications or verify the stated contact preference. Provider and admin preview screens remain unconnected. Test only with non-sensitive inputs. Run the existing frontend tests plus `node --test tests/referrals.test.cjs` from frontend.

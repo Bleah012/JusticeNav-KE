@@ -79,9 +79,10 @@ export function TermsOfUsePage() {
               The current frontend contains page layouts, navigation and form
               validation. Firebase authentication is available when configured.
               Firestore can store the signed-in user's profile, descriptions and
-              clarification answers when configured. AI classification and referral processing remain unconnected. A
-              visible button or form does not mean that its underlying service
-              is available.
+              clarification answers when configured. AI classification and
+              institutional referral delivery remain unconnected. A visible
+              button or form does not mean that its underlying service is
+              available.
             </p>
           </section>
 
@@ -100,16 +101,23 @@ export function TermsOfUsePage() {
               qualified legal professional. Do not rely on the prototype to file
               documents, preserve a deadline or obtain urgent assistance.
             </p>
-            <p>Category-based pathway links use only the issue category selected in a saved assessment. They do not determine applicability, eligibility or the best course of action. Preparation prompts are not a complete filing checklist. Save checklist or Save &amp; exit stores account progress. A tick does not validate evidence, meet an institutional requirement or submit a referral.</p>
+            <p>
+              Category-based pathway links use only the issue category selected
+              in a saved assessment. They do not determine applicability,
+              eligibility or the best course of action. Preparation prompts are
+              not a complete filing checklist. Save checklist or Save &amp; exit
+              stores account progress. A tick does not validate evidence, meet
+              an institutional requirement or submit a referral.
+            </p>
           </section>
 
           <section id="terms-testing" aria-labelledby="terms-testing-title">
             <h2 id="terms-testing-title">Responsible testing</h2>
             <p>
-              During development, use a dedicated test email address you control and
-              a unique password you do not use elsewhere. Do not enter identification
-              numbers, PINs, financial details or confidential information about
-              yourself or anyone else.
+              During development, use a dedicated test email address you control
+              and a unique password you do not use elsewhere. Do not enter
+              identification numbers, PINs, financial details or confidential
+              information about yourself or anyone else.
             </p>
             <ul>
               <li>
@@ -127,26 +135,27 @@ export function TermsOfUsePage() {
             </ul>
             <p>
               The sign-up agreement checkbox currently supports on-page form
-              validation. Registration creates a real Firebase account when configured,
-              but it does not submit a contractual acceptance record to the JusticeNav API.
-              Signing in does not establish eligibility, create a saved assessment or
-              send a referral to an institution.
+              validation. Registration creates a real Firebase account when
+              configured, but it does not submit a contractual acceptance record
+              to the JusticeNav API. Signing in does not establish eligibility,
+              create a saved assessment or send a referral to an institution.
             </p>
           </section>
 
           <section id="terms-sources" aria-labelledby="terms-sources-title">
             <h2 id="terms-sources-title">Sources and availability</h2>
             <p>
-              The directory and resource library show an initial catalogue drawn from
-                official published sources. It is not a complete list of relevant
-                organisations or resources, and listing does not establish a partnership.
+              The directory and resource library show an initial catalogue drawn
+              from official published sources. It is not a complete list of
+              relevant organisations or resources, and listing does not
+              establish a partnership.
             </p>
             <p>
-              Any displayed source check date describes when the project reviewed
-                the published information, not a
-              guarantee that it remains current. Confirm contact details,
-              opening hours, charges, requirements and eligibility directly with
-              the organisation concerned before relying on them.
+              Any displayed source check date describes when the project
+              reviewed the published information, not a guarantee that it
+              remains current. Confirm contact details, opening hours, charges,
+              requirements and eligibility directly with the organisation
+              concerned before relying on them.
             </p>
             <p>
               Development changes may interrupt or remove prototype pages.
@@ -157,10 +166,15 @@ export function TermsOfUsePage() {
           <section id="terms-referrals" aria-labelledby="terms-referrals-title">
             <h2 id="terms-referrals-title">Referrals and organisations</h2>
             <p>
-              No referral is currently submitted or delivered through this
-              application. Any future school-project referral demonstration must
-              be identified as a demonstration and must not be presented as a
-              live handoff to an institution.
+              Save referral request creates a private, immutable student-project
+              record in your account. It stores your request fields, public
+              service and pathway context, and the version and time of your
+              acknowledgement that this is a project-only save. It does not
+              submit or deliver information to an institution, create a case,
+              guarantee acceptance or representation, or record institutional
+              review. Tracking currently shows only the saved event. This
+              acknowledgement is not permission for model training or unrelated
+              reuse. Contact organisations through their official channels.
             </p>
             <p>
               Naming or linking to an organisation does not establish its

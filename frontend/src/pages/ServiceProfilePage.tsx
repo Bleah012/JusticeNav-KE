@@ -81,13 +81,12 @@ export function ServiceProfilePage({
           {service && <p>{service.description}</p>}
         </div>
         {service && (
-          <Button
-            variant="secondary"
-            disabled
-            title="Referral requests are not available yet"
+          <Link
+            className="btn btn-secondary"
+            to={`/app/referrals/new?serviceId=${service.id}`}
           >
             Start referral
-          </Button>
+          </Link>
         )}
       </header>
 
@@ -164,9 +163,7 @@ export function ServiceProfilePage({
                   aria-labelledby="service-about"
                 >
                   <h2 id="service-about">About</h2>
-                  <p>
-                    {service.about || "Information is not listed here."}
-                  </p>
+                  <p>{service.about || "Information is not listed here."}</p>
                 </section>
 
                 <section
@@ -221,7 +218,36 @@ export function ServiceProfilePage({
                   )}
                 </section>
 
-                {service.sourceReview && <section className="service-profile__section" aria-labelledby="service-sources"><h2 id="service-sources">Sources</h2><ul>{service.sourceReview.sources.map((source) => { const href = publicWebsite(source.url); return href ? <li key={href}><a href={href} target="_blank" rel="noopener noreferrer">{source.name} <ExternalLink size={14} aria-hidden="true" /></a></li> : null; })}</ul><p>The check date records this project’s review of published information. Confirm current details directly with the organisation.</p></section>}
+                {service.sourceReview && (
+                  <section
+                    className="service-profile__section"
+                    aria-labelledby="service-sources"
+                  >
+                    <h2 id="service-sources">Sources</h2>
+                    <ul>
+                      {service.sourceReview.sources.map((source) => {
+                        const href = publicWebsite(source.url);
+                        return href ? (
+                          <li key={href}>
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {source.name}{" "}
+                              <ExternalLink size={14} aria-hidden="true" />
+                            </a>
+                          </li>
+                        ) : null;
+                      })}
+                    </ul>
+                    <p>
+                      The check date records this project’s review of published
+                      information. Confirm current details directly with the
+                      organisation.
+                    </p>
+                  </section>
+                )}
 
                 <div className="service-profile__notice">
                   <Info size={20} aria-hidden="true" />
@@ -240,11 +266,16 @@ export function ServiceProfilePage({
                 <dl>
                   <div>
                     <dt>Access</dt>
-                    <dd>{service.contact.access || "Confirm with official source"}</dd>
+                    <dd>
+                      {service.contact.access || "Confirm with official source"}
+                    </dd>
                   </div>
                   <div>
                     <dt>Coverage</dt>
-                    <dd>{service.contact.coverage || "Confirm with official source"}</dd>
+                    <dd>
+                      {service.contact.coverage ||
+                        "Confirm with official source"}
+                    </dd>
                   </div>
                   <div>
                     <dt>Hours</dt>
@@ -254,26 +285,32 @@ export function ServiceProfilePage({
                   </div>
                   <div>
                     <dt>Address</dt>
-                    <dd>{service.contact.address || "Confirm with official source"}</dd>
+                    <dd>
+                      {service.contact.address ||
+                        "Confirm with official source"}
+                    </dd>
                   </div>
                   <div>
                     <dt>Phone</dt>
-                    <dd>{service.contact.phone || "Confirm with official source"}</dd>
+                    <dd>
+                      {service.contact.phone || "Confirm with official source"}
+                    </dd>
                   </div>
                   <div>
                     <dt>Email</dt>
-                    <dd>{service.contact.email || "Confirm with official source"}</dd>
+                    <dd>
+                      {service.contact.email || "Confirm with official source"}
+                    </dd>
                   </div>
                 </dl>
-                <Button
-                  full
-                  disabled
-                  title="Referral requests are not available yet"
+                <Link
+                  className="btn btn-primary btn-full"
+                  to={`/app/referrals/new?serviceId=${service.id}`}
                 >
                   Request assistance
-                </Button>
+                </Link>
                 <p className="service-profile__referral-status">
-                  Referral requests are not available. No referral is sent to
+                  You can save a private project request. No referral is sent to
                   this organisation.
                 </p>
               </aside>

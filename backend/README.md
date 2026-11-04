@@ -102,7 +102,7 @@ future record query or update; they are not implemented by `/auth/me`.
 Firebase signup/sign-in/password recovery and protected frontend workspaces
 are connected. The own-profile endpoints below use Firestore when configured.
 Public source-backed catalogue and pathway reads are connected as described below.
-AI classification, notifications and demonstration referral processing remain
+AI classification, notifications and institutional referral delivery remain
 separate work. Assessment draft persistence is described below.
 
 Tests use isolated verifier/SDK mocks. Their `unit-*` identity strings are
@@ -343,3 +343,16 @@ cannot establish whether a server commit occurred; the same ID is retained for
 recovery. No delete, referral, notification, upload or institutional verification is
 added. Saved ticks are preparation progress only. The adapter follows the existing
 transaction pattern; see [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions).
+
+
+## Private project referrals
+
+- `GET /api/v1/referrals/selection/{pathwayId}` resolves the existing catalogue's linked service and a versioned source snapshot. It creates nothing.
+- `PUT /api/v1/referrals/{32hexId}` creates one immutable request. Body: `pathwayId`, `serviceId`, `selectionVersion`, `fullName`, `email`, `phone` (nullable E.164), `contactMethod` (`email`/`phone`), `description` (1–1500), `acknowledged: true`, `expectedRevision: 0`.
+- `GET /api/v1/referrals/{32hexId}` reads only the verified account's request. `GET /api/v1/referrals?after={32hexId}&limit=20` returns metadata-only pages in document-ID order, not chronological order. Limits are 1–50. Cursor records must belong to the same owner.
+
+Firestore namespace: `referralOwners/{sha256(uid)}/referrals/{32hexId}` in `(default)`. No new index or browser Firestore permission is required. Existing deny-all client rules stay in place. Admin SDK access uses the existing backend credentials; ownership is enforced by API paths and stored owner checks.
+
+The backend derives `uid`, revision 1, timestamps, `scope=school-demonstration`, `status=saved`, `deliveryStatus=not-sent`, acknowledgement version `project-request-v1`, and the immutable public snapshot. A transaction creates only once; repeats return 409 without overwriting. A source-version or service/pathway mismatch returns 409. Own missing records/cursors return 404, invalid inputs return redacted 422, unavailable/corrupt storage returns 503. Contact and description fields are omitted from list responses. Source-review dates are encoded as ISO calendar strings; server timestamps remain Firestore timestamps.
+
+This operation does not send emails, SMS, messages or institutional referrals and does not add a provider queue. There is no edit, delete, export, retention automation or status-update endpoint in this batch. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.

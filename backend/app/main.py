@@ -21,6 +21,8 @@ from .pathways import PathwayStore
 from .pathways import router as pathway_router
 from .profiles import FirestoreProfileStore, ProfileStore
 from .profiles import router as profile_router
+from .referrals import FirestoreReferralStore, ReferralStore
+from .referrals import router as referral_router
 
 
 class HealthResponse(BaseModel):
@@ -36,6 +38,7 @@ def create_app(
     catalog_store: CatalogStore | None = None,
     pathway_store: PathwayStore | None = None,
     checklist_store: ChecklistStore | None = None,
+    referral_store: ReferralStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -74,12 +77,25 @@ def create_app(
         else FirestoreChecklistStore(settings)
     )
     app.include_router(checklist_router)
+    app.state.referral_store = (
+        referral_store
+        if referral_store is not None
+        else FirestoreReferralStore(settings)
+    )
+    app.include_router(referral_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/referrals"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid referral input. Check the contact fields, description, acknowledgement and source selection."
+                },
+            )
         if request.url.path.startswith("/api/v1/checklists"):
             return JSONResponse(
                 status_code=422,

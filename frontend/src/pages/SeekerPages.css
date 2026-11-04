@@ -352,3 +352,12 @@
     }
   }
 }
+
+@layer components {
+  .referral-saved-description {
+    white-space: pre-wrap;
+  }
+  .seeker-page__details dd {
+    overflow-wrap: anywhere;
+  }
+}
