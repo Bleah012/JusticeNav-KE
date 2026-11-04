@@ -23,6 +23,7 @@ from .catalog import (
 from .catalog import (
     Identifier as PublicId,
 )
+from .notification_events import queue_saved_update
 from .pathways import Pathway, PreparationItem, find_pathway, load_pathways
 
 Identifier = Annotated[StrictStr, Field(pattern=r"^[a-f0-9]{32}$")]
@@ -279,6 +280,7 @@ class FirestoreChecklistStore:
                     transaction.set(reference, data)
                 else:
                     transaction.create(reference, data)
+                queue_saved_update(self._client, transaction, uid, "checklist", result)
                 return result
 
             return write(self._client.transaction(max_attempts=3))

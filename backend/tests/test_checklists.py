@@ -410,7 +410,8 @@ def test_firestore_transaction_reads_before_creating_and_rejects_stale_revisions
     )
     stored = result.model_dump(by_alias=True)
     stored["sourceReview"] = result.source_review.model_dump(by_alias=True, mode="json")
-    transaction.create.assert_called_once_with(reference, stored)
+    transaction.create.assert_any_call(reference, stored)
+    assert transaction.create.call_count == 2
     assert isinstance(stored["sourceReview"]["checkedOn"], str)
     encode_dict(stored)
     transaction.set.assert_not_called()

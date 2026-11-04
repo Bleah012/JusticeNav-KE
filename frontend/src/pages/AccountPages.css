@@ -362,3 +362,10 @@
     }
   }
 }
+
+@layer components {
+  .notification-persistence__help, .notification-persistence__status { margin: 0; padding: 16px 22px; }
+  .notification-persistence__help { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); }
+  .notification-persistence__pages { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  @media (max-width: 760px) { .account-pages__notification-list li { flex-wrap: wrap; } .account-pages__notification-list li > .btn { margin-left: 36px; } }
+}

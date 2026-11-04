@@ -291,14 +291,14 @@ def test_firestore_create_is_atomic_and_payload_is_sdk_encodable(monkeypatch):
     reference.get.assert_called_once_with(
         transaction=transaction, retry=None, timeout=10
     )
-    data = transaction.create.call_args.args[1]
+    data = transaction.create.call_args_list[0].args[1]
     assert isinstance(data["selection"]["sourceReview"]["checkedOn"], str)
     encode_dict(data)
     reference.get.return_value.exists = True
     reference.get.return_value.to_dict.return_value = data
     with pytest.raises(ReferralConflict):
         store.create("owner", ID, ReferralCreate.model_validate(body()), source)
-    assert transaction.create.call_count == 1 and not transaction.set.called
+    assert transaction.create.call_count == 2 and not transaction.set.called
     assert result.saved_at == result.updated_at
 
 

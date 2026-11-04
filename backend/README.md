@@ -102,7 +102,7 @@ future record query or update; they are not implemented by `/auth/me`.
 Firebase signup/sign-in/password recovery and protected frontend workspaces
 are connected. The own-profile endpoints below use Firestore when configured.
 Public source-backed catalogue and pathway reads are connected as described below.
-AI classification, notifications and institutional referral delivery remain
+AI classification, external notifications and institutional referral delivery remain
 separate work. Assessment draft persistence is described below.
 
 Tests use isolated verifier/SDK mocks. Their `unit-*` identity strings are
@@ -141,8 +141,8 @@ client UID, role header or query parameter. Browser code never initializes Fires
 | PUT    | `/api/v1/profile/me` | Validate and atomically create/update the authenticated user's profile.   |
 
 Both methods require the existing Firebase bearer token. The request body accepts
-only `fullName` (trimmed, 1–120 characters, no control characters), optional `phone`
-(null or international format starting with `+`, 8–15 digits), `preferredLanguage`
+only `fullName` (trimmed, 1â€“120 characters, no control characters), optional `phone`
+(null or international format starting with `+`, 8â€“15 digits), `preferredLanguage`
 (`en` or `sw`) and `expectedRevision` (integer, 0 for the first save). Extra fields
 including UID, role, email, password and timestamps are rejected. Invalid inputs
 return a generic 422 response without echoing submitted values.
@@ -348,8 +348,8 @@ transaction pattern; see [Firestore transactions](https://firebase.google.com/do
 ## Private project referrals
 
 - `GET /api/v1/referrals/selection/{pathwayId}` resolves the existing catalogue's linked service and a versioned source snapshot. It creates nothing.
-- `PUT /api/v1/referrals/{32hexId}` creates one immutable request. Body: `pathwayId`, `serviceId`, `selectionVersion`, `fullName`, `email`, `phone` (nullable E.164), `contactMethod` (`email`/`phone`), `description` (1–1500), `acknowledged: true`, `expectedRevision: 0`.
-- `GET /api/v1/referrals/{32hexId}` reads only the verified account's request. `GET /api/v1/referrals?after={32hexId}&limit=20` returns metadata-only pages in document-ID order, not chronological order. Limits are 1–50. Cursor records must belong to the same owner.
+- `PUT /api/v1/referrals/{32hexId}` creates one immutable request. Body: `pathwayId`, `serviceId`, `selectionVersion`, `fullName`, `email`, `phone` (nullable E.164), `contactMethod` (`email`/`phone`), `description` (1â€“1500), `acknowledged: true`, `expectedRevision: 0`.
+- `GET /api/v1/referrals/{32hexId}` reads only the verified account's request. `GET /api/v1/referrals?after={32hexId}&limit=20` returns metadata-only pages in document-ID order, not chronological order. Limits are 1â€“50. Cursor records must belong to the same owner.
 
 Firestore namespace: `referralOwners/{sha256(uid)}/referrals/{32hexId}` in `(default)`. No new index or browser Firestore permission is required. Existing deny-all client rules stay in place. Admin SDK access uses the existing backend credentials; ownership is enforced by API paths and stored owner checks.
 
@@ -371,3 +371,20 @@ Activity merges at most six records from each kind, then returns the six most re
 The installed Firestore SDK can decode an integer-zero aggregate as `0.0`. The adapter normalizes only this zero representation; nonintegral, negative, boolean, unsafe or unexpected values are rejected. Regression tests exercise the real SDK decoder and query builders with network methods mocked. No live credentials are used in tests.
 
 Reference: [Firestore aggregation queries](https://firebase.google.com/docs/firestore/query-data/aggregation-queries).
+
+
+## In-app saved-record notifications
+
+`GET /api/v1/notifications` lists the verified account's safe notification metadata. Optional `unread=true`, `after={notificationId}` and `limit=1..50` (default 20) support filtering and pagination. `PUT /api/v1/notifications/read` takes only `{ "notificationIds": [ ... ] }` with 1â€“50 unique references and marks exactly those owned updates read. It never creates notifications, marks future updates read, or allows setting unread. GET creates nothing. No client owner/role override is accepted as identity. Missing/foreign references return the same 404, malformed input returns redacted 422, and unavailable/corrupt storage returns generic 503.
+
+Namespace: `notificationOwners/{sha256(uid)}/notifications/{id}` in `(default)`. A notification ID is 20 decimal digits of the save timestamp in microseconds followed by `-` and a SHA-256 fingerprint of kind/source ID/revision. This makes document-ID descending order chronological for these server-created updates and makes each save reference stable. The unfiltered list uses `order_by("id", direction="DESCENDING")` on the stored ID field. The unread-only query retains `isRead == false` plus descending `__name__`, using the descending isRead index with descending __name__ ordering. Both use a bounded `limit + 1` read. Stored IDs must match document IDs, so ordering and cursor references are consistent across both queries. The unfiltered list deliberately avoids descending `__name__`-only ordering, which failed its live Firestore precondition check. No custom composite index, client Firestore rule change or new environment setting is introduced. An owned cursor remains valid after that row is marked read.
+
+`notification_events.py` is independent of source-store modules to avoid circular imports. Existing save transactions queue both the record write and one metadata-only notification create, after all reads. A failed notification write fails that save transaction. Source conflict checks run before writes; rejected/repeated saves do not produce duplicate committed events. Earlier saves are not backfilled. Each later successful save gets its own update, even when the entered values are unchanged. Profiles are not a notification source in this batch.
+
+Payload fields are kind, source record ID/revision, source saved timestamp, assessment status where relevant, isRead/readAt and verified UID in storage. No descriptions, answers, personal names, email addresses, phone numbers, document contents or raw message text are copied. List responses omit per-row UID and return the verified UID once in the envelope. Referral updates mean **saved in JusticeNav KE**, never institutional receipt.
+
+Mark-as-read uses one transaction and a bounded batch-get (five-second read timeout). Batch-get results can arrive in any order: every requested snapshot, path, owner and stored fingerprint is validated before any write. The transaction only updates isRead/readAt on previously unread rows. Repeated requests keep the first readAt and create nothing. A mixed owned/foreign or missing batch is not partially applied. Future source saves have distinct unread updates. There is no delete, preference, external message, reminder scheduler or provider-notification endpoint.
+
+Tests mock network/SDK operations and verify actual SDK transaction write payloads, read-before-write behavior, source-save integration, metadata boundaries, duplicate saves, ownership, cursor/filter behavior and monotonic read state.
+
+References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions), [default index ordering](https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the__name__field).
