@@ -160,7 +160,7 @@ Live database save/reload and visual browser review are separate manual checks.
   clears earlier answers only after saving; leaving without saving discards edits.
 - `/app/assessments/:assessmentId/clarify` restores saved answers and progress.
   Save & exit permits partial answers. Continue requires all three answers and saves
-  before showing the existing pathway-unavailable page. No AI call or match is made.
+  before showing category-based public information links. No AI call is made.
 - `/app/assessments` loads own metadata, filters by saved status and supports the next
   page/first page controls. Records reopen at Describe for Draft and Clarify otherwise.
   The list uses a short opaque reference as its title rather than exposing a private
@@ -248,12 +248,36 @@ The generic `/app/assessments/results` route offers general browsing and a link 
 My Assessments. Its three guides are explicitly not personalised results.
 `/pathways/:pathwayId` is public and includes the related real service profile,
 official sources, review date and a working Create my checklist link.
-`/app/checklists/new?pathwayId=...` requires sign-in and loads public preparation
-prompts. Ticks and progress exist only in React memory and reset on page departure
-or refresh. Save checklist and Continue to referral remain disabled. No uploads,
-saved checklist record, referral, document validation or deadline protection occurs.
+`/app/checklists/new?pathwayId=...` requires sign-in and loads a versioned checklist
+template. Save checklist or Save & exit explicitly saves progress. My Checklists
+reopens `/app/checklists/:checklistId` with the saved ticks and source snapshot.
+Only unsaved changes are lost on refresh or departure. Continue to referral stays
+disabled. No upload, evidence validation, filing or deadline protection is performed.
 An optional validated assessment reference preserves the return link only; it does
 not change the public data request or establish ownership/eligibility.
 
 Run `node --test tests/auth.test.cjs tests/profile.test.cjs tests/assessments.test.cjs tests/catalog.test.cjs tests/pathways.test.cjs`
 from the frontend folder. See the bundle guide for browser acceptance checks.
+
+## Saved checklist behaviour
+
+Create checklist without a pathway opens a source-guide chooser. Opening a template
+or saved list never saves a record. Each new editor keeps one opaque ID, including
+uncertain-save recovery. Save progress with Save checklist; Save & exit confirms
+the write before returning to My Checklists. In progress / Complete / No items
+filters use paginated owner summaries. Counts reflect ticks saved to Firestore,
+not legal completion or institutional review. Saved snapshots keep the original
+item meanings and source-review date even if current public guides later change.
+
+Editor and list children are keyed by UID plus route/filter. Private transports
+capture and recheck the current Firebase user around token/fetch/JSON operations.
+No credential, tick, source text, name or private description enters a URL. Only
+opaque references, a public pathway ID and fixed filter values may appear there.
+On conflict or an uncertain save, edits remain visible and another write is blocked
+until Reload saved checklist replaces them. A confirmed response must match the
+owner, reference, template, returned ticks and next revision. Sign-out clears pages.
+
+Run all six suites:
+`node --test tests/auth.test.cjs tests/profile.test.cjs tests/assessments.test.cjs tests/catalog.test.cjs tests/pathways.test.cjs tests/checklists.test.cjs`.
+Browser acceptance: save partial ticks, refresh and reopen, complete and filter,
+untick/save, test two-tab revision conflict and another account's inaccessible ID.

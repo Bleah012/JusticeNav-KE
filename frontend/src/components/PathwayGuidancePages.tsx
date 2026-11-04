@@ -1,4 +1,4 @@
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { backendUrl, firebaseAuth } from "../auth/firebaseClient";
 import { useAuth } from "../auth/useAuth";
 import { validId } from "../assessments/assessmentApi";
@@ -12,7 +12,6 @@ import type { Navigation } from "../pathways/pathwayApi";
 import { AssessmentLayout } from "./AssessmentLayout";
 import { PathwayDetailsPage } from "../pages/PathwayDetailsPage";
 import { AssessmentResultsPage } from "../pages/AssessmentResultsPage";
-import { PreparationChecklistPage } from "../pages/PreparationChecklistPage";
 
 function PathwayRecord({ id }: { id: string }) {
   const { state, retry } = usePublicResource(
@@ -36,30 +35,6 @@ function PathwayRecord({ id }: { id: string }) {
 export function ConnectedPathwayDetailsPage() {
   const { pathwayId = "" } = useParams();
   return <PathwayRecord key={pathwayId} id={pathwayId} />;
-}
-function PreparationRecord({ id }: { id: string }) {
-  const { state, retry } = usePublicResource(
-    (signal) => createPathwayApi(backendUrl).preparation(id, signal),
-    true,
-  );
-  return (
-    <PreparationChecklistPage
-      checklist={
-        state.status === "ready"
-          ? { status: "ready", requirements: state.value }
-          : state.status === "loading"
-            ? { status: "loading" }
-            : state.status === "not-found"
-              ? { status: "not-found" }
-              : { status: "error", retry }
-      }
-    />
-  );
-}
-export function ConnectedPreparationPage() {
-  const [params] = useSearchParams();
-  const id = params.get("pathwayId") ?? "";
-  return <PreparationRecord key={id} id={id} />;
 }
 function BrowsePathways() {
   const { state, retry } = usePublicResource((signal) =>

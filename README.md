@@ -16,6 +16,7 @@ unavailable verification when configuration is missing.
 Own-profile persistence uses the authenticated FastAPI backend and the default
 Firestore database when configured. Assessment descriptions and clarification
 answers can also be saved, listed and reopened for the signed-in account.
+Preparation checklists persist source-item snapshots and explicit progress saves.
 The public service directory and resource library use a versioned catalogue of
 reviewed official sources served through FastAPI. Classification, notifications
 and referral processing remain unconnected. The interface does not create successful
@@ -80,8 +81,8 @@ Dataset permissions and suitability must be checked before use.
 Official Kenyan sources support the initial public service and resource catalogue.
 See [public catalogue source notes](docs/public-catalog-sources.md). Saved issue categories now select a small, documented set of public pathway links.
 This fixed navigation rule is not AI classification or an eligibility decision.
-See [pathway guidance notes](docs/pathway-guidance-sources.md). Checklist ticks are
-page-local; saved checklists and referral delivery remain separate work.
+See [pathway guidance notes](docs/pathway-guidance-sources.md). Checklist snapshots and ticks can be saved to the signed-in account, listed and reopened
+through My Checklists. Referral delivery remains separate work.
 
 ## Development Rules
 

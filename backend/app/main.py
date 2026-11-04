@@ -14,6 +14,8 @@ from .assessments import router as assessment_router
 from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
 from .catalog import CatalogStore
 from .catalog import router as catalog_router
+from .checklists import ChecklistStore, FirestoreChecklistStore
+from .checklists import router as checklist_router
 from .config import Settings
 from .pathways import PathwayStore
 from .pathways import router as pathway_router
@@ -33,6 +35,7 @@ def create_app(
     assessment_store: AssessmentStore | None = None,
     catalog_store: CatalogStore | None = None,
     pathway_store: PathwayStore | None = None,
+    checklist_store: ChecklistStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -65,12 +68,25 @@ def create_app(
         pathway_store if pathway_store is not None else PathwayStore()
     )
     app.include_router(pathway_router)
+    app.state.checklist_store = (
+        checklist_store
+        if checklist_store is not None
+        else FirestoreChecklistStore(settings)
+    )
+    app.include_router(checklist_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/checklists"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid checklist input. Check the selected items, template and saved revision."
+                },
+            )
         if request.url.path.startswith("/api/v1/assessments"):
             return JSONResponse(
                 status_code=422,

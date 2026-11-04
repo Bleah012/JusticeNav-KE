@@ -100,7 +100,7 @@ export function TermsOfUsePage() {
               qualified legal professional. Do not rely on the prototype to file
               documents, preserve a deadline or obtain urgent assistance.
             </p>
-            <p>Category-based pathway links use only the issue category selected in a saved assessment. They do not determine applicability, eligibility or the best course of action. Preparation prompts are not a complete filing checklist. Local ticks do not save a checklist, validate evidence or submit a referral.</p>
+            <p>Category-based pathway links use only the issue category selected in a saved assessment. They do not determine applicability, eligibility or the best course of action. Preparation prompts are not a complete filing checklist. Save checklist or Save &amp; exit stores account progress. A tick does not validate evidence, meet an institutional requirement or submit a referral.</p>
           </section>
 
           <section id="terms-testing" aria-labelledby="terms-testing-title">

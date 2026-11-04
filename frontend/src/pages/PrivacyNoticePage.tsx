@@ -81,7 +81,7 @@ export function PrivacyNoticePage() {
               Information and navigation support, not legal advice. JusticeNav
               KE does not represent the organisations named on its pages.
             </p>
-            <p>Pathway navigation reads the signed-in account's saved issue category to select general information links. It does not analyse the description. Public pathway and preparation requests carry no bearer token. Checklist ticks remain in page memory and are discarded on refresh or departure; no checklist is saved.</p>
+            <p>Pathway navigation reads the signed-in account's saved issue category to select general information links. It does not analyse the description. Public guide requests carry no bearer token. Checklist templates, records and progress use the authenticated API. Save checklist or Save &amp; exit stores a source-item snapshot, selected item IDs, owner reference, revision, status and timestamps in Firestore. Unsaved edits remain in page memory and are discarded on refresh or departure.</p>
           </section>
 
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">
@@ -134,7 +134,7 @@ export function PrivacyNoticePage() {
             <h2 id="privacy-external-title">External services</h2>
             <p>Google Firebase processes authentication requests and stores the test
               account. Firebase may process network and security information under its
-              own service terms. Creating an account and saving a profile or assessment are real cloud operations even
+              own service terms. Creating an account and saving a profile, assessment or checklist are real cloud operations even
               though the justice-navigation services remain a student prototype.
               The development profile database uses the location selected in the
               Firebase console. Profile storage location does not establish where

@@ -311,3 +311,8 @@
     }
   }
 }
+
+@layer components {
+  .preparation-checklist__choices { display: grid; gap: 12px; padding: 0; margin: 24px 0; list-style: none; }
+  .preparation-checklist__choices .btn { text-align: left; justify-content: flex-start; }
+}
