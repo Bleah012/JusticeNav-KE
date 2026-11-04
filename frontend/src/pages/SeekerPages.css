@@ -361,3 +361,37 @@
     overflow-wrap: anywhere;
   }
 }
+
+@layer components {
+  .seeker-dashboard__heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+  }
+  .seeker-dashboard__stats article > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .seeker-dashboard__stat-link {
+    display: block;
+    margin-top: 12px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-size: 12px;
+  }
+  .seeker-dashboard__refreshed {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .seeker-dashboard__activity time {
+    display: block;
+    margin-top: 6px;
+  }
+  @media (max-width: 760px) {
+    .seeker-dashboard__heading {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+}

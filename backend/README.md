@@ -356,3 +356,18 @@ Firestore namespace: `referralOwners/{sha256(uid)}/referrals/{32hexId}` in `(def
 The backend derives `uid`, revision 1, timestamps, `scope=school-demonstration`, `status=saved`, `deliveryStatus=not-sent`, acknowledgement version `project-request-v1`, and the immutable public snapshot. A transaction creates only once; repeats return 409 without overwriting. A source-version or service/pathway mismatch returns 409. Own missing records/cursors return 404, invalid inputs return redacted 422, unavailable/corrupt storage returns 503. Contact and description fields are omitted from list responses. Source-review dates are encoded as ISO calendar strings; server timestamps remain Firestore timestamps.
 
 This operation does not send emails, SMS, messages or institutional referrals and does not add a provider queue. There is no edit, delete, export, retention automation or status-update endpoint in this batch. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.
+
+
+## Own-account dashboard
+
+`GET /api/v1/dashboard` requires the same verified Firebase token as saved records. No body, owner selector or role override is accepted as identity. It reads the existing hashed-owner subcollections in `(default)`: `assessmentOwners/{sha256(uid)}/assessments`, `checklistOwners/{sha256(uid)}/checklists`, and `referralOwners/{sha256(uid)}/referrals`. It performs no writes and needs no new environment settings, collections or migrations.
+
+Counts use an unbounded `count(alias="total")` query per owner collection, not the record-list pagination limit. Recent records use `order_by("updatedAt", direction="DESCENDING").limit(6)`. All current write paths supply that timestamp. These use the ordinary Firestore indexes; no composite filter/index is introduced. The three owner sections are read concurrently; each RPC has a five-second timeout and no retry. A missing/failed section, malformed aggregate or invalid/foreign recent record makes the summary unavailable (503), rather than fabricating zero or partial counts. HTTP errors do not expose SDK error text or private fields.
+
+The response contains verified `uid`, strict nonnegative integer `counts` (`assessments`, `checklists`, `referrals`), `latestChecklist` (the existing safe checklist-summary fields), `latestReferral` (the existing referral-summary fields), `activity` (kind, opaque ID, saved timestamp and assessment status only) and `refreshedAt`. It excludes descriptions, clarification answers, personal names, emails, phone numbers, tokens and profile fields. Referrals retain only `status=saved` and `deliveryStatus=not-sent`.
+
+Activity merges at most six records from each kind, then returns the six most recent latest saves. Each kind/record appears once. It is not an event log. Latest checklist means greatest `(updatedAt, id)` in that account; its progress is saved selected items divided by that checklist's items, not account-wide completion or evidence verification. Latest referral means greatest `(updatedAt, id)`; current referral records are immutable. Counts, recent queries and refresh time are separate reads, not a transactionally atomic snapshot; refresh after concurrent changes. Detected contradictory results fail closed and can be retried.
+
+The installed Firestore SDK can decode an integer-zero aggregate as `0.0`. The adapter normalizes only this zero representation; nonintegral, negative, boolean, unsafe or unexpected values are rejected. Regression tests exercise the real SDK decoder and query builders with network methods mocked. No live credentials are used in tests.
+
+Reference: [Firestore aggregation queries](https://firebase.google.com/docs/firestore/query-data/aggregation-queries).

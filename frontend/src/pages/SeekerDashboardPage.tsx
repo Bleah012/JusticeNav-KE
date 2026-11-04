@@ -4,113 +4,78 @@ import {
   FileText,
   Info,
   Mail,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router";
+import { useAuth } from "../auth/useAuth";
+import { statusLabels } from "../assessments/assessmentApi";
+import { referralTime } from "../referrals/referralApi";
+import { useDashboard } from "../dashboard/useDashboard";
+import { activityLink } from "../dashboard/dashboardApi";
+import type { DashboardState } from "../dashboard/DashboardResource";
 import { Button } from "../components/ui/Button";
-import {
-  isSavedDemonstrationReferral,
-  referralDate,
-  referralStatusLabels,
-} from "../types/referralData";
-import type { DemonstrationReferral } from "../types/referralData";
 import "./SeekerPages.css";
 
-export type SeekerDashboardSnapshot = {
-  displayName: string | null;
-  activeAssessments: number;
-  openReferrals: number;
-  checklist: { completed: number; total: number } | null;
-  savedResources: number;
-  activity: readonly {
-    id: string;
-    title: string;
-    note: string | null;
-    occurredAt: string;
-  }[];
-  referral: DemonstrationReferral | null;
+const activityTitles = {
+  assessment: "Assessment saved",
+  checklist: "Checklist progress saved",
+  referral: "Project referral saved",
 };
-
-type DashboardData =
-  | { status: "unavailable" }
-  | { status: "loading" }
-  | { status: "error"; retry?: () => void }
-  | { status: "ready"; snapshot: SeekerDashboardSnapshot };
-
-// Reject invalid totals rather than showing invented or misleading progress.
-function validSnapshot(snapshot: SeekerDashboardSnapshot): boolean {
-  const counts = [
-    snapshot.activeAssessments,
-    snapshot.openReferrals,
-    snapshot.savedResources,
-  ];
-  const checklist = snapshot.checklist;
-  return (
-    counts.every((value) => Number.isSafeInteger(value) && value >= 0) &&
-    (checklist === null ||
-      (Number.isSafeInteger(checklist.completed) &&
-        Number.isSafeInteger(checklist.total) &&
-        checklist.completed >= 0 &&
-        checklist.total >= checklist.completed))
-  );
-}
-
-// Populate account details only from an authenticated, owner-scoped backend response.
-export function SeekerDashboardPage({
-  data = { status: "unavailable" },
+export function DashboardView({
+  state,
+  refresh,
 }: {
-  data?: DashboardData;
+  state: DashboardState;
+  refresh: () => void;
 }) {
-  const snapshot =
-    data.status === "ready" && validSnapshot(data.snapshot)
-      ? data.snapshot
-      : null;
-  const referral =
-    snapshot?.referral && isSavedDemonstrationReferral(snapshot.referral)
-      ? snapshot.referral
-      : null;
-  const activity =
-    snapshot?.activity.filter(
-      (event, index, all) =>
-        event.id.trim() &&
-        event.title.trim() &&
-        referralDate(event.occurredAt) &&
-        all.findIndex((candidate) => candidate.id === event.id) === index,
-    ) ?? [];
-  const checklist = snapshot?.checklist;
-  const checklistProgress =
-    checklist && checklist.total > 0
-      ? `${Math.round((checklist.completed / checklist.total) * 100)}%`
-      : null;
+  const snapshot = state.status === "ready" ? state.value : null;
+  const checklist = snapshot?.latestChecklist,
+    referral = snapshot?.latestReferral;
+  const loading = state.status === "loading";
+  const missing = loading ? "Loading..." : "Unavailable";
   const stats = [
     {
-      label: "Active assessment",
-      value: snapshot?.activeAssessments,
+      label: "Saved assessments",
+      value: snapshot?.counts.assessments ?? missing,
       icon: FileText,
+      to: "/app/assessments",
     },
-    { label: "Open referrals", value: snapshot?.openReferrals, icon: Mail },
+    {
+      label: "Saved referrals",
+      value: snapshot?.counts.referrals ?? missing,
+      icon: Mail,
+      to: "/app/referrals",
+    },
     {
       label: "Checklist progress",
-      value: checklistProgress,
+      value: !snapshot
+        ? missing
+        : !checklist
+          ? "No saved checklist"
+          : checklist.totalItems === 0
+            ? "No items"
+            : `${Math.round((checklist.completedItems / checklist.totalItems) * 100)}%`,
       icon: ClipboardCheck,
+      to: checklist ? `/app/checklists/${checklist.id}` : "/app/checklists",
     },
     {
-      label: "Saved resources",
-      value: snapshot?.savedResources,
-      icon: ShieldCheck,
+      label: "Saved checklists",
+      value: snapshot?.counts.checklists ?? missing,
+      icon: ClipboardCheck,
+      to: "/app/checklists",
     },
   ];
   return (
     <>
-      <header className="seeker-page__heading">
-        <span className="seeker-page__eyebrow">Dashboard</span>
-        <h1>
-          {snapshot?.displayName?.trim()
-            ? `Welcome, ${snapshot.displayName.trim()}`
-            : "Your justice journey"}
-        </h1>
-        <p>Here’s what’s happening with your justice journey.</p>
+      <header className="seeker-page__heading seeker-dashboard__heading">
+        <div>
+          <span className="seeker-page__eyebrow">Dashboard</span>
+          <h1>Your justice journey</h1>
+          <p>Here’s what’s happening with your justice journey.</p>
+        </div>
+        <Button variant="secondary" disabled={loading} onClick={refresh}>
+          {loading ? "Loading..." : "Refresh dashboard"}
+        </Button>
       </header>
       <section
         className="seeker-dashboard__cta"
@@ -141,40 +106,56 @@ export function SeekerDashboardPage({
       </section>
       <div
         className="seeker-page__notice"
-        role={data.status === "error" ? "alert" : "status"}
+        role={state.status === "error" ? "alert" : "status"}
       >
         <Info size={20} aria-hidden="true" />
         <div>
           <p>
-            {snapshot
-              ? "School-project demonstration only. Referral records do not confirm institutional delivery. AI processing and institutional referral delivery remain unavailable."
-              : data.status === "loading"
-                ? "Loading your dashboard information."
-                : data.status === "error"
-                  ? "Your dashboard could not be loaded."
-                  : "Your saved descriptions and answers can be reviewed in My Assessments. Open My Referrals to review your saved project requests. Journey statistics are currently unavailable. Your personal information can be managed on the Profile page. AI processing is not connected."}
+            {state.status === "error"
+              ? state.message
+              : loading
+                ? "Loading your saved-record summary."
+                : "These totals describe your saved records in JusticeNav KE. Saved referrals are project requests, not institutional submissions or open cases. AI processing and institutional delivery remain unconnected."}
           </p>
-          {data.status === "error" && data.retry && (
-            <Button variant="secondary" onClick={data.retry}>
+          {state.status === "error" && (
+            <Button variant="secondary" onClick={refresh}>
               Try again
             </Button>
           )}
         </div>
       </div>
-      <section className="seeker-dashboard__stats" aria-label="Journey summary">
-        {stats.map(({ label, value, icon: Icon }) => (
+      {snapshot && (
+        <p className="seeker-dashboard__refreshed">
+          Last refreshed (Kenya):{" "}
+          <time dateTime={snapshot.refreshedAt}>
+            {referralTime(snapshot.refreshedAt)}
+          </time>
+          . Refresh after changes to see updated records.
+        </p>
+      )}
+      <section
+        className="seeker-dashboard__stats"
+        aria-label="Journey summary"
+        aria-busy={loading}
+      >
+        {stats.map(({ label, value, icon: Icon, to }) => (
           <article key={label}>
             <Icon size={22} aria-hidden="true" />
             <div>
               <h2>{label}</h2>
-              <strong>{value ?? "Unavailable"}</strong>
-              {label === "Checklist progress" &&
-                checklistProgress &&
-                checklist && (
-                  <small>
-                    {checklist.completed} of {checklist.total} complete
-                  </small>
-                )}
+              <strong>{value}</strong>
+              {label === "Checklist progress" && checklist && (
+                <small>
+                  Latest updated checklist: {checklist.pathwayTitle}.{" "}
+                  {checklist.completedItems} of {checklist.totalItems} items
+                  complete.
+                </small>
+              )}
+              <Link className="seeker-dashboard__stat-link" to={to}>
+                {label === "Checklist progress"
+                  ? "View checklist"
+                  : `View ${label.toLowerCase()}`}
+              </Link>
             </div>
           </article>
         ))}
@@ -185,29 +166,39 @@ export function SeekerDashboardPage({
           aria-labelledby="dashboard-activity-title"
         >
           <h2 id="dashboard-activity-title">Recent activity</h2>
-          <p>Your latest updates and next actions</p>
+          <p>
+            The latest save per record, with the six most recent shown. This is
+            not a complete history.
+          </p>
           {snapshot ? (
-            activity.length ? (
+            snapshot.activity.length ? (
               <ul className="seeker-dashboard__activity">
-                {activity.map((event) => (
-                  <li key={event.id}>
-                    <strong>{event.title}</strong>
-                    {event.note && <p>{event.note}</p>}
+                {snapshot.activity.map((event) => (
+                  <li key={`${event.kind}:${event.id}`}>
+                    <Link to={activityLink(event)}>
+                      <strong>{activityTitles[event.kind]}</strong>
+                    </Link>
+                    {event.kind === "assessment" && event.assessmentStatus && (
+                      <p>{statusLabels[event.assessmentStatus]}</p>
+                    )}
                     <time dateTime={event.occurredAt}>
-                      {referralDate(event.occurredAt)}
+                      {referralTime(event.occurredAt)}
                     </time>
                   </li>
                 ))}
               </ul>
             ) : (
               <p>
-                {snapshot.activity.length
-                  ? "Activity information could not be displayed."
-                  : "No recent activity to display."}
+                No saved activity to display. Start an assessment to begin your
+                journey.
               </p>
             )
           ) : (
-            <p>Activity information is currently unavailable.</p>
+            <p>
+              {loading
+                ? "Loading recent saves..."
+                : "Activity information is currently unavailable."}
+            </p>
           )}
         </section>
         <section
@@ -217,9 +208,7 @@ export function SeekerDashboardPage({
           <h2 id="dashboard-referral-title">My referral</h2>
           {referral ? (
             <>
-              <span className="seeker-page__badge">
-                {referralStatusLabels[referral.status]} (demonstration)
-              </span>
+              <span className="seeker-page__badge">Saved in JusticeNav KE</span>
               <dl className="seeker-page__details">
                 <div>
                   <dt>Referral ID</dt>
@@ -230,41 +219,59 @@ export function SeekerDashboardPage({
                   <dd>{referral.serviceName}</dd>
                 </div>
                 <div>
-                  <dt>Last updated</dt>
+                  <dt>Pathway</dt>
+                  <dd>{referral.pathwayTitle}</dd>
+                </div>
+                <div>
+                  <dt>Date saved (Kenya)</dt>
                   <dd>
-                    <time dateTime={referral.updatedAt}>
-                      {referralDate(referral.updatedAt)}
+                    <time dateTime={referral.savedAt}>
+                      {referralTime(referral.savedAt)}
                     </time>
                   </dd>
                 </div>
                 <div>
-                  <dt>Next action</dt>
-                  <dd>
-                    {referral.nextAction || "No next action is recorded."}
-                  </dd>
+                  <dt>Institutional delivery</dt>
+                  <dd>Not sent to an institution</dd>
                 </div>
               </dl>
+              <p>
+                Your most recently saved project request. No institutional
+                review or next action is recorded.
+              </p>
               <Link
                 className="btn btn-secondary btn-full"
-                to={`/app/referrals/${encodeURIComponent(referral.id)}`}
+                to={`/app/referrals/${referral.id}`}
               >
                 Track referral
               </Link>
             </>
           ) : (
-            <>
-              <p>
-                {snapshot && snapshot.referral === null
-                  ? "No referral is selected for this dashboard."
-                  : "Open My Referrals to review saved requests."}
-              </p>
-              <Link className="btn btn-secondary btn-full" to="/app/referrals">
-                My Referrals
-              </Link>
-            </>
+            <p>
+              {snapshot
+                ? "No saved referral requests in this account."
+                : loading
+                  ? "Loading saved referral..."
+                  : "Referral information is currently unavailable."}
+            </p>
           )}
+          <Link className="btn btn-ghost btn-full" to="/app/referrals">
+            My Referrals
+          </Link>
         </section>
       </div>
     </>
+  );
+}
+function AccountDashboard({ uid }: { uid: string }) {
+  const { state, refresh } = useDashboard(uid);
+  return <DashboardView state={state} refresh={refresh} />;
+}
+export function SeekerDashboardPage() {
+  const { session } = useAuth();
+  return session.status === "ready" ? (
+    <AccountDashboard key={session.identity.uid} uid={session.identity.uid} />
+  ) : (
+    <p role="status">Verify your session to view the dashboard.</p>
   );
 }

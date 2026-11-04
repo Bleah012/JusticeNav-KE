@@ -72,42 +72,71 @@ export function PrivacyNoticePage() {
               JusticeNav KE is a software engineering student project. This
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
-              is connected when configured. Firestore profile and assessment storage are available when configured. AI
-              classification and institutional referral delivery are not connected. The public directory
-              and resource library load published institutional information from the
-              JusticeNav API without sending a bearer token or cookies.
+              is connected when configured. Firestore profile and assessment
+              storage are available when configured. AI classification and
+              institutional referral delivery are not connected. The public
+              directory and resource library load published institutional
+              information from the JusticeNav API without sending a bearer token
+              or cookies.
             </p>
             <p>
               Information and navigation support, not legal advice. JusticeNav
               KE does not represent the organisations named on its pages.
             </p>
-            <p>Pathway navigation reads the signed-in account's saved issue category to select general information links. It does not analyse the description. Public guide requests carry no bearer token. Checklist templates, records and progress use the authenticated API. Save checklist or Save &amp; exit stores a source-item snapshot, selected item IDs, owner reference, revision, status and timestamps in Firestore. Unsaved edits remain in page memory and are discarded on refresh or departure.</p>
+            <p>
+              Pathway navigation reads the signed-in account's saved issue
+              category to select general information links. It does not analyse
+              the description. Public guide requests carry no bearer token.
+              Checklist templates, records and progress use the authenticated
+              API. Save checklist or Save &amp; exit stores a source-item
+              snapshot, selected item IDs, owner reference, revision, status and
+              timestamps in Firestore. Unsaved edits remain in page memory and
+              are discarded on refresh or departure.
+            </p>
           </section>
 
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">
             <h2 id="privacy-forms-title">Information you enter</h2>
             <p>
-              Registration sends your email address and password to Google Firebase
-              Authentication and attempts to save your name as a Firebase display name.
-              Sign-in and password recovery also contact Firebase. The JusticeNav API
-              receives a Firebase ID token to verify identity and role; it does not
-              receive your password. The optional phone field on registration is disabled and is not submitted.
-              Saving the Profile page sends your name, optional phone number and language
-              preference to the authenticated API, which stores them in Firestore with
-              your verified user ID, saved revision and backend-generated timestamps.
-              The profile does not store a password or change a sign-in email or role.
-              Continue and Save & exit on assessment pages send your description or
-              clarification answers to the authenticated API for storage in Firestore,
-              with your verified user ID, assessment reference, saved progress, revision
-              and backend timestamps. These entries are available only through own-account
-              endpoints. Leaving a form without saving discards its edits.
-              Save referral request stores your entered name, email, optional phone, contact preference, description, a snapshot of the selected public pathway and service, acknowledgement version and server timestamps in Firestore under your verified account. These fields are sent to the JusticeNav API in the request body, not in the page URL. The URL may contain an opaque request reference. Confirmation and tracking read your own saved record; they do not contact an institution, verify contact details or send email or SMS. No referral editing, deletion or retention automation is connected.
+              Registration sends your email address and password to Google
+              Firebase Authentication and attempts to save your name as a
+              Firebase display name. Sign-in and password recovery also contact
+              Firebase. The JusticeNav API receives a Firebase ID token to
+              verify identity and role; it does not receive your password. The
+              optional phone field on registration is disabled and is not
+              submitted. Saving the Profile page sends your name, optional phone
+              number and language preference to the authenticated API, which
+              stores them in Firestore with your verified user ID, saved
+              revision and backend-generated timestamps. The profile does not
+              store a password or change a sign-in email or role. Continue and
+              Save & exit on assessment pages send your description or
+              clarification answers to the authenticated API for storage in
+              Firestore, with your verified user ID, assessment reference, saved
+              progress, revision and backend timestamps. These entries are
+              available only through own-account endpoints. Leaving a form
+              without saving discards its edits. Save referral request stores
+              your entered name, email, optional phone, contact preference,
+              description, a snapshot of the selected public pathway and
+              service, acknowledgement version and server timestamps in
+              Firestore under your verified account. These fields are sent to
+              the JusticeNav API in the request body, not in the page URL. The
+              URL may contain an opaque request reference. Confirmation and
+              tracking read your own saved record; they do not contact an
+              institution, verify contact details or send email or SMS. No
+              referral editing, deletion or retention automation is connected.
+              The dashboard reads totals and recent saved-record summaries from
+              your own account; its response excludes assessment and referral
+              descriptions, contact details and clarification answers. Recent
+              activity shows the latest save per record, not a complete history.
+              Opening or refreshing the dashboard does not save records or
+              create activity events.
             </p>
             <p>
               Your browser or password manager may retain information through
-              its own settings. Use a dedicated test email address you control and a
-              unique password you do not use elsewhere. Do not enter identification
-              numbers, PINs, financial details or confidential dispute information.
+              its own settings. Use a dedicated test email address you control
+              and a unique password you do not use elsewhere. Do not enter
+              identification numbers, PINs, financial details or confidential
+              dispute information.
             </p>
           </section>
 
@@ -122,8 +151,9 @@ export function PrivacyNoticePage() {
             <p>
               Password-reset links may contain a reset code. Treat those links
               as private. The reset page verifies the code with Firebase before
-              requesting a password change. A successful reset changes the Firebase
-              account password. Do not share reset links, screenshots of codes or tokens.
+              requesting a password change. A successful reset changes the
+              Firebase account password. Do not share reset links, screenshots
+              of codes or tokens.
             </p>
           </section>
 
@@ -132,13 +162,17 @@ export function PrivacyNoticePage() {
             aria-labelledby="privacy-external-title"
           >
             <h2 id="privacy-external-title">External services</h2>
-            <p>Google Firebase processes authentication requests and stores the test
-              account. Firebase may process network and security information under its
-              own service terms. Creating an account and saving a profile, assessment or checklist are real cloud operations even
-              though the justice-navigation services remain a student prototype.
-              The development profile database uses the location selected in the
-              Firebase console. Profile storage location does not establish where
-              Firebase Authentication or every other service processes information.</p>
+            <p>
+              Google Firebase processes authentication requests and stores the
+              test account. Firebase may process network and security
+              information under its own service terms. Creating an account and
+              saving a profile, assessment or checklist are real cloud
+              operations even though the justice-navigation services remain a
+              student prototype. The development profile database uses the
+              location selected in the Firebase console. Profile storage
+              location does not establish where Firebase Authentication or every
+              other service processes information.
+            </p>
             <p>
               The landing page currently loads its photo from images.pexels.com.
               Loading that image contacts Pexels, which can receive your IP
@@ -164,12 +198,13 @@ export function PrivacyNoticePage() {
             <h2 id="privacy-storage-title">Storage and tracking</h2>
             <p>
               The current application has no added advertising or analytics
-              integration. Firebase stores authentication state, including tokens, in
-              browser session storage for the current tab and clears that session on
-              explicit sign-out. Browser session restoration may affect how long the
-              tab remains available. This is not account deletion or revocation of all
-              sessions. No assessment or referral is saved in browser storage by this app.
-              This statement does not cover browser extensions or third-party websites.
+              integration. Firebase stores authentication state, including
+              tokens, in browser session storage for the current tab and clears
+              that session on explicit sign-out. Browser session restoration may
+              affect how long the tab remains available. This is not account
+              deletion or revocation of all sessions. No assessment or referral
+              is saved in browser storage by this app. This statement does not
+              cover browser extensions or third-party websites.
             </p>
             <p>
               Development servers and future hosting providers may process

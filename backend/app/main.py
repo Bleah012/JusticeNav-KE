@@ -17,6 +17,8 @@ from .catalog import router as catalog_router
 from .checklists import ChecklistStore, FirestoreChecklistStore
 from .checklists import router as checklist_router
 from .config import Settings
+from .dashboard import DashboardStore, FirestoreDashboardStore
+from .dashboard import router as dashboard_router
 from .pathways import PathwayStore
 from .pathways import router as pathway_router
 from .profiles import FirestoreProfileStore, ProfileStore
@@ -39,6 +41,7 @@ def create_app(
     pathway_store: PathwayStore | None = None,
     checklist_store: ChecklistStore | None = None,
     referral_store: ReferralStore | None = None,
+    dashboard_store: DashboardStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -83,6 +86,12 @@ def create_app(
         else FirestoreReferralStore(settings)
     )
     app.include_router(referral_router)
+    app.state.dashboard_store = (
+        dashboard_store
+        if dashboard_store is not None
+        else FirestoreDashboardStore(settings)
+    )
+    app.include_router(dashboard_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(

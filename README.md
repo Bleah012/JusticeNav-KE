@@ -96,3 +96,8 @@ Production deployment requires passing checks and explicit approval.
 ## Private saved project requests
 
 Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. Provider processing, status changes, notifications and institutional delivery remain unconnected.
+
+
+## Connected seeker dashboard
+
+The own-account dashboard reads total saved assessments, checklists and project requests, recent saves, latest-checklist progress and the latest saved project-request preview. Counts cover all saved records, not just the first list page. It does not create notifications, institutional status updates or a separate activity log. Saved referrals remain **not sent to an institution**.
