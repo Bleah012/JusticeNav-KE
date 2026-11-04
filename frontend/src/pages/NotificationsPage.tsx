@@ -1,169 +1,44 @@
-import { useState } from "react";
-import { ClipboardCheck, FileText, Info, Mail, Trash2 } from "lucide-react";
-import { AccountDataState } from "../components/AccountDataState";
+import { ClipboardCheck, FileText, Info, Mail } from "lucide-react";
+import { Link, useSearchParams } from "react-router";
+import { useAuth } from "../auth/useAuth";
 import { Button } from "../components/ui/Button";
-import { Link } from "react-router";
-import type { AccountData, AccountNotification } from "../types/accountData";
-import { referralDate as formatAccountDate } from "../types/referralData";
+import { referralTime } from "../referrals/referralApi";
+import { notificationLink, notificationTitles, validNotificationId } from "../notifications/notificationApi";
+import type { NotificationQuery } from "../notifications/notificationApi";
+import type { NotificationState } from "../notifications/NotificationResource";
+import { useNotifications } from "../notifications/useNotifications";
 import "./SeekerPages.css";
 import "./AccountPages.css";
 
-const notificationIcons = {
-  referral: Mail,
-  checklist: ClipboardCheck,
-  assessment: FileText,
-  information: Info,
-};
-
-// Validate saved metadata before presenting account updates or unread indicators.
-function validNotifications(items: readonly AccountNotification[]): boolean {
-  return (
-    new Set(items.map((item) => item.id)).size === items.length &&
-    items.every(
-      (item) =>
-        item.id.trim() &&
-        item.title.trim() &&
-        item.description.trim() &&
-        formatAccountDate(item.createdAt) &&
-        typeof item.isRead === "boolean" &&
-        Object.hasOwn(notificationIcons, item.kind) &&
-        (item.referralId === null ||
-          (item.kind === "referral" && Boolean(item.referralId.trim()))),
-    )
-  );
+const icons = { assessment: FileText, checklist: ClipboardCheck, referral: Mail };
+function pageLink(unread: boolean, after?: string) { const params = new URLSearchParams(); if (unread) params.set("unread", "true"); if (after) params.set("after", after); return `/app/notifications${params.size ? `?${params}` : ""}`; }
+export function NotificationView({ state, query, refresh, markRead, filter }: { state: NotificationState; query: NotificationQuery; refresh: () => void; markRead: (ids: readonly string[]) => void; filter: (value: boolean) => void }) {
+  const page = state.status === "ready" ? state.value : null;
+  const saving = state.status === "ready" && state.saving;
+  const unreadIds = page?.notifications.filter(row => !row.isRead).map(row => row.id) ?? [];
+  return <>
+    <header className="seeker-page__heading account-pages__heading"><div><span className="seeker-page__eyebrow">Updates</span><h1>Notifications</h1><p>Saved-record updates in your account.</p></div><Button variant="secondary" disabled={saving || state.status === "loading"} onClick={refresh}>{state.status === "loading" ? "Loading..." : "Refresh notifications"}</Button></header>
+    <div className="seeker-page__notice"><Info size={20} aria-hidden="true"/><p>In-app project activity only. Updates appear after saves made with this feature. They do not confirm institutional delivery or review, and no email or SMS is sent. Viewing this page does not mark updates as read.</p></div>
+    <section className="account-pages__notifications" aria-labelledby="all-notifications-title" aria-busy={saving || state.status === "loading"}>
+      <div className="account-pages__notification-header"><h2 id="all-notifications-title">{query.unread ? "Unread notifications" : "All notifications"}</h2><Button variant="ghost" disabled={saving || !unreadIds.length} onClick={() => markRead(unreadIds)}>{saving ? "Saving read status..." : "Mark displayed as read"}</Button></div>
+      <label className="account-pages__unread-filter"><input type="checkbox" checked={query.unread} disabled={saving} onChange={event => filter(event.target.checked)}/>Show unread only</label>
+      <p className="notification-persistence__help">Newest saves first. The bulk button applies only to unread updates displayed on this page. Links open current saved records.</p>
+      {state.status === "loading" ? <p className="notification-persistence__status" role="status">Loading notifications...</p> : state.status === "error" ? <section className="seeker-page__state" role="alert"><h3>Notification information could not be opened</h3><p>{state.message}</p><Button variant="secondary" onClick={refresh}>Reload notifications</Button></section> : <>
+        {state.notice && <p className="notification-persistence__status" role="status">{state.notice}</p>}
+        {page && page.notifications.length ? <ul className="account-pages__notification-list" aria-label="Account notifications">{page.notifications.map(item => { const Icon = icons[item.kind]; const title = notificationTitles[item.kind]; return <li key={item.id} className={!item.isRead ? "account-pages__notification--unread" : undefined}><Icon size={22} aria-hidden="true"/><div><h3>{title}</h3><span className="seeker-page__badge">{item.isRead ? "Read" : "Unread"}</span><p>{item.kind === "referral" ? "Your project request was saved in JusticeNav KE. It was not sent to an institution." : item.kind === "checklist" ? "Your preparation progress was saved in JusticeNav KE." : "Your assessment was saved in JusticeNav KE."}</p><time dateTime={item.createdAt}>{referralTime(item.createdAt)}</time><Link className="account-pages__record-link" to={notificationLink(item)}>View {item.kind === "referral" ? "referral" : item.kind}</Link></div>{!item.isRead && <Button variant="secondary" disabled={saving} aria-label={`Mark ${title.toLowerCase()} for ${item.recordId.slice(0,8)} from ${referralTime(item.createdAt)} as read`} onClick={() => markRead([item.id])}>Mark as read</Button>}</li>; })}</ul> : <section className="seeker-page__state"><Mail size={30} aria-hidden="true"/><h3>{query.unread ? "No unread notifications to display." : "No notifications to display."}</h3><p>{query.unread ? "Clear Show unread only to review read updates." : "New saves to assessments, checklists and project referrals create account-only updates."}</p></section>}
+      </>}
+    </section>
+    <nav className="notification-persistence__pages" aria-label="Notification pages">{query.after && <Link className="btn btn-secondary" to={pageLink(query.unread)}>First page</Link>}{page?.nextCursor && !saving && <Link className="btn btn-secondary" to={pageLink(query.unread,page.nextCursor)}>Next page</Link>}</nav>
+  </>;
 }
-
-// Filtering is local; read/delete/preferences stay disabled until persistence exists.
-export function NotificationsPage({
-  data = { status: "unavailable" },
-}: {
-  data?: AccountData<readonly AccountNotification[]>;
-}) {
-  const [unreadOnly, setUnreadOnly] = useState(false);
-  const items =
-    data.status === "ready" && validNotifications(data.value)
-      ? data.value
-      : null;
-  const visible = items?.filter((item) => !unreadOnly || !item.isRead) ?? [];
-
-  return (
-    <>
-      <header className="seeker-page__heading account-pages__heading">
-        <div>
-          <span className="seeker-page__eyebrow">Updates</span>
-          <h1>Notifications</h1>
-          <p>Referral updates, reminders and important next actions.</p>
-        </div>
-        <Button
-          variant="secondary"
-          disabled
-          title="Notification preferences are currently unavailable."
-        >
-          Notification preferences
-        </Button>
-      </header>
-      <div className="seeker-page__notice">
-        <Info size={20} aria-hidden="true" />
-        <p>
-          School-project updates only. A project notification does not confirm
-          institutional delivery. Notification delivery, read-status changes and
-          deletion are currently unavailable.
-        </p>
-      </div>
-      <section
-        className="account-pages__notifications"
-        aria-labelledby="all-notifications-title"
-      >
-        <div className="account-pages__notification-header">
-          <h2 id="all-notifications-title">All notifications</h2>
-          <Button
-            variant="ghost"
-            disabled
-            title="Saving notification read status is currently unavailable."
-          >
-            Mark all as read
-          </Button>
-        </div>
-        <label className="account-pages__unread-filter">
-          <input
-            type="checkbox"
-            checked={unreadOnly}
-            onChange={(event) => setUnreadOnly(event.target.checked)}
-          />
-          Show unread only
-        </label>
-        {items ? (
-          visible.length ? (
-            <ul
-              className="account-pages__notification-list"
-              aria-label="Account notifications"
-            >
-              {visible.map((item) => {
-                const Icon = notificationIcons[item.kind];
-                return (
-                  <li
-                    key={item.id}
-                    className={
-                      !item.isRead
-                        ? "account-pages__notification--unread"
-                        : undefined
-                    }
-                  >
-                    <Icon size={22} aria-hidden="true" />
-                    <div>
-                      <h3>{item.title}</h3>
-                      {!item.isRead && (
-                        <span className="seeker-page__badge">Unread</span>
-                      )}
-                      <p>{item.description}</p>
-                      <time dateTime={item.createdAt}>
-                        {formatAccountDate(item.createdAt)}
-                      </time>
-                      {item.kind === "referral" && item.referralId && (
-                        <Link
-                          className="account-pages__record-link"
-                          to={`/app/referrals/${encodeURIComponent(item.referralId)}`}
-                        >
-                          View referral
-                        </Link>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="account-pages__delete"
-                      disabled
-                      aria-label={`Delete notification: ${item.title}`}
-                      title="Notification deletion is currently unavailable."
-                    >
-                      <Trash2 size={18} aria-hidden="true" />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <section className="seeker-page__state">
-              <Mail size={30} aria-hidden="true" />
-              <h3>
-                {unreadOnly
-                  ? "No unread notifications to display."
-                  : "No notifications to display."}
-              </h3>
-              <p>
-                {unreadOnly
-                  ? "Choose all notifications to see any other saved updates."
-                  : "No notification records were returned for this account."}
-              </p>
-            </section>
-          )
-        ) : (
-          <AccountDataState
-            subject="Notification information"
-            status={data.status === "ready" ? "error" : data.status}
-            retry={data.status === "error" ? data.retry : undefined}
-          />
-        )}
-      </section>
-    </>
-  );
+function AccountNotifications({ uid, query }: { uid: string; query: NotificationQuery }) {
+  const { state, refresh, markRead } = useNotifications(uid, query);
+  const [, setParams] = useSearchParams();
+  return <NotificationView state={state} query={query} refresh={refresh} markRead={markRead} filter={unread => setParams(unread ? { unread: "true" } : {})}/>;
+}
+export function NotificationsPage() {
+  const { session } = useAuth(); const [params] = useSearchParams();
+  const unread = params.get("unread"), after = params.get("after");
+  if (unread !== null && unread !== "true" || after !== null && !validNotificationId(after)) return <><header className="seeker-page__heading"><h1>Notifications</h1></header><p role="alert">This notification page could not be opened.</p><Link className="btn btn-secondary" to="/app/notifications">First page</Link></>;
+  return session.status === "ready" ? <AccountNotifications key={`${session.identity.uid}:${unread ?? "all"}:${after ?? "first"}`} uid={session.identity.uid} query={{ unread: unread === "true", after: after ?? undefined }}/> : <p role="status">Verify your session to view notifications.</p>;
 }

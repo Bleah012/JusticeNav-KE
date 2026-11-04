@@ -172,7 +172,7 @@ export function TermsOfUsePage() {
               acknowledgement that this is a project-only save. It does not
               submit or deliver information to an institution, create a case,
               guarantee acceptance or representation, or record institutional
-              review. Tracking currently shows only the saved event. This
+              review. Tracking currently shows only the saved event. In-app notifications record successful saves and account read status; they do not establish institutional delivery, review or response. This
               acknowledgement is not permission for model training or unrelated
               reuse. Contact organisations through their official channels.
             </p>

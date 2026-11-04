@@ -29,6 +29,7 @@ from .auth import (
     get_firebase_app,
 )
 from .config import Settings
+from .notification_events import queue_saved_update
 
 Status = Literal["draft", "needs-clarification", "awaiting-pathways"]
 Issue = Literal["consumer", "money-debt", "other"]
@@ -241,6 +242,7 @@ class FirestoreAssessmentStore:
                     transaction.set(reference, data)
                 else:
                     transaction.create(reference, data)
+                queue_saved_update(self._client, transaction, uid, "assessment", result)
                 return result
 
             return write(self._client.transaction(max_attempts=3))

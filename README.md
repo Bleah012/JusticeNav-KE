@@ -18,8 +18,8 @@ Firestore database when configured. Assessment descriptions and clarification
 answers can also be saved, listed and reopened for the signed-in account.
 Preparation checklists persist source-item snapshots and explicit progress saves.
 The public service directory and resource library use a versioned catalogue of
-reviewed official sources served through FastAPI. Classification, notifications
-and institutional referral delivery remain unconnected. The interface does not create successful
+reviewed official sources served through FastAPI. Classification and external message delivery
+remain unconnected. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development
@@ -95,9 +95,14 @@ Production deployment requires passing checks and explicit approval.
 
 ## Private saved project requests
 
-Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. Provider processing, status changes, notifications and institutional delivery remain unconnected.
+Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. Provider processing, status changes and institutional delivery remain unconnected. In-app saved-record notifications are available as described below.
 
 
 ## Connected seeker dashboard
 
 The own-account dashboard reads total saved assessments, checklists and project requests, recent saves, latest-checklist progress and the latest saved project-request preview. Counts cover all saved records, not just the first list page. It does not create notifications, institutional status updates or a separate activity log. Saved referrals remain **not sent to an institution**.
+
+
+## In-app saved-record notifications
+
+Successful assessment, checklist and project-request saves now create an account-only metadata update in the same Firestore transaction as the record. Notifications support unread filtering, cursor pagination, individual mark-as-read and **Mark displayed as read**, with persistent read status. No events are seeded or backfilled for earlier saves. Notification reads and read-status changes do not send email/SMS, create provider messages or deliver referrals to institutions.

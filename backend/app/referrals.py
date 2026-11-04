@@ -17,6 +17,7 @@ from .assessments import STORAGE_ERRORS, UserDependency
 from .auth import get_firebase_app
 from .catalog import CatalogModel, SourceReview, Text, get_catalog
 from .catalog import Identifier as PublicId
+from .notification_events import queue_saved_update
 from .pathways import find_pathway, load_pathways
 
 Identifier = Annotated[StrictStr, Field(pattern=r"^[a-f0-9]{32}$")]
@@ -285,6 +286,7 @@ class FirestoreReferralStore:
                     by_alias=True, mode="json"
                 )
                 transaction.create(reference, data)
+                queue_saved_update(self._client, transaction, uid, "referral", result)
                 return result
 
             return write(self._client.transaction(max_attempts=3))

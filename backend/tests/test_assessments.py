@@ -421,9 +421,8 @@ def test_firestore_adapter_writes_after_read_and_preserves_revision_checks(monke
     reference.get.assert_called_once_with(
         transaction=transaction, retry=None, timeout=10
     )
-    transaction.create.assert_called_once_with(
-        reference, result.model_dump(by_alias=True)
-    )
+    transaction.create.assert_any_call(reference, result.model_dump(by_alias=True))
+    assert transaction.create.call_count == 2
     transaction.set.assert_not_called()
     store, reference, transaction = transaction_fixture(monkeypatch, result)
     with pytest.raises(AssessmentConflict):

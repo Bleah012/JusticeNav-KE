@@ -19,6 +19,8 @@ from .checklists import router as checklist_router
 from .config import Settings
 from .dashboard import DashboardStore, FirestoreDashboardStore
 from .dashboard import router as dashboard_router
+from .notifications import FirestoreNotificationStore, NotificationStore
+from .notifications import router as notification_router
 from .pathways import PathwayStore
 from .pathways import router as pathway_router
 from .profiles import FirestoreProfileStore, ProfileStore
@@ -42,6 +44,7 @@ def create_app(
     checklist_store: ChecklistStore | None = None,
     referral_store: ReferralStore | None = None,
     dashboard_store: DashboardStore | None = None,
+    notification_store: NotificationStore | None = None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -92,12 +95,25 @@ def create_app(
         else FirestoreDashboardStore(settings)
     )
     app.include_router(dashboard_router)
+    app.state.notification_store = (
+        notification_store
+        if notification_store is not None
+        else FirestoreNotificationStore(settings)
+    )
+    app.include_router(notification_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/notifications"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid notification input. Check the notification references and filter."
+                },
+            )
         if request.url.path.startswith("/api/v1/referrals"):
             return JSONResponse(
                 status_code=422,
