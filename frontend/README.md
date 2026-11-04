@@ -51,7 +51,7 @@ origin and would require matching Firebase-domain and backend CORS settings.
   A new account without a custom role is a seeker. There is no client-side role picker.
   The guards improve navigation; backend authorization remains mandatory on every
   future endpoint, including ownership and provider-membership/assignment checks.
-- Signing in does not create an assessment or populate dashboard counts, resources or referrals.
+- Signing in creates no assessment or referral. The dashboard reads counts and recent saves from existing records in the verified account; resource saving is not connected.
   Their unavailable states remain until the relevant data services are implemented.
 
 The API must run with the same Firebase project and backend-only credentials;
@@ -291,3 +291,14 @@ One random request ID is kept before sending. Confirmed saves navigate to `/app/
 `/app/referrals` lists only the account's summary records with cursor pagination; `/app/referrals/{id}` reads the private details. The only history event is the server-recorded project save. Missing, forbidden or failed reads never display success or fake empty results. API and resource lifecycles discard late responses after account/page changes. Authentication and configured backend/Firestore are required. No new environment settings or dependencies are needed.
 
 The current project saves contact details and a description; it does **not** deliver them to the organisation, send notifications or verify the stated contact preference. Provider and admin preview screens remain unconnected. Test only with non-sensitive inputs. Run the existing frontend tests plus `node --test tests/referrals.test.cjs` from frontend.
+
+
+## Dashboard counts, recent saves and referral preview
+
+`/app` reads authenticated `GET /api/v1/dashboard` using the verified session. The component/resource is keyed by UID. Token, response and JSON processing verify that the same Firebase user is still active. Abort, timeout, reload and unmount discard obsolete results; summary fields are not persisted in browser storage. Requests use GET only, no body or owner query, no cookies, no cached responses and no redirects. The returned UID and all displayed summaries are validated before publication.
+
+Cards show **Saved assessments**, **Saved referrals**, **Checklist progress** and **Saved checklists**. The previous unsupported saved-resource figure is replaced with a supported saved-checklist total. Assessment totals include every saved draft/clarification state; referral totals mean project records, never open institutional cases. Progress describes the most recently updated saved checklist. A confirmed empty account shows three zero totals and no saved checklist; a zero-item checklist shows No items. Loading and failed reads never appear as zero or reuse old account data.
+
+Recent activity shows the six most recent records' latest saves. Links resume the assessment's saved step, the checklist or the referral. The referral preview shows the latest account-owned summary and **Not sent to an institution**, with no contact or description fields. Refresh dashboard reloads the summary; navigating back from a saved form loads it again. No polling, notifications, provider workflow or institutional handoff is added.
+
+Run all existing frontend tests plus `node --test tests/dashboard.test.cjs` from frontend. The backend suite automatically discovers `test_dashboard.py`. Browser verification should compare counts with saved lists, save an assessment/checklist/request, return to dashboard, and check links, latest-record updates, a second account, confirmed empty data and backend-unavailable retry behavior.
