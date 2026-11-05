@@ -106,3 +106,7 @@ The own-account dashboard reads total saved assessments, checklists and project 
 ## In-app saved-record notifications
 
 Successful assessment, checklist and project-request saves now create an account-only metadata update in the same Firestore transaction as the record. Notifications support unread filtering, cursor pagination, individual mark-as-read and **Mark displayed as read**, with persistent read status. No events are seeded or backfilled for earlier saves. Notification reads and read-status changes do not send email/SMS, create provider messages or deliver referrals to institutions.
+
+## Read-only administration
+
+Administrators can open Overview, Justice Services and Pathways. The overview counts published services, pathways and resources. The catalogue pages show source links and review dates from the same versioned files as the public site. Each API request requires the verified Firebase admin role. See the [backend setup and development account guide](backend/README.md).

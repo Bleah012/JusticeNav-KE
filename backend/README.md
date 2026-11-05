@@ -388,3 +388,17 @@ Mark-as-read uses one transaction and a bounded batch-get (five-second read time
 Tests mock network/SDK operations and verify actual SDK transaction write payloads, read-before-write behavior, source-save integration, metadata boundaries, duplicate saves, ownership, cursor/filter behavior and monotonic read state.
 
 References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions), [default index ordering](https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the__name__field).
+
+## Administrative catalogue reads
+
+`GET /api/v1/admin/overview`, `GET /api/v1/admin/services` and `GET /api/v1/admin/pathways` require the verified Firebase `role: admin` claim. Authentication runs before catalogue loading. Missing or invalid credentials return 401. A verified seeker or provider receives 403. Catalogue loading failures return a generic 503. Responses include the verified UID and `readOnly: true`, with `Cache-Control: no-store`.
+
+Overview totals count published service, pathway and resource records in the source files. Services use the public directory projection. Pathways use the reviewed pathway catalogue and validate every service reference against the service catalogue. Administrative reads access these local files and return public catalogue data. Account and referral analytics are a separate feature.
+
+For browser testing, use an existing development account you control in `justicenav-ke`. Copy its UID from Firebase Authentication → Users and enter it locally when prompted. From the repository root, inspect its role first.
+
+```powershell
+& ".\backend\.venv\Scripts\python.exe" ".\backend\tools\admin_role.py"
+```
+
+To grant that account the development admin role, run the helper with `--apply`, enter the same UID and type `GRANT ADMIN` at the prompt. The helper checks the project and credential project, and preserves unrelated claims. To restore the seeker role, run it with `--role seeker --apply` and type `RESTORE SEEKER`. Sign out and sign back in after either role change to obtain a fresh token. [Firebase custom claims documentation](https://firebase.google.com/docs/auth/admin/custom-claims).
