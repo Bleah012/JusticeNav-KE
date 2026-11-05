@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from .admin_catalog import router as admin_catalog_router
 from .assessments import AssessmentStore, FirestoreAssessmentStore
 from .assessments import router as assessment_router
 from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
@@ -101,6 +102,7 @@ def create_app(
         else FirestoreNotificationStore(settings)
     )
     app.include_router(notification_router)
+    app.include_router(admin_catalog_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(

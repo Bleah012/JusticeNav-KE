@@ -57,7 +57,7 @@ function AdminNavigation() {
   );
 }
 
-// The route guard verifies the administrator role; management data is still unavailable.
+// Verify role on the route and each catalogue API request; editing remains unavailable.
 export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="seeker-shell admin-shell">
@@ -66,7 +66,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </a>
       <aside className="seeker-shell__sidebar">
         <AppBrand />
-        <span className="admin-pages__role">Administrator · preview</span>
+        <span className="admin-pages__role">Administrator Â· preview</span>
         <AdminNavigation />
         <p className="seeker-shell__disclaimer">
           <Info size={18} aria-hidden="true" />
@@ -94,9 +94,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice" id="admin-prototype-note">
             <Info size={20} aria-hidden="true" />
             <p>
-              Administrative management preview. Your account role is checked
-              by the API. Management services are not connected. No changes are
-              saved, published, archived or verified.
+              Your administrator role is checked by the API. Overview, Justice
+              Services and Pathways show read-only published catalogue
+              information. Other management services remain previews. No changes
+              are saved, published, archived or verified by these pages.
             </p>
           </div>
           {children}

@@ -313,3 +313,9 @@ Opening or refreshing the page does not change unread status. Each unread row of
 These notifications begin with successful saves after this feature is applied. Earlier records remain available in their normal lists but have no retroactively invented notifications. New saves of assessments/checklists create new updates; immutable older referral records are not resubmitted. Fixed titles/body copy are derived from notification kind, never user-entered descriptions or backend-supplied HTML. Read status is not institutional review, email delivery or proof that a person opened the linked record. Preferences, deletion and external notification delivery remain unavailable.
 
 Run all existing frontend suites plus `node --test tests/notifications.test.cjs`. Backend tests automatically include `test_notifications.py`. Browser verification should create each source type using non-sensitive inputs, check notifications and links, mark one and displayed rows, refresh, filter and page, save another revision, test another account and verify unavailable/retry states.
+
+## Connected administrator catalogues
+
+Use `/admin`, `/admin/services` and `/admin/pathways` with a verified development admin account. Overview shows published catalogue counts. The service and pathway tables support local search, category filtering, sorting by source check date and pagination. The public-page links open the corresponding directory or pathway records, and the source links open the cited official sites.
+
+The page checks the verified role before mounting its request controller. Every fetch sends the current account token to a fixed admin API path. The controller clears old data when the account or page changes and distinguishes permission denial, catalogue errors and confirmed empty results. Run `node --test tests/admin-catalog.test.cjs` from frontend for the new boundary and filtering checks.

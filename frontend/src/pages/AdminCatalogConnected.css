@@ -1,0 +1,20 @@
+.admin-catalog-connected__filters {
+  grid-template-columns: minmax(220px, 1fr) minmax(150px, 220px) minmax(
+      150px,
+      220px
+    );
+}
+.admin-catalog-connected__sources {
+  margin: 0;
+  padding-left: 1rem;
+  max-width: 22rem;
+}
+.admin-catalog-connected__sources li {
+  margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .admin-catalog-connected__filters {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,11 +1,5 @@
-import { AdminCatalog } from "../components/AdminCatalog";
-import type { AdminData, AdminPathwayRecord } from "../types/adminData";
+import { ConnectedAdminCatalog } from "../components/ConnectedAdminCatalog";
 
-// Keep pathway management separate from public recommendations and eligibility claims.
-export function AdminPathwaysPage({
-  data,
-}: {
-  data?: AdminData<readonly AdminPathwayRecord[]>;
-}) {
-  return <AdminCatalog kind="pathway" data={data} />;
+export function AdminPathwaysPage() {
+  return <ConnectedAdminCatalog kind="pathways" />;
 }
