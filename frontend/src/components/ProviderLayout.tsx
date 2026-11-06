@@ -49,7 +49,9 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
       </a>
       <aside className="seeker-shell__sidebar">
         <AppBrand />
-        <span className="admin-pages__role">Service provider · preview</span>
+        <span className="admin-pages__role">
+          Service provider · demonstration
+        </span>
         <ProviderNavigation />
         <p className="seeker-shell__disclaimer">
           <Info size={18} aria-hidden="true" />
@@ -64,7 +66,7 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
           <div className="seeker-shell__mobile-brand">
             <AppBrand />
           </div>
-          <span className="seeker-shell__preview">Provider preview</span>
+          <span className="seeker-shell__preview">Provider demonstration</span>
           <SessionActions />
         </header>
         <WorkspaceMenu>
@@ -77,9 +79,8 @@ export function ProviderLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice">
             <Info size={20} aria-hidden="true" />
             <p>
-              Provider workspace preview. Service membership and
-              referral processing are not connected. No status changes or
-              responses are sent.
+              Use this workspace to review assigned school demonstrations for
+              your development service membership.
             </p>
           </div>
           {children}

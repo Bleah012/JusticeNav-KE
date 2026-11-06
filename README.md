@@ -95,7 +95,7 @@ Production deployment requires passing checks and explicit approval.
 
 ## Private saved project requests
 
-Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. Provider processing, status changes and institutional delivery remain unconnected. In-app saved-record notifications are available as described below.
+Signed-in users can explicitly save a referral request, reload its confirmation, and reopen its own-account tracking record. Records use real submitted test inputs and the existing official-source catalogue, not seeded personal data. The only current status is **Saved in JusticeNav KE**; delivery is **Not sent to an institution**. The development demonstration supports an optional sharing and progress workflow alongside the private saved request. In-app saved-record notifications are available as described below.
 
 
 ## Connected seeker dashboard
@@ -110,3 +110,7 @@ Successful assessment, checklist and project-request saves now create an account
 ## Read-only administration
 
 Administrators can open Overview, Justice Services and Pathways. The overview counts published services, pathways and resources. The catalogue pages show source links and review dates from the same versioned files as the public site. Each API request requires the verified Firebase admin role. See the [backend setup and development account guide](backend/README.md).
+
+## Development referral workflow
+
+A seeker can share the reference and public source metadata from an existing saved request. An administrator assigns that demonstration to a development provider with a matching service membership. The provider records review and completion. The seeker sees those events in My Referrals and can withdraw sharing. The saved request retains its separate institutional delivery status.

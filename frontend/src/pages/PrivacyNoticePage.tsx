@@ -123,12 +123,37 @@ export function PrivacyNoticePage() {
               URL may contain an opaque request reference. Confirmation and
               tracking read your own saved record; they do not contact an
               institution, verify contact details or send email or SMS. No
-              referral editing, deletion or retention automation is connected.
+              editing, deletion or retention automation applies to the private
+              request.
+            </p>
+            <p>
+              If you opt in to a school demonstration, we store your account and
+              referral references, the public service and pathway names, the
+              consent version, and progress dates in a separate record. The
+              project administrator and assigned development provider see the
+              demonstration metadata. The provider assignment is stored using a
+              key derived from the provider account and service. Withdrawing
+              sharing removes provider access on subsequent requests and keeps
+              the history in My Referrals.
+            </p>
+            <p>
               The dashboard reads totals and recent saved-record summaries from
               your own account; its response excludes assessment and referral
               descriptions, contact details and clarification answers. Recent
               activity shows the latest save per record, not a complete history.
-              Opening or refreshing the dashboard does not save records or create activity events. Successful assessment, checklist and project-request saves also store an account-only notification in Firestore in the same transaction. Each update contains your verified UID, a reference to the saved record and revision, its kind, saved timestamp and assessment step where relevant, plus unread/read status and the server time when marked read. Notification records do not copy your description, clarification answers or contact details. Opening Notifications only reads this metadata; Mark as read and Mark displayed as read explicitly save read status for the selected updates. No email, SMS or institutional delivery is triggered, and no automatic deletion or notification preferences are connected.
+              Opening or refreshing the dashboard does not save records or
+              create activity events. Successful assessment, checklist and
+              project-request saves also store an account-only notification in
+              Firestore in the same transaction. Each update contains your
+              verified UID, a reference to the saved record and revision, its
+              kind, saved timestamp and assessment step where relevant, plus
+              unread/read status and the server time when marked read.
+              Notification records do not copy your description, clarification
+              answers or contact details. Opening Notifications only reads this
+              metadata; Mark as read and Mark displayed as read explicitly save
+              read status for the selected updates. No email, SMS or
+              institutional delivery is triggered, and no automatic deletion or
+              notification preferences are connected.
             </p>
             <p>
               Your browser or password manager may retain information through

@@ -355,7 +355,7 @@ Firestore namespace: `referralOwners/{sha256(uid)}/referrals/{32hexId}` in `(def
 
 The backend derives `uid`, revision 1, timestamps, `scope=school-demonstration`, `status=saved`, `deliveryStatus=not-sent`, acknowledgement version `project-request-v1`, and the immutable public snapshot. A transaction creates only once; repeats return 409 without overwriting. A source-version or service/pathway mismatch returns 409. Own missing records/cursors return 404, invalid inputs return redacted 422, unavailable/corrupt storage returns 503. Contact and description fields are omitted from list responses. Source-review dates are encoded as ISO calendar strings; server timestamps remain Firestore timestamps.
 
-This operation does not send emails, SMS, messages or institutional referrals and does not add a provider queue. There is no edit, delete, export, retention automation or status-update endpoint in this batch. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.
+Saving creates a private immutable request and an account update. The separate development workflow described below handles sharing and progress. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.
 
 
 ## Own-account dashboard
@@ -402,3 +402,15 @@ For browser testing, use an existing development account you control in `justice
 ```
 
 To grant that account the development admin role, run the helper with `--apply`, enter the same UID and type `GRANT ADMIN` at the prompt. The helper checks the project and credential project, and preserves unrelated claims. To restore the seeker role, run it with `--role seeker --apply` and type `RESTORE SEEKER`. Sign out and sign back in after either role change to obtain a fresh token. [Firebase custom claims documentation](https://firebase.google.com/docs/auth/admin/custom-claims).
+
+## Development referral workflow
+
+The `/api/v1/demo-referrals` routes are enabled in development and test. The verified Firebase role determines access. The owner gets progress at `/mine/{referral_id}` and uses `/share` or `/withdraw` under that path. Sharing requires `confirmed: true` and `consentVersion: "demo-metadata-v1"`. The API checks the existing private referral's owner and selection before creating a workflow. Admins list `/admin` and assign via `/admin/{key}/assign`. Providers list `/provider` and update `/provider/{key}/status`.
+
+Provider membership is read from the current Firebase account. The account must be active, have the provider role and have a `demoServiceId` that matches the demonstration service. The administrator submits the selected account UID in the assignment body. Responses use a demonstration reference and include service/pathway metadata, revision and progress dates. The original referral ID is returned only to its owner. Contact fields, description and the provider UID stay outside the workflow projection.
+
+The `demoReferralWorkflows` collection stores the owner's UID and original referral reference, a consent version, published labels and bounded event history. Its document key is a hash of the owner's UID and original referral ID. An assignment key hashes the provider UID and service. The admin queue filters shared records. The provider queue filters its current assignment key and validates the service on every returned row. Both queues page by ascending document ID and read at most 21 records per request. They use collection-scoped single-field indexes with default Firestore indexing.
+
+Each write checks the current revision and transition inside a transaction. The sequence is Shared, Assigned, Under review, Completed. Owners can withdraw at any of these stages. Withdrawal clears the assignment key and preserves the owner history. A withdrawn workflow is final. The original request retains its private data and delivery status. Future workflows require a separate saved request.
+
+For a development provider in `justicenav-ke`, use the existing local role tool with `--role provider --service-id <published-id>`. Run its dry run before using `--apply` and entering `GRANT PROVIDER`. To remove the development membership, use `--role seeker --apply`. Sign in again after changing claims to obtain a new token. [Firebase custom claims](https://firebase.google.com/docs/auth/admin/custom-claims).
