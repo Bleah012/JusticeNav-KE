@@ -96,8 +96,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <p>
               Your administrator role is checked by the API. Overview, Justice
               Services and Pathways show read-only published catalogue
-              information. Other management services remain previews. No changes
-              are saved, published, archived or verified by these pages.
+              information. Referrals lets you assign school demonstrations
+              shared by seekers.
             </p>
           </div>
           {children}

@@ -290,7 +290,7 @@ One random request ID is kept before sending. Confirmed saves navigate to `/app/
 
 `/app/referrals` lists only the account's summary records with cursor pagination; `/app/referrals/{id}` reads the private details. The only history event is the server-recorded project save. Missing, forbidden or failed reads never display success or fake empty results. API and resource lifecycles discard late responses after account/page changes. Authentication and configured backend/Firestore are required. No new environment settings or dependencies are needed.
 
-The current project saves contact details and a description; it does **not** deliver them to the organisation, send email/SMS notifications or verify the stated contact preference. Successful saves create account-only in-app updates as described below. Provider and admin preview screens remain unconnected. Test only with non-sensitive inputs. Run the existing frontend tests plus `node --test tests/referrals.test.cjs` from frontend.
+The current project saves contact details and a description; it does **not** deliver them to the organisation, send email/SMS notifications or verify the stated contact preference. Successful saves create account-only in-app updates as described below. The development referral workflow handles optional sharing and progress from the saved request. Test only with non-sensitive inputs. Run the existing frontend tests plus `node --test tests/referrals.test.cjs` from frontend.
 
 
 ## Dashboard counts, recent saves and referral preview
@@ -319,3 +319,9 @@ Run all existing frontend suites plus `node --test tests/notifications.test.cjs`
 Use `/admin`, `/admin/services` and `/admin/pathways` with a verified development admin account. Overview shows published catalogue counts. The service and pathway tables support local search, category filtering, sorting by source check date and pagination. The public-page links open the corresponding directory or pathway records, and the source links open the cited official sites.
 
 The page checks the verified role before mounting its request controller. Every fetch sends the current account token to a fixed admin API path. The controller clears old data when the account or page changes and distinguishes permission denial, catalogue errors and confirmed empty results. Run `node --test tests/admin-catalog.test.cjs` from frontend for the new boundary and filtering checks.
+
+## Demonstration referral views
+
+In My Referrals, open a saved request and opt in to sharing the demonstration metadata. Use `/admin/referrals` to assign shared requests by a development provider UID. Use `/provider` as the assigned provider to start and complete a demo review. Return to My Referrals to read the event history or withdraw sharing. These views use the existing authenticated referral transport and refresh controls. A confirmed update changes the visible status. A conflict or uncertain save requires a refresh before retrying.
+
+Search and browsing remain in the account and catalogue routes. The demonstration queues page through twenty results at a time. Run `node --test tests/demo-referrals.test.cjs` from frontend to verify transport, metadata parsing and saved outcomes.

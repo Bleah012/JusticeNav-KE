@@ -20,6 +20,8 @@ from .checklists import router as checklist_router
 from .config import Settings
 from .dashboard import DashboardStore, FirestoreDashboardStore
 from .dashboard import router as dashboard_router
+from .demo_referrals import FirebaseProviderDirectory, FirestoreDemoReferrals
+from .demo_referrals import router as demo_referral_router
 from .notifications import FirestoreNotificationStore, NotificationStore
 from .notifications import router as notification_router
 from .pathways import PathwayStore
@@ -46,6 +48,8 @@ def create_app(
     referral_store: ReferralStore | None = None,
     dashboard_store: DashboardStore | None = None,
     notification_store: NotificationStore | None = None,
+    demo_referral_store=None,
+    demo_provider_directory=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -103,12 +107,29 @@ def create_app(
     )
     app.include_router(notification_router)
     app.include_router(admin_catalog_router)
+    app.state.demo_referrals_enabled = settings.app_env in {"development", "test"}
+    app.state.demo_referral_store = (
+        demo_referral_store
+        if demo_referral_store is not None
+        else FirestoreDemoReferrals(settings)
+    )
+    app.state.demo_provider_directory = (
+        demo_provider_directory
+        if demo_provider_directory is not None
+        else FirebaseProviderDirectory(settings)
+    )
+    app.include_router(demo_referral_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/demo-referrals"):
+            return JSONResponse(
+                status_code=422,
+                content={"detail": "Invalid demonstration referral input."},
+            )
         if request.url.path.startswith("/api/v1/notifications"):
             return JSONResponse(
                 status_code=422,

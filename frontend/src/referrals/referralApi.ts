@@ -198,17 +198,19 @@ export function parseReferral(
     acknowledgedAt: item.acknowledgedAt,
   };
 }
-export function createReferralApi({
-  baseUrl,
-  uid,
-  currentUser,
-  request = fetch,
-}: {
+type ReferralTransportOptions = {
   baseUrl: string;
   uid: string;
   currentUser: () => User | null;
   request?: typeof fetch;
-}) {
+};
+
+export function createReferralTransport(
+  { baseUrl, uid, currentUser, request = fetch }: ReferralTransportOptions,
+  scope: "saved" | "demo" = "saved",
+) {
+  const prefix =
+    scope === "demo" ? "/api/v1/demo-referrals" : "/api/v1/referrals";
   async function read(
     path: string,
     method: "GET" | "PUT",
@@ -221,28 +223,31 @@ export function createReferralApi({
     if (!user || !active()) throw new ReferralError(401);
     const token = await user.getIdToken();
     if (!active()) throw new ReferralError(401);
-    const response = await request(
-      `${apiOrigin(baseUrl)}/api/v1/referrals${path}`,
-      {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          ...(method === "PUT" ? { "Content-Type": "application/json" } : {}),
-        },
-        ...(method === "PUT" ? { body: JSON.stringify(body) } : {}),
-        signal,
-        credentials: "omit",
-        redirect: "error",
-        cache: "no-store",
-        referrerPolicy: "no-referrer",
+    const response = await request(`${apiOrigin(baseUrl)}${prefix}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(method === "PUT" ? { "Content-Type": "application/json" } : {}),
       },
-    );
+      ...(method === "PUT" ? { body: JSON.stringify(body) } : {}),
+      signal,
+      credentials: "omit",
+      redirect: "error",
+      cache: "no-store",
+      referrerPolicy: "no-referrer",
+    });
     if (!active()) throw new ReferralError(401);
     if (!response.ok) throw new ReferralError(response.status);
     const result: unknown = await response.json();
     if (!active()) throw new ReferralError(401);
     return result;
   }
+  return read;
+}
+
+export function createReferralApi(options: ReferralTransportOptions) {
+  const { uid } = options;
+  const read = createReferralTransport(options);
   function checkId(id: string) {
     if (!validId(id)) throw new ReferralError(422);
   }

@@ -1,0 +1,35 @@
+.demo-referral__progress {
+  grid-column: 1 / -1;
+}
+
+.demo-referral__consent,
+.demo-referral__assignment {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+.demo-referral__consent label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.demo-referral__assignment label {
+  display: grid;
+  gap: 0.4rem;
+  width: min(100%, 28rem);
+}
+
+.demo-referral__assignment input {
+  padding: 0.65rem;
+  border: 1px solid currentColor;
+  font: inherit;
+  width: 100%;
+}
+
+.demo-referral__queue li > div {
+  min-width: 0;
+  width: 100%;
+}

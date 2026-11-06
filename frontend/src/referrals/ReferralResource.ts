@@ -15,6 +15,14 @@ export type ReferralState<T> =
       error: string;
       notice: string;
     };
+type MutationMessages = {
+  success?: string;
+  invalid?: string;
+  denied?: string;
+  conflict?: string;
+  unconfirmed?: string;
+};
+
 function loadError(error: unknown) {
   if (error instanceof ReferralError && error.status === 404)
     return "This request or pathway could not be found for your account. Return to My Referrals.";
@@ -108,6 +116,7 @@ export class ReferralResource<T> {
   };
   mutate = async (
     operation: (value: T, signal: AbortSignal) => Promise<T>,
+    messages: MutationMessages = {},
   ): Promise<T | undefined> => {
     const previous = this.value;
     if (
@@ -132,6 +141,7 @@ export class ReferralResource<T> {
         needsReload: false,
         error: "",
         notice:
+          messages.success ??
           "Your request was saved in JusticeNav KE. It was not sent to an institution.",
       });
       return value;
@@ -141,7 +151,10 @@ export class ReferralResource<T> {
         cause instanceof ReferralError &&
         [401, 403, 404].includes(cause.status)
       ) {
-        this.publish({ status: "error", message: loadError(cause) });
+        this.publish({
+          status: "error",
+          message: messages.denied ?? loadError(cause),
+        });
         return;
       }
       const invalid = cause instanceof ReferralError && cause.status === 422;
@@ -152,10 +165,13 @@ export class ReferralResource<T> {
         notice: "",
         needsReload: !invalid,
         error: invalid
-          ? "Check the contact fields, description and acknowledgement before saving again."
+          ? (messages.invalid ??
+            "Check the contact fields, description and acknowledgement before saving again.")
           : conflict
-            ? "This request already exists or its source selection changed. Reload its saved version before saving again. Your edits remain in this form until you reload."
-            : "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Referrals.",
+            ? (messages.conflict ??
+              "This request already exists or its source selection changed. Reload its saved version before saving again. Your edits remain in this form until you reload.")
+            : (messages.unconfirmed ??
+              "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Referrals."),
       });
     }
   };
