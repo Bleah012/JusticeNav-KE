@@ -1,4 +1,4 @@
-"""Atomic metadata-only saved-record updates; no external message delivery."""
+"""Atomic metadata-only updates for saved records and demonstration progress."""
 
 import hashlib
 from datetime import UTC, datetime
@@ -10,9 +10,21 @@ from .catalog import CatalogModel
 
 Identifier = Annotated[StrictStr, Field(pattern=r"^[0-9]{20}-[a-f0-9]{64}$")]
 RecordId = Annotated[StrictStr, Field(pattern=r"^[a-f0-9]{32}$")]
-Kind = Literal["assessment", "checklist", "referral"]
+Kind = Literal[
+    "assessment",
+    "checklist",
+    "referral",
+    "referral-assigned",
+    "referral-under-review",
+    "referral-completed",
+]
 AssessmentStatus = Literal["draft", "needs-clarification", "awaiting-pathways"]
 Revision = Annotated[int, Field(strict=True, ge=1, le=9007199254740991)]
+REFERRAL_PROGRESS_REVISIONS = {
+    "referral-assigned": 2,
+    "referral-under-review": 3,
+    "referral-completed": 4,
+}
 
 
 def event_id(kind, record_id, revision, stamp):
@@ -40,6 +52,9 @@ class Notification(CatalogModel):
             raise ValueError("Invalid event reference")
         if (self.kind == "assessment") != (self.assessment_status is not None):
             raise ValueError("Invalid saved-record state")
+        revision = REFERRAL_PROGRESS_REVISIONS.get(self.kind)
+        if revision is not None and self.record_revision != revision:
+            raise ValueError("Invalid demonstration progress revision")
         if (
             self.is_read != (self.read_at is not None)
             or self.read_at is not None
@@ -80,6 +95,29 @@ def saved_update(uid, kind, record):
 
 def queue_saved_update(connection, transaction, uid, kind, record):
     """Called inside an existing record-save transaction, after all reads."""
-    event = saved_update(uid, kind, record)
-    reference = notification_collection(connection, uid).document(event.id)
+    _queue_notification(connection, transaction, saved_update(uid, kind, record))
+
+
+def queue_referral_progress(connection, transaction, record):
+    """Queue a progress update for the original seeker and referral."""
+    kind = f"referral-{record.status}"
+    if kind not in REFERRAL_PROGRESS_REVISIONS:
+        return
+    stamp = record.history[-1].at
+    event = StoredNotification(
+        id=event_id(kind, record.referral_id, record.revision, stamp),
+        uid=record.owner_uid,
+        kind=kind,
+        recordId=record.referral_id,
+        recordRevision=record.revision,
+        assessmentStatus=None,
+        createdAt=stamp,
+        isRead=False,
+        readAt=None,
+    )
+    _queue_notification(connection, transaction, event)
+
+
+def _queue_notification(connection, transaction, event):
+    reference = notification_collection(connection, event.uid).document(event.id)
     transaction.create(reference, event.model_dump(by_alias=True))

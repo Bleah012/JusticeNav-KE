@@ -144,16 +144,18 @@ export function PrivacyNoticePage() {
               Opening or refreshing the dashboard does not save records or
               create activity events. Successful assessment, checklist and
               project-request saves also store an account-only notification in
-              Firestore in the same transaction. Each update contains your
-              verified UID, a reference to the saved record and revision, its
-              kind, saved timestamp and assessment step where relevant, plus
-              unread/read status and the server time when marked read.
-              Notification records do not copy your description, clarification
-              answers or contact details. Opening Notifications only reads this
-              metadata; Mark as read and Mark displayed as read explicitly save
-              read status for the selected updates. No email, SMS or
-              institutional delivery is triggered, and no automatic deletion or
-              notification preferences are connected.
+              Firestore in the same transaction. Demonstration assignment,
+              review started and review completed create notifications for the
+              seeker in the same transaction as the progress change. Each update
+              contains your verified UID, a reference to the saved record and
+              revision, its kind, event timestamp and assessment step where
+              relevant, plus unread/read status and the server time when marked
+              read. Notification records do not copy your description,
+              clarification answers or contact details. Opening Notifications
+              only reads this metadata; Mark as read and Mark displayed as read
+              explicitly save read status for the selected updates. No email,
+              SMS or institutional delivery is triggered, and no automatic
+              deletion or notification preferences are connected.
             </p>
             <p>
               Your browser or password manager may retain information through

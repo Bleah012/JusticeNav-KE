@@ -16,6 +16,7 @@ from .assessments import STORAGE_ERRORS
 from .auth import CurrentUser, get_firebase_app, require_roles
 from .catalog import CatalogModel, Text
 from .catalog import Identifier as PublicId
+from .notification_events import queue_referral_progress
 from .referrals import Identifier as ReferralId
 from .referrals import ReferralMissing, ReferralUnavailable
 
@@ -251,6 +252,8 @@ class FirestoreDemoReferrals:
                     transaction.create(reference, data)
                 else:
                     transaction.set(reference, data)
+                    if previous.status != updated.status:
+                        queue_referral_progress(self._client, transaction, updated)
                 return updated
 
             return write(self._client.transaction(max_attempts=3))

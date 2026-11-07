@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 from fastapi.testclient import TestClient
 from google.auth.credentials import AnonymousCredentials
-from google.cloud.firestore_v1 import Client
+from google.cloud.firestore_v1 import Client, DocumentReference
 from google.cloud.firestore_v1.query import Query
 from pydantic import ValidationError
 
@@ -16,6 +16,7 @@ from app import demo_referrals as demo
 from app.auth import InvalidToken
 from app.config import Settings
 from app.main import create_app
+from app.notification_events import event_id, notification_collection
 from app.referrals import ReferralMissing
 
 BASE = "/api/v1/demo-referrals"
@@ -376,7 +377,78 @@ def test_firestore_transaction_rejects_stale_revision_before_write(monkeypatch):
     assert transaction.set.call_count == 1
     updated = transaction.set.call_args.args[1]
     assert updated["status"] == "withdrawn" and updated["providerKey"] is None
+    transaction.create.assert_not_called()
     assert reference.get.call_args.kwargs["transaction"] is transaction
+
+
+def test_firestore_progress_and_seeker_notification_use_the_same_transaction(
+    monkeypatch,
+):
+    connection = Client(
+        project="unit-demo-referrals", credentials=AnonymousCredentials()
+    )
+    store = demo.FirestoreDemoReferrals(Settings(_env_file=None))
+    store._client = connection
+    monkeypatch.setattr(demo.firestore, "transactional", lambda function: function)
+    owner = "seeker-one"
+    row = demo.start_handoff(source(), owner, REFERRAL)
+    snapshot = Mock(exists=False, id=row.id)
+    read = Mock(return_value=snapshot)
+    monkeypatch.setattr(DocumentReference, "get", read)
+
+    transaction = connection.transaction()
+    monkeypatch.setattr(connection, "transaction", Mock(return_value=transaction))
+    store.change(row.id, lambda previous: row)
+    assert len(transaction._write_pbs) == 1
+    assert "/demoReferralWorkflows/" in transaction._write_pbs[0].update.name
+
+    snapshot.exists = True
+    provider = demo.scoped_key("provider-one", SERVICE)
+    for revision, status in enumerate(("assigned", "under-review", "completed"), 2):
+        snapshot.to_dict.return_value = row.model_dump(by_alias=True)
+        transaction = Client.transaction(connection)
+        connection.transaction.return_value = transaction
+
+        def advance(previous):
+            return demo.advance(previous, revision - 1, status, provider)
+
+        row = store.change(row.id, advance)
+        assert read.call_args.kwargs["transaction"] is transaction
+        workflow_write, notification_write = transaction._write_pbs
+        assert workflow_write.update.fields["status"].string_value == status
+        fields = notification_write.update.fields
+        stamp = row.history[-1].at
+        kind = f"referral-{status}"
+        expected_id = event_id(kind, REFERRAL, revision, stamp)
+        expected_path = (
+            notification_collection(connection, owner).document(expected_id).path
+        )
+        assert notification_write.update.name.endswith("/documents/" + expected_path)
+        assert notification_write.current_document.exists is False
+        assert set(fields) == {
+            "id",
+            "uid",
+            "kind",
+            "recordId",
+            "recordRevision",
+            "assessmentStatus",
+            "createdAt",
+            "isRead",
+            "readAt",
+        }
+        assert fields["uid"].string_value == owner
+        assert fields["recordId"].string_value == REFERRAL
+        assert fields["kind"].string_value == kind
+        assert fields["recordRevision"].integer_value == revision
+        assert fields["createdAt"].timestamp_value == stamp
+        assert fields["isRead"].boolean_value is False
+
+        snapshot.to_dict.return_value = row.model_dump(by_alias=True)
+        retry = Client.transaction(connection)
+        connection.transaction.return_value = retry
+        with pytest.raises(demo.Conflict):
+            store.change(row.id, advance)
+        assert retry._write_pbs == []
 
 
 @pytest.mark.parametrize(
