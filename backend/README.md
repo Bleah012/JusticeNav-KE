@@ -387,6 +387,8 @@ Mark-as-read uses one transaction and a bounded batch-get (five-second read time
 
 Tests mock network/SDK operations and verify actual SDK transaction write payloads, read-before-write behavior, source-save integration, metadata boundaries, duplicate saves, ownership, cursor/filter behavior and monotonic read state.
 
+Demonstration assignment, review started and review completed each queue an unread notification in the same Firestore transaction as the workflow change. The notification uses the seeker's existing namespace, the original referral ID and the workflow revision and event time. Sharing and withdrawal are recorded in workflow history. Earlier transitions remain in history without retroactive inbox entries.
+
 References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions), [default index ordering](https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the__name__field).
 
 ## Administrative catalogue reads

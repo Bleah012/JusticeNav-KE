@@ -312,6 +312,8 @@ Opening or refreshing the page does not change unread status. Each unread row of
 
 These notifications begin with successful saves after this feature is applied. Earlier records remain available in their normal lists but have no retroactively invented notifications. New saves of assessments/checklists create new updates; immutable older referral records are not resubmitted. Fixed titles/body copy are derived from notification kind, never user-entered descriptions or backend-supplied HTML. Read status is not institutional review, email delivery or proof that a person opened the linked record. Preferences, deletion and external notification delivery remain unavailable.
 
+Demonstration referral assignment, review started and review completed each add an unread update to the seeker's inbox. **View referral** opens the original private request and its current demonstration history. Earlier progress stays in referral history. Existing read controls apply to both progress updates and saved-record updates.
+
 Run all existing frontend suites plus `node --test tests/notifications.test.cjs`. Backend tests automatically include `test_notifications.py`. Browser verification should create each source type using non-sensitive inputs, check notifications and links, mark one and displayed rows, refresh, filter and page, save another revision, test another account and verify unavailable/retry states.
 
 ## Connected administrator catalogues
