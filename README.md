@@ -67,7 +67,7 @@ Real organizations are not assumed to participate in referral processing.
 
 - frontend/: user interface and frontend tests.
 - backend/: API, classification integration, and backend tests.
-- data/: dataset documentation and approved small samples.
+- [data/](data/README.md) provides dataset setup, reviewed labels and the offline evaluator.
 - docs/: requirements, design notes, and testing evidence.
 - .github/workflows/: automated checks and deployment workflows.
 
