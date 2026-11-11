@@ -63,7 +63,7 @@ function DescriptionAccount({ uid, assessmentId }: {
   const { state, resource } = editor;
   return <AssessmentLayout step={1} saveFormId={state.status === "ready" ? "assessment-description-form" : undefined} saveDisabled={state.status !== "ready" || state.saving || state.needsReload}>
   <div className="assessment-entry__title"><span className="assessment-entry__badge"><Sparkles size={14} aria-hidden="true"/>AI-assisted navigation</span><h1>What happened?</h1><p>Describe your situation in your own words. You do not need to use legal terms.</p></div>
-  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>Continue and Save &amp; exit save your description to your private assessment. Use non-sensitive development inputs. Leaving without saving discards edits. AI classification and pathway processing are not connected.</p></div>
+  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>Continue and Save &amp; exit save your description to your private assessment. Use non-sensitive development inputs. Leaving without saving discards edits. On the next step, you can choose a category or ask for a suggestion from your saved description.</p></div>
   {state.status === "ready" ? <DescriptionForm key={`${id}:${state.value?.revision ?? 0}`} editor={editor} id={id}/> : <AssessmentFeedback state={state} reload={() => void resource.reload()}/>}
  </AssessmentLayout>;
 }

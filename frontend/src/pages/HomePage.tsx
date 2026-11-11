@@ -289,8 +289,8 @@ export function HomePage() {
             </p>
             <p>
               Firebase authentication, profile saving and saved assessments are available
-              when configured. AI classification, referral processing and account
-              deletion remain unavailable in this student prototype. Use a dedicated test account only.
+              when configured. Category suggestions are optional and use your
+              saved description when requested. Use a dedicated test account.
             </p>
             <ul
               className="home-privacy__principles"

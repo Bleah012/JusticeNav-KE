@@ -39,7 +39,7 @@ type Query = {
   status?: AssessmentStatus;
   after?: string;
 };
-type Request = (uid: string, id: string | null, method: "GET" | "PUT", body: unknown, signal: AbortSignal, query?: Query) => Promise<unknown>;
+type Request = (uid: string, id: string | null, method: "GET" | "PUT", body: unknown, signal: AbortSignal, query?: Query & { suggestionRevision?: number }) => Promise<unknown>;
 export class AssessmentError extends Error {
   readonly status: number;
   constructor(status: number) { super("Assessment request could not be completed"); this.status = status; }
@@ -55,6 +55,10 @@ export function createAssessmentRequest({ baseUrl, currentUser, request = fetch 
   return async (uid, id, method, body, signal, query = {}) => {
     if ((id !== null && !validId(id)) || (method === "PUT" && id === null) || (query.status && !validStatus(query.status)) || (query.after && !validId(query.after)))
       throw new AssessmentError(422);
+    const revision = query.suggestionRevision;
+    if (revision !== undefined && (method !== "GET" || id === null ||
+      !Number.isSafeInteger(revision) || revision < 1 || query.status || query.after))
+      throw new AssessmentError(422);
     const user = currentUser();
     if (!user || user.uid !== uid || signal.aborted)
       throw new AssessmentError(401);
@@ -62,6 +66,10 @@ export function createAssessmentRequest({ baseUrl, currentUser, request = fetch 
     if (signal.aborted || currentUser() !== user)
       throw new AssessmentError(401);
     const url = new URL(`${apiOrigin(baseUrl)}/api/v1/assessments${id ? `/${id}` : ""}`);
+    if (revision !== undefined) {
+      url.pathname += "/issue-suggestion";
+      url.searchParams.set("revision", String(revision));
+    }
     if (query.status)
       url.searchParams.set("status", query.status);
     if (query.after)
@@ -103,6 +111,14 @@ export function createAssessmentApi(uid: string, request: Request) {
     async get(id: string, signal: AbortSignal): Promise<Assessment> {
       const result = object(await request(uid, id, "GET", undefined, signal));
       return parseAssessment(result.assessment, uid, id);
+    },
+    async suggestIssue(id: string, revision: number, signal: AbortSignal): Promise<Answers["issue"]> {
+      const result = object(await request(uid, id, "GET", undefined, signal, { suggestionRevision: revision }));
+      const issue = result.issue;
+      if (result.assessmentId !== id || result.revision !== revision ||
+        (issue !== null && issue !== "consumer" && issue !== "money-debt" && issue !== "other"))
+        throw new AssessmentError(502);
+      return issue;
     },
     async save(id: string, update: Update, revision: number, signal: AbortSignal): Promise<Assessment> {
       // Whitelist fields even when callers supply extra identity, status or result properties.

@@ -102,8 +102,8 @@ future record query or update; they are not implemented by `/auth/me`.
 Firebase signup/sign-in/password recovery and protected frontend workspaces
 are connected. The own-profile endpoints below use Firestore when configured.
 Public source-backed catalogue and pathway reads are connected as described below.
-AI classification, external notifications and institutional referral delivery remain
-separate work. Assessment draft persistence is described below.
+The optional assessment issue suggestion runs inside the API. Assessment draft
+persistence and the suggestion endpoint are described below.
 
 Tests use isolated verifier/SDK mocks. Their `unit-*` identity strings are
 test fixtures only, not Firebase accounts, saved cases or demo operational
@@ -300,8 +300,7 @@ Method `selected-category-v1` is an explicit editorial mapping:
 - Money / Debt: Small Claims Court information.
 - Something else: no automatic links; general browsing remains available.
 
-No description analysis, timeline/contact inference, scores, jurisdiction checks,
-eligibility decisions or AI model are involved. NLAS is browse-only and retains
+Pathway lookup uses the confirmed category. NLAS is browse-only and retains
 its debt-recovery exclusion. Existing `awaiting-pathways` is a storage progress
 value meaning that clarification is complete; it is not a saved classification.
 Results are recomputed on reads from the current public guides. No migration,
@@ -416,3 +415,14 @@ The `demoReferralWorkflows` collection stores the owner's UID and original refer
 Each write checks the current revision and transition inside a transaction. The sequence is Shared, Assigned, Under review, Completed. Owners can withdraw at any of these stages. Withdrawal clears the assignment key and preserves the owner history. A withdrawn workflow is final. The original request retains its private data and delivery status. Future workflows require a separate saved request.
 
 For a development provider in `justicenav-ke`, use the existing local role tool with `--role provider --service-id <published-id>`. Run its dry run before using `--apply` and entering `GRANT PROVIDER`. To remove the development membership, use `--role seeker --apply`. Sign in again after changing claims to obtain a new token. [Firebase custom claims](https://firebase.google.com/docs/auth/admin/custom-claims).
+
+## Assessment issue suggestions
+
+`GET /api/v1/assessments/{id}/issue-suggestion?revision={revision}` reads the
+verified account's saved description for that revision. It returns the reference,
+revision, and an issue label or `null` when the model is unsure. Stale revisions
+return 409. An unavailable model returns 503 and the clarification form still
+accepts manual answers. The request makes no assessment, notification or other
+Firestore write. The API fits the small synthetic corpus in memory on first use
+and reuses the fitted model for subsequent requests. See the
+[issue suggestion notes](../docs/issue-suggestions.md) for evaluation and limits.

@@ -18,8 +18,8 @@ Firestore database when configured. Assessment descriptions and clarification
 answers can also be saved, listed and reopened for the signed-in account.
 Preparation checklists persist source-item snapshots and explicit progress saves.
 The public service directory and resource library use a versioned catalogue of
-reviewed official sources served through FastAPI. Classification and external message delivery
-remain unconnected. The interface does not create successful
+reviewed official sources served through FastAPI. Seekers can request an
+issue category suggestion from a saved assessment. The interface does not create successful
 operations or operational records to fill those gaps.
 
 See [backend setup and endpoint checks](backend/README.md). Frontend development
@@ -57,7 +57,7 @@ Real organizations are not assumed to participate in referral processing.
 - Frontend: React, TypeScript, Vite, React Router, Tailwind CSS, Lucide.
 - Authentication and database: Firebase Authentication and Firestore.
 - Backend: Python and FastAPI.
-- AI baseline: scikit-learn, TF-IDF, and Logistic Regression.
+- Issue suggestion baseline: TF-IDF and multinomial logistic regression in Python.
 - Backend testing: Pytest and FastAPI TestClient; linting and formatting: Ruff.
 - Frontend authentication boundary tests: Node test runner with mocked SDK/network operations.
 - Version control and CI/CD: Git, GitHub, and GitHub Actions.
@@ -76,11 +76,11 @@ Real organizations are not assumed to participate in referral processing.
 JusticeNav KE Wireframes.zip is the approved visual reference.
 Optional prototype features are not automatically part of the MVP.
 
-Training data and Kenyan evaluation examples will be documented separately.
-Dataset permissions and suitability must be checked before use.
+The issue suggestion model uses versioned synthetic training examples and a
+separate synthetic Kenyan evaluation set. See [issue suggestion notes](docs/issue-suggestions.md).
 Official Kenyan sources support the initial public service and resource catalogue.
 See [public catalogue source notes](docs/public-catalog-sources.md). Saved issue categories now select a small, documented set of public pathway links.
-This fixed navigation rule is not AI classification or an eligibility decision.
+The seeker chooses the category used by this fixed navigation rule.
 See [pathway guidance notes](docs/pathway-guidance-sources.md). Checklist snapshots and ticks can be saved to the signed-in account, listed and reopened
 through My Checklists. Referral delivery remains separate work.
 

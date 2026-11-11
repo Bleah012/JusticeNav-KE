@@ -29,10 +29,10 @@ from .auth import (
     get_firebase_app,
 )
 from .config import Settings
+from .issue_classifier import Issue, SuggestionUnavailable, suggest_issue
 from .notification_events import queue_saved_update
 
 Status = Literal["draft", "needs-clarification", "awaiting-pathways"]
-Issue = Literal["consumer", "money-debt", "other"]
 Timeframe = Literal["recent", "months", "older", "unsure"]
 Contact = Literal["yes", "no", "unsure"]
 Identifier = Annotated[str, Field(pattern=r"^[a-f0-9]{32}$")]
@@ -120,6 +120,12 @@ class AssessmentRecord(BaseModel):
 
 class AssessmentResponse(BaseModel):
     assessment: AssessmentRecord
+
+
+class IssueSuggestion(BaseModel):
+    assessment_id: Identifier = Field(alias="assessmentId")
+    revision: int
+    issue: Issue | None
 
 
 class AssessmentSummary(BaseModel):
@@ -331,6 +337,27 @@ def get_my_assessment(
         return AssessmentResponse(assessment=result)
     except (AssessmentUnavailable, AssessmentMissing) as error:
         raise http_error(error) from error
+
+
+@router.get("/{identifier}/issue-suggestion", response_model=IssueSuggestion)
+def get_my_issue_suggestion(
+    identifier: Identifier,
+    revision: Annotated[int, Query(ge=1)],
+    user: UserDependency,
+    store: StoreDependency,
+):
+    assessment = get_my_assessment(identifier, user, store).assessment
+    if assessment.revision != revision:
+        raise HTTPException(
+            409, "This assessment changed. Reload it before requesting a suggestion."
+        )
+    try:
+        issue = suggest_issue(assessment.description)
+    except SuggestionUnavailable as error:
+        raise HTTPException(
+            503, "Issue suggestions are currently unavailable."
+        ) from error
+    return IssueSuggestion(assessmentId=identifier, revision=revision, issue=issue)
 
 
 @router.put("/{identifier}", response_model=AssessmentResponse)

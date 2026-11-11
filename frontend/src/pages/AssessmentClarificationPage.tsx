@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { ArrowRight, Check, Info } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
@@ -17,9 +17,65 @@ type Editor = ReturnType<typeof useAssessmentRecord>;
 function ClarificationHeading() {
   return <>
   <div className="assessment-entry__title assessment-clarification__title"><h1>Help us understand your situation</h1><p>Your answers help us show more relevant information.</p></div>
-  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>These fixed questions are not AI-generated. Save &amp; exit saves partial answers; Continue saves all three answers. Use non-sensitive development inputs. Continue opens published links based only on your saved issue category; your description is not analysed.</p></div>
+  <div className="assessment-entry__prototype" role="note" id="assessment-prototype-note"><Info size={18} aria-hidden="true"/><p>Choose an issue category yourself or request a suggestion based on your saved description. Save &amp; exit saves partial answers. Continue saves all three answers and opens published links based on the category you choose. Use non-sensitive development inputs.</p></div>
  </>;
 }
+
+type SuggestionState =
+  | { status: "idle" | "loading" | "uncertain" | "unavailable" }
+  | { status: "suggested"; issue: NonNullable<Answers["issue"]> };
+
+function IssueSuggestion({ request, select, disabled }: {
+  request: (signal: AbortSignal) => Promise<Answers["issue"]>;
+  select: (issue: NonNullable<Answers["issue"]>) => void;
+  disabled: boolean;
+}) {
+  const [state, setState] = useState<SuggestionState>({ status: "idle" });
+  const pending = useRef<AbortController | null>(null);
+  useEffect(() => () => pending.current?.abort(), []);
+
+  async function suggest() {
+    if (pending.current) return;
+    const controller = new AbortController();
+    pending.current = controller;
+    setState({ status: "loading" });
+    try {
+      const issue = await request(controller.signal);
+      if (controller.signal.aborted) return;
+      setState(issue ? { status: "suggested", issue } : { status: "uncertain" });
+    } catch {
+      if (!controller.signal.aborted) setState({ status: "unavailable" });
+    } finally {
+      pending.current = null;
+    }
+  }
+
+  return (
+    <div className="assessment-entry__prototype">
+      <Info size={18} aria-hidden="true"/>
+      <div className="assessment-clarification__suggestion">
+        {state.status !== "suggested" && state.status !== "uncertain" && (
+          <Button type="button" variant="secondary" onClick={() => void suggest()} disabled={disabled || state.status === "loading"}>
+            {state.status === "unavailable" ? "Retry suggestion" : "Suggest a category"}
+          </Button>
+        )}
+        <p role="status">
+          {state.status === "idle" && "The model can suggest a category from your saved description. You choose what to save."}
+          {state.status === "loading" && "Checking your saved description…"}
+          {state.status === "uncertain" && "The model is unsure. Choose the category that best fits your situation."}
+          {state.status === "unavailable" && "The suggestion is unavailable. You can still choose a category and continue."}
+          {state.status === "suggested" && <>Suggested category <strong>{issueOptions.find(([issue]) => issue === state.issue)?.[1]}</strong>. You can choose any category below.</>}
+        </p>
+        {state.status === "suggested" && (
+          <Button type="button" variant="secondary" disabled={disabled} onClick={() => select(state.issue)}>
+            Use this category
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ClarificationForm({ editor, id }: {
   editor: Editor;
   id: string;
@@ -32,6 +88,7 @@ function ClarificationForm({ editor, id }: {
   const navigate = useNavigate();
   if (state.status !== "ready" || !state.value)
     return null;
+  const revision = state.value.revision;
   const answeredCount = Object.values(answers).filter(Boolean).length;
   const update = (part: Partial<Answers>) => { setAnswers((previous) => ({ ...previous, ...part })); setError(null); };
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -58,6 +115,11 @@ function ClarificationForm({ editor, id }: {
   <progress className="assessment-clarification__progress" value={answeredCount} max={3} aria-labelledby="clarification-progress-label"/>
   <ClarificationHeading />
   <form id="assessment-clarification-form" onSubmit={handleSubmit} noValidate aria-busy={state.saving}>
+   <IssueSuggestion
+     request={(signal) => api.suggestIssue(id, revision, signal)}
+     select={(issue) => update({ issue })}
+     disabled={state.saving || state.needsReload}
+   />
    <fieldset className="assessment-clarification__question" aria-describedby={error === "issue" ? "clarification-error" : undefined} disabled={state.saving}><legend>What type of issue best describes your situation?</legend><div className="assessment-clarification__options">{issueOptions.map(([value, label], index) => <label key={value}><input ref={index === 0 ? issueRef : undefined} type="radio" name="clarification-issue" value={value} checked={answers.issue === value} required aria-invalid={error === "issue" || undefined} onChange={() => update({ issue: value })}/><span>{label}</span><Check size={18} aria-hidden="true"/></label>)}</div></fieldset>
    <div className="assessment-clarification__fields">
     <label><span>When did the problem occur?</span><select ref={timeframeRef} value={answers.timeframe ?? ""} required disabled={state.saving} aria-invalid={error === "timeframe" || undefined} aria-describedby={error === "timeframe" ? "clarification-error" : undefined} onChange={(event) => update({ timeframe: event.target.value as Answers["timeframe"] })}><option value="" disabled>Select a timeframe</option>{timeframeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
