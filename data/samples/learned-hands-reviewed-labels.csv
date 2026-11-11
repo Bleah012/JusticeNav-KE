@@ -1,0 +1,31 @@
+case_key,expected,review_reason
+079093210c0ffd36,consumer,Refund request for a cancelled hotel booking
+1129df853cc46c9c,consumer,Advance payment for undelivered custom furniture
+1a676ce6aef8066a,consumer,Disputed price and deposit for catering
+45e99f5b756fb282,consumer,Online seller failed to ship or refund a purchase
+4cb6cac6085394de,consumer,Jewellery warranty and replacement parts
+4f439f9b879b653c,consumer,Refund for a product with misadvertised specifications
+54003c023a8ac56c,consumer,Unexpected charge for a repeat plumbing repair
+7521d871a2fb99bc,consumer,Paid event did not deliver advertised services
+978dfa8e119ff23c,consumer,Telecom provider charged more than the agreed price
+a8039e913bb08a4b,consumer,Warranty dispute following replacement engine failure
+1bd1cedc1661181d,money-debt,Student loan arrears and cosigner collection
+249ea7e116ad9daa,money-debt,Collection on a disputed student loan
+3648da14e2655e6f,money-debt,Recovery of a documented personal loan
+396b316f2b4eff36,money-debt,Recovery of an unpaid personal debt
+42661cd3e013ac85,money-debt,Student loan repayment and interest dispute
+4513ba1a65df4746,money-debt,Collection on a payday loan
+753e5adc5dcdb5fe,money-debt,Repayment terms in a personal promissory note
+abf790fdc12adc07,money-debt,Collection lawsuit over unsecured debt
+ae7cb01b7f565cf5,money-debt,Outstanding car loan after repossession
+ce1b0484dfe8b88d,money-debt,Lawsuit over unpaid credit card debt
+0210ce6f6873cbee,other,Landlord disputes rent payments
+07126d6037607197,other,Pet permission under a residential lease
+13122afbcdab446e,other,Maintenance and safety in a rented unit
+16859401173c4d77,other,Landlord demands an early lease renewal decision
+057c0724c4b45ce9,other,Workplace complaint about a coworker
+07a4ef1c00e862de,other,Workplace accommodation request
+0845d65a1749657b,other,Compensation during an employment-related travel delay
+0d0c89f89dbc7dfd,other,School enrolment and proof of residency
+4d157aa9b1ee538f,other,Access rules for university recreation equipment
+9073e0a72c9b0013,other,Student residence status during a university transfer

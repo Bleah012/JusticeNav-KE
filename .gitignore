@@ -30,6 +30,7 @@ firebase-admin.json
 # Local datasets; allow documentation and approved samples
 data/**
 !data/*.md
+!data/evaluate_learned_hands.py
 !data/samples/
 !data/samples/**
 
