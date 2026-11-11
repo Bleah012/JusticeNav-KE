@@ -320,6 +320,7 @@ export function HomePage() {
               <Link
                 className="home-footer__brand"
                 to="/"
+                state={{ scrollToHome: true }}
                 aria-label="JusticeNav KE home"
               >
                 <svg
