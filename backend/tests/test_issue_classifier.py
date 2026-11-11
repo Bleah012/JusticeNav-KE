@@ -3,13 +3,18 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from app.issue_classifier import TRAINING_PATH, suggest_issue
 
 
-def test_held_out_scenarios_cover_all_three_categories_and_abstention():
+@pytest.mark.parametrize(
+    "fixture_name", ["issue_evaluation.json", "issue_coverage_evaluation.json"]
+)
+def test_held_out_scenarios_cover_all_three_categories_and_abstention(fixture_name):
     training = json.loads(TRAINING_PATH.read_text(encoding="utf-8"))
     evaluation = json.loads(
-        (Path(__file__).with_name("fixtures") / "issue_evaluation.json").read_text(
+        (Path(__file__).with_name("fixtures") / fixture_name).read_text(
             encoding="utf-8"
         )
     )
