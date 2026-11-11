@@ -45,6 +45,35 @@ test("invalid resource paths, status and cursors are rejected before fetching", 
   await assert.rejects(request("user-a", null, "GET", undefined, signal(), { after: "foreign/path" }));
 });
 
+test("issue suggestions send only the saved reference and revision and accept abstention", async () => {
+  const user = { uid: "user-a", getIdToken: async () => "unit-token" };
+  let result = { assessmentId: id, revision: 2, issue: "consumer" };
+  let calls = 0;
+  const transport = createAssessmentRequest({
+    baseUrl: "http://localhost:8000",
+    currentUser: () => user,
+    request: async (url, options) => {
+      calls++;
+      assert.equal(url, `http://localhost:8000/api/v1/assessments/${id}/issue-suggestion?revision=2`);
+      assert.equal(options.method, "GET");
+      assert.equal(options.body, undefined);
+      assert.equal(options.cache, "no-store");
+      return { ok: true, json: async () => result };
+    },
+  });
+  const api = createAssessmentApi("user-a", transport);
+  assert.equal(await api.suggestIssue(id, 2, signal()), "consumer");
+  result = { ...result, issue: null };
+  assert.equal(await api.suggestIssue(id, 2, signal()), null);
+  for (const revision of [0, -1, 1.5, "2", Number.POSITIVE_INFINITY])
+    await assert.rejects(api.suggestIssue(id, revision, signal()));
+  assert.equal(calls, 2);
+  for (const change of [{ assessmentId: other }, { revision: 3 }, { issue: "invented" }]) {
+    const invalid = createAssessmentApi("user-a", async () => ({ ...result, ...change }));
+    await assert.rejects(invalid.suggestIssue(id, 2, signal()), (error) => error.status === 502);
+  }
+});
+
 test("missing or mismatched sessions and aborted requests never fetch", async () => {
   for (const user of [null, { uid: "foreign", getIdToken: async () => "unit-token" }]) {
     const request = createAssessmentRequest({ baseUrl: "http://localhost:8000", currentUser: () => user });

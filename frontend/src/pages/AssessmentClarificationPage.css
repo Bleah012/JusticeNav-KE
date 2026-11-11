@@ -1,4 +1,10 @@
 @layer components {
+  .assessment-clarification__suggestion {
+    display: grid;
+    justify-items: start;
+    gap: 8px;
+  }
+
   .assessment-clarification__meta {
     display: flex;
     align-items: baseline;

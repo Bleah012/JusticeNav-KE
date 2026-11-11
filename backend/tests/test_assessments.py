@@ -148,6 +148,58 @@ def test_unavailable_authentication_does_not_load_assessments():
     assert store.calls == []
 
 
+def test_suggestion_is_read_only_and_manual_answer_wins(monkeypatch):
+    classifier = Mock(return_value="money-debt")
+    monkeypatch.setattr(assessments, "suggest_issue", classifier)
+    store = MemoryStore()
+    saved = store.save("user-a", ID, ADAPTER.validate_python(description()))
+    store.calls.clear()
+    path = f"{URL}/{ID}/issue-suggestion"
+    with client(store) as api:
+        assert api.get(path, params={"revision": 1}).status_code == 401
+        assert store.calls == []
+        assert (
+            api.get(path, params={"revision": 1}, headers=headers("user-b")).status_code
+            == 404
+        )
+        assert (
+            api.get(path, params={"revision": 2}, headers=headers()).status_code == 409
+        )
+        classifier.assert_not_called()
+        response = api.get(path, params={"revision": 1}, headers=headers())
+        assert response.status_code == 200
+        assert response.headers["Cache-Control"] == "no-store"
+        assert response.json() == {
+            "assessmentId": ID,
+            "revision": 1,
+            "issue": "money-debt",
+        }
+        classifier.assert_called_once_with(saved.description)
+        assert store.records["user-a", ID] == saved
+        assert all(call[0] == "get" for call in store.calls)
+
+        response = api.put(f"{URL}/{ID}", json=clarification(), headers=headers())
+        assert response.status_code == 200
+        assert response.json()["assessment"]["answers"]["issue"] == "consumer"
+
+
+def test_suggestion_abstains_or_fails_without_exposing_description(monkeypatch):
+    classifier = Mock(side_effect=[None, assessments.SuggestionUnavailable("private")])
+    monkeypatch.setattr(assessments, "suggest_issue", classifier)
+    store = MemoryStore()
+    store.save("user-a", ID, ADAPTER.validate_python(description()))
+    path = f"{URL}/{ID}/issue-suggestion"
+    with client(store) as api:
+        rejected = api.get(path, params={"revision": "private"}, headers=headers())
+        assert rejected.status_code == 422
+        assert "private" not in rejected.text
+        response = api.get(path, params={"revision": 1}, headers=headers())
+        assert response.status_code == 200 and response.json()["issue"] is None
+        failure = api.get(path, params={"revision": 1}, headers=headers())
+        assert failure.status_code == 503
+        assert "private" not in failure.text
+
+
 def test_missing_assessment_and_empty_list_do_not_create_records():
     store = MemoryStore()
     with client(store) as api:

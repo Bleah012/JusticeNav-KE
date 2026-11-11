@@ -79,10 +79,10 @@ export function TermsOfUsePage() {
               The current frontend contains page layouts, navigation and form
               validation. Firebase authentication is available when configured.
               Firestore can store the signed-in user's profile, descriptions and
-              clarification answers when configured. AI classification and
-              institutional referral delivery remain unconnected. A visible
-              button or form does not mean that its underlying service is
-              available.
+              clarification answers when configured. On request, the project
+              can suggest a broad issue category from your saved description.
+              You choose the category used to look up published information.
+              The suggestion can be wrong or unavailable.
             </p>
           </section>
 

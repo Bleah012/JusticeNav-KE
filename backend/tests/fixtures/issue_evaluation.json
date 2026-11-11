@@ -1,0 +1,34 @@
+{
+  "consumer": [
+    "I bought a cooker from a retailer in Nakuru and it broke on the first day. The shop rejected my warranty request.",
+    "I paid a delivery fee to an online seller for a water tank. The seller has my money but the goods never arrived.",
+    "A fibre internet company kept billing my subscription after I cancelled and won't refund the extra charge.",
+    "The appliance store delivered a damaged television. I asked them for a replacement, but the retailer ignored me.",
+    "A bus ticket booking website charged my card twice and the company refuses to refund the second payment.",
+    "I paid a plumber to fit a new tap. The paid service was never finished and the contractor refuses a refund."
+  ],
+  "money-debt": [
+    "A friend in Kisumu borrowed money from me for school fees and has missed every promised repayment.",
+    "My SACCO says I still owe loan arrears after I paid the last instalment. It will not correct the balance.",
+    "A digital lender added a penalty to my loan even though I made the repayment before it was due.",
+    "An old classmate borrowed cash from me through M-Pesa. They acknowledge the debt but refuse to repay.",
+    "I paid off an emergency loan from a mobile app but a debt collector says the loan is overdue.",
+    "The microfinance lender is charging interest after I repaid the full principal and sent proof of payment."
+  ],
+  "other": [
+    "A county officer rejected the permit for my building extension in Eldoret without explaining the decision.",
+    "My brother is contesting my mother's will and disputes who should administer her estate.",
+    "I am trying to correct my date of birth on a government birth certificate before applying for an ID.",
+    "My former partner will not agree on custody and visitation arrangements for our child.",
+    "My employer dismissed me while I was on maternity leave and gave no reason for the termination.",
+    "A neighbour put up a fence inside our plot and is blocking the shared path in Nyeri."
+  ],
+  "uncertain": [
+    "Please help me.",
+    "I have a problem with someone and I do not know what to do.",
+    "Nina shida, tafadhali nisaidie.",
+    "XYZ quux frobnicate.",
+    "Loan.",
+    "Refund."
+  ]
+}

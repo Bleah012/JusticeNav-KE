@@ -73,8 +73,8 @@ export function PrivacyNoticePage() {
               draft describes the current frontend prototype, not a fully
               operating justice service. Firebase email/password authentication
               is connected when configured. Firestore profile and assessment
-              storage are available when configured. AI classification and
-              institutional referral delivery are not connected. The public
+              storage are available when configured. Seekers can request an
+              issue category suggestion on a saved assessment. The public
               directory and resource library load published institutional
               information from the JusticeNav API without sending a bearer token
               or cookies.
@@ -85,8 +85,8 @@ export function PrivacyNoticePage() {
             </p>
             <p>
               Pathway navigation reads the signed-in account's saved issue
-              category to select general information links. It does not analyse
-              the description. Public guide requests carry no bearer token.
+              category to select general information links. Public guide
+              requests carry no bearer token.
               Checklist templates, records and progress use the authenticated
               API. Save checklist or Save &amp; exit stores a source-item
               snapshot, selected item IDs, owner reference, revision, status and
@@ -125,6 +125,15 @@ export function PrivacyNoticePage() {
               institution, verify contact details or send email or SMS. No
               editing, deletion or retention automation applies to the private
               request.
+            </p>
+            <p>
+              Selecting Suggest a category asks the authenticated JusticeNav
+              API to load your saved assessment by reference and revision.
+              The model processes the description in server memory and
+              returns a category suggestion or an unsure response. The API
+              does not send your description to an external AI provider or
+              save the prediction. Your category choice is stored when you
+              save the clarification answers.
             </p>
             <p>
               If you opt in to a school demonstration, we store your account and
@@ -250,11 +259,10 @@ export function PrivacyNoticePage() {
               shared in the school-project referral demonstration.
             </p>
             <p>
-              No classifier is connected, and this prototype does not send form
-              entries for AI analysis or model training. Any proposed reuse of
-              user information for training or research must be separately
-              disclosed and reviewed; entering information must not be treated
-              as permission for that reuse.
+              The issue suggestion model uses synthetic training examples.
+              Saved assessments are used for suggestions only when requested.
+              Any proposed reuse of user information for training or research
+              requires separate disclosure and review.
             </p>
           </section>
 

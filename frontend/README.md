@@ -160,7 +160,9 @@ Live database save/reload and visual browser review are separate manual checks.
   clears earlier answers only after saving; leaving without saving discards edits.
 - `/app/assessments/:assessmentId/clarify` restores saved answers and progress.
   Save & exit permits partial answers. Continue requires all three answers and saves
-  before showing category-based public information links. No AI call is made.
+  before showing category-based public information links. **Suggest a category**
+  optionally requests a suggestion for that saved revision. **Use this category**
+  selects the radio option locally. The seeker can override it before saving.
 - `/app/assessments` loads own metadata, filters by saved status and supports the next
   page/first page controls. Records reopen at Describe for Draft and Clarify otherwise.
   The list uses a short opaque reference as its title rather than exposing a private
@@ -169,7 +171,8 @@ Live database save/reload and visual browser review are separate manual checks.
   missing saved records show an error rather than an empty form that creates data.
 
 Descriptions and answers never enter URLs, browser-managed application storage or
-logs. Only opaque references, fixed status filters and pagination cursors enter URLs.
+logs. URLs use opaque references, fixed status filters, pagination cursors and
+the saved revision for category suggestions.
 The existing SDK session persistence is unchanged. Account/route changes abort reads
 and writes and ignore obsolete results. The server cannot cancel an already committed
 write, so uncertain outcomes request a reload instead of claiming failure or retrying

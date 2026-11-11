@@ -115,7 +115,7 @@ export function DashboardView({
               ? state.message
               : loading
                 ? "Loading your saved-record summary."
-                : "These totals describe your saved records in JusticeNav KE. Saved referrals are project requests, not institutional submissions or open cases. AI processing and institutional delivery remain unconnected."}
+                : "These totals describe your saved records in JusticeNav KE. Saved referrals are project requests, not institutional submissions or open cases."}
           </p>
           {state.status === "error" && (
             <Button variant="secondary" onClick={refresh}>

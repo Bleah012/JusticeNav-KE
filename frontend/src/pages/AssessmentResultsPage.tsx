@@ -15,7 +15,7 @@ export function AssessmentResultsPage({ assessmentId, results }: { assessmentId:
   const label = navigation ? { consumer: "Consumer", "money-debt": "Money / Debt", other: "Something else" }[navigation.selectedIssue] : null;
   return <AssessmentLayout step={3}>
     <div className="assessment-entry__title assessment-results__title"><span className="assessment-entry__badge">Navigation result</span><h1>Potentially relevant pathways</h1>{navigation && <p>Information linked to your saved {label} selection.</p>}</div>
-    <div className="assessment-entry__prototype" id="assessment-prototype-note" role="note"><Info size={18} aria-hidden="true"/><p>These links use only the issue category you selected. Your description, timeframe and contact answer are not analysed. No AI, eligibility decision, deadline check or institutional referral is performed.</p></div>
+    <div className="assessment-entry__prototype" id="assessment-prototype-note" role="note"><Info size={18} aria-hidden="true"/><p>These published information links use the issue category you selected. Check the official sources for eligibility and deadlines.</p></div>
     <section className="assessment-results" aria-label="Pathway results" aria-busy={results.status === "loading"}>
       {results.status === "loading" && <div className="assessment-results__state" role="status"><LoaderCircle size={30} aria-hidden="true"/><h2>Loading pathway information.</h2></div>}
       {results.status === "error" && <div className="assessment-results__state" role="alert"><h2>We could not load your pathway information.</h2><p>No results are displayed. Check your session and API connection, then retry.</p><Button variant="secondary" onClick={results.retry}>Try again</Button></div>}
