@@ -57,6 +57,7 @@ export function PublicHeader() {
           <Link
             className="public-header__brand"
             to="/"
+            state={{ scrollToHome: true }}
             onClick={closeMenu}
             aria-label="JusticeNav KE home"
           >
@@ -91,7 +92,7 @@ export function PublicHeader() {
             className={`public-header__nav${open ? " is-open" : ""}`}
             aria-label="Main navigation"
           >
-            <NavLink to="/" end onClick={closeMenu}>
+            <NavLink to="/" end state={{ scrollToHome: true }} onClick={closeMenu}>
               Home
             </NavLink>
             <a href="/#how-it-works" onClick={closeMenu}>
