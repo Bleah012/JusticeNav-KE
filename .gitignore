@@ -31,6 +31,7 @@ firebase-admin.json
 data/**
 !data/*.md
 !data/evaluate_learned_hands.py
+!data/evaluate_kenyan_english.py
 !data/samples/
 !data/samples/**
 
