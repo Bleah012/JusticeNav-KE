@@ -13,6 +13,8 @@ import { referralTime } from "../referrals/referralApi";
 import { ReferralResource } from "../referrals/ReferralResource";
 import { ReferralFeedback } from "./ReferralFeedback";
 import { Button } from "./ui/Button";
+import { DashboardChart } from "../dashboard/DashboardChart";
+import { dashboardPalette } from "../dashboard/dashboardChartData";
 import "../pages/SeekerPages.css";
 import "../pages/DemoReferralWorkflow.css";
 
@@ -191,6 +193,39 @@ function AssignmentForm({
   );
 }
 
+function ProviderStatusSummary({ referrals }: { referrals: DemoRecord[] }) {
+  return (
+    <section
+      className="dashboard-metrics__card dashboard-metrics__card--provider"
+      aria-labelledby="provider-status-title"
+    >
+      <h2 id="provider-status-title">Referral statuses</h2>
+      <p>Assigned demonstrations on this page.</p>
+      <DashboardChart
+        kind="doughnut"
+        points={[
+          {
+            label: "Assigned",
+            value: referrals.filter(({ status }) => status === "assigned").length,
+            color: dashboardPalette.blue,
+          },
+          {
+            label: "Under review",
+            value: referrals.filter(({ status }) => status === "under-review").length,
+            color: dashboardPalette.amber,
+          },
+          {
+            label: "Completed",
+            value: referrals.filter(({ status }) => status === "completed").length,
+            color: dashboardPalette.green,
+          },
+        ]}
+        emptyLabel="No demonstrations on this page."
+      />
+    </section>
+  );
+}
+
 function Queue({
   uid,
   role,
@@ -210,6 +245,8 @@ function Queue({
   const reload = () => void resource.reload();
   const route = role === "admin" ? "/admin/referrals" : "/provider";
   const title = role === "admin" ? "Referral management" : "Provider dashboard";
+  const referrals = ready ? state.value.referrals : [];
+  const showSummary = role === "provider" && referrals.length > 0;
 
   function assign(record: DemoRecord, providerUid: string) {
     void resource.mutate(
@@ -257,6 +294,7 @@ function Queue({
           : "Review your assigned demonstrations and record their progress."}
       </p>
       <ReferralFeedback state={state} reload={reload} />
+      {showSummary && <ProviderStatusSummary referrals={referrals} />}
       <section
         id="provider-assigned-referrals"
         aria-labelledby="demo-queue-title"

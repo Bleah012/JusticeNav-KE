@@ -1,0 +1,140 @@
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 1rem;
+  margin-block: 1.25rem;
+}
+
+.dashboard-metrics__stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-metrics__card--provider {
+  max-width: 40rem;
+  margin-block: 1.25rem;
+}
+
+.dashboard-metrics__card {
+  min-width: 0;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid #d9e4dd;
+  border-radius: 0.75rem;
+  background: #f8fbf9;
+}
+
+.dashboard-metrics__card > h2 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.65rem, 3vw, 2.15rem);
+  line-height: 1.05;
+}
+
+.dashboard-metrics__card > p {
+  margin: 0.5rem 0 0.85rem;
+  color: #485a52;
+  font-size: 0.9rem;
+}
+
+.dashboard-metrics__card > a {
+  display: inline-block;
+  margin-top: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-chart {
+  min-width: 0;
+}
+
+.dashboard-chart__canvas {
+  position: relative;
+  width: 100%;
+  height: 10.75rem;
+}
+
+.dashboard-chart--doughnut {
+  display: grid;
+  grid-template-columns: minmax(5rem, 8rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.dashboard-chart--doughnut .dashboard-chart__canvas {
+  height: 8rem;
+}
+
+.dashboard-chart__values {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin: 0.6rem 0 0;
+}
+
+.dashboard-chart__values > div {
+  min-width: 0;
+  border-top: 1px solid #d9e4dd;
+  padding-top: 0.55rem;
+}
+
+.dashboard-chart__values dt {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  color: #485a52;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-chart__values dt span {
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.dashboard-chart__values dd {
+  margin: 0.15rem 0 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dashboard-chart--doughnut .dashboard-chart__values {
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+
+.dashboard-chart--doughnut .dashboard-chart__values > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dashboard-chart__empty {
+  grid-column: 1 / -1;
+  margin: 0.65rem 0 0;
+  color: #485a52;
+}
+
+.dashboard-chart__empty + .dashboard-chart__values {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 950px) {
+  .dashboard-metrics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .dashboard-chart__values {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-chart__values > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+}

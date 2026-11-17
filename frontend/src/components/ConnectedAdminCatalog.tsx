@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  BookOpen,
-  Building2,
-  Info,
-  Route as RouteIcon,
-  Search,
-} from "lucide-react";
+import { Info, Search } from "lucide-react";
 import { Link } from "react-router";
 import { useAuth } from "../auth/useAuth";
 import { useAdminCatalog } from "../admin/useAdminCatalog";
@@ -22,6 +16,8 @@ import type { AdminState } from "../admin/AdminResource";
 import { AdminDataState } from "./AdminDataState";
 import { formatAdminDate } from "../types/adminData";
 import { Button } from "./ui/Button";
+import { DashboardChart } from "../dashboard/DashboardChart";
+import { dashboardPalette } from "../dashboard/dashboardChartData";
 import "../pages/AdminCatalogConnected.css";
 
 const pageSize = 10;
@@ -32,48 +28,58 @@ const titles = {
 };
 
 function CatalogueOverview({ value }: { value: AdminOverview }) {
-  const totals = [
-    { label: "Published services", count: value.services, Icon: Building2 },
-    { label: "Published pathways", count: value.pathways, Icon: RouteIcon },
-    { label: "Published resources", count: value.resources, Icon: BookOpen },
-  ];
   return (
     <>
-      <section
-        className="seeker-dashboard__stats"
-        aria-label="Published catalogue totals"
-      >
-        {totals.map(({ label, count, Icon }) => (
-          <article key={label}>
-            <Icon size={22} aria-hidden="true" />
-            <div>
-              <h2>{label}</h2>
-              <strong>{count}</strong>
-            </div>
-          </article>
-        ))}
-      </section>
-      <div className="admin-pages__charts">
-        <section className="seeker-page__panel">
-          <h2>Justice services</h2>
-          <p>
-            Service and resource catalogue checked on{" "}
-            {formatAdminDate(value.catalogCheckedOn)}.
-          </p>
-          <Link className="btn btn-secondary" to="/admin/services">
-            View services
-          </Link>
+      <div className="dashboard-metrics">
+        <section
+          className="dashboard-metrics__card"
+          aria-labelledby="catalogue-totals-title"
+        >
+          <h2 id="catalogue-totals-title">Published catalogue totals</h2>
+          <DashboardChart
+            kind="bar"
+            points={[
+              {
+                label: "Services",
+                value: value.services,
+                color: dashboardPalette.green,
+              },
+              {
+                label: "Pathways",
+                value: value.pathways,
+                color: dashboardPalette.blue,
+              },
+              {
+                label: "Resources",
+                value: value.resources,
+                color: dashboardPalette.amber,
+              },
+            ]}
+            emptyLabel="No published catalogue entries."
+          />
         </section>
-        <section className="seeker-page__panel">
-          <h2>Pathways</h2>
-          <p>
-            Pathway catalogue checked on{" "}
-            {formatAdminDate(value.pathwaysCheckedOn)}.
-          </p>
-          <Link className="btn btn-secondary" to="/admin/pathways">
-            View pathways
-          </Link>
-        </section>
+        <div className="dashboard-metrics__stack">
+          <section className="dashboard-metrics__card">
+            <h2>Justice services</h2>
+            <p>
+              Service and resource catalogue checked on{" "}
+              {formatAdminDate(value.catalogCheckedOn)}.
+            </p>
+            <Link className="btn btn-secondary" to="/admin/services">
+              View services
+            </Link>
+          </section>
+          <section className="dashboard-metrics__card">
+            <h2>Pathways</h2>
+            <p>
+              Pathway catalogue checked on{" "}
+              {formatAdminDate(value.pathwaysCheckedOn)}.
+            </p>
+            <Link className="btn btn-secondary" to="/admin/pathways">
+              View pathways
+            </Link>
+          </section>
+        </div>
       </div>
       <section className="seeker-page__panel">
         <h2>Account and referral analytics</h2>
