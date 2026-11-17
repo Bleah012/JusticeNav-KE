@@ -13,6 +13,8 @@ import { referralTime } from "../referrals/referralApi";
 import { useDashboard } from "../dashboard/useDashboard";
 import { activityLink } from "../dashboard/dashboardApi";
 import type { DashboardState } from "../dashboard/DashboardResource";
+import { DashboardChart } from "../dashboard/DashboardChart";
+import { dashboardPalette } from "../dashboard/dashboardChartData";
 import { Button } from "../components/ui/Button";
 import "./SeekerPages.css";
 
@@ -45,18 +47,6 @@ export function DashboardView({
       value: snapshot?.counts.referrals ?? missing,
       icon: Mail,
       to: "/app/referrals",
-    },
-    {
-      label: "Checklist progress",
-      value: !snapshot
-        ? missing
-        : !checklist
-          ? "No saved checklist"
-          : checklist.totalItems === 0
-            ? "No items"
-            : `${Math.round((checklist.completedItems / checklist.totalItems) * 100)}%`,
-      icon: ClipboardCheck,
-      to: checklist ? `/app/checklists/${checklist.id}` : "/app/checklists",
     },
     {
       label: "Saved checklists",
@@ -134,7 +124,7 @@ export function DashboardView({
         </p>
       )}
       <section
-        className="seeker-dashboard__stats"
+        className="seeker-dashboard__stats seeker-dashboard__stats--three"
         aria-label="Journey summary"
         aria-busy={loading}
       >
@@ -144,25 +134,62 @@ export function DashboardView({
             <div>
               <h2>{label}</h2>
               <strong>{value}</strong>
-              {label === "Checklist progress" && checklist && (
-                <small>
-                  Latest updated checklist: {checklist.pathwayTitle}.{" "}
-                  {checklist.completedItems} of {checklist.totalItems} items
-                  complete.
-                </small>
-              )}
               <Link className="seeker-dashboard__stat-link" to={to}>
-                {label === "Checklist progress"
-                  ? "View checklist"
-                  : `View ${label.toLowerCase()}`}
+                View {label.toLowerCase()}
               </Link>
             </div>
           </article>
         ))}
       </section>
-      <div className="seeker-dashboard__grid">
+      <div className="seeker-dashboard__grid seeker-dashboard__grid--metrics">
         <section
-          className="seeker-page__panel"
+          className="dashboard-metrics__card seeker-dashboard__checklist"
+          aria-labelledby="dashboard-checklist-title"
+        >
+          <h2 id="dashboard-checklist-title">Checklist progress</h2>
+          {checklist ? (
+            <>
+              <p>{checklist.pathwayTitle}</p>
+              <DashboardChart
+                kind="doughnut"
+                points={[
+                  {
+                    label: "Complete",
+                    value: checklist.completedItems,
+                    color: dashboardPalette.green,
+                  },
+                  {
+                    label: "Remaining",
+                    value: checklist.totalItems - checklist.completedItems,
+                    color: dashboardPalette.unfilled,
+                  },
+                ]}
+                emptyLabel="This checklist has no items."
+              />
+              <Link
+                className="btn btn-secondary"
+                to={`/app/checklists/${checklist.id}`}
+              >
+                View checklist
+              </Link>
+            </>
+          ) : (
+            <>
+              <p>
+                {snapshot
+                  ? "No saved checklist."
+                  : loading
+                    ? "Loading checklist progress..."
+                    : "Checklist progress is unavailable."}
+              </p>
+              <Link className="btn btn-secondary" to="/app/checklists">
+                My Checklists
+              </Link>
+            </>
+          )}
+        </section>
+        <section
+          className="seeker-page__panel seeker-dashboard__activity-panel"
           aria-labelledby="dashboard-activity-title"
         >
           <h2 id="dashboard-activity-title">Recent activity</h2>
@@ -202,7 +229,7 @@ export function DashboardView({
           )}
         </section>
         <section
-          className="seeker-page__panel"
+          className="seeker-page__panel seeker-dashboard__referral-panel"
           aria-labelledby="dashboard-referral-title"
         >
           <h2 id="dashboard-referral-title">My referral</h2>

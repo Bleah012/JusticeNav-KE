@@ -210,7 +210,7 @@
     color: var(--muted);
   }
   .seeker-dashboard__cta {
-    background: var(--ink);
+    background: #163b32;
     color: var(--surface);
     padding: 34px 38px;
     border-radius: 8px;
@@ -286,6 +286,32 @@
     grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
     gap: 20px;
   }
+  .seeker-dashboard__stats--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .seeker-dashboard__stats--three article {
+    border-color: #d9e4dd;
+    border-radius: 0.75rem;
+    background: #f8fbf9;
+  }
+  .seeker-dashboard__stats--three article > svg {
+    color: #23705a;
+  }
+  .seeker-dashboard__grid--metrics {
+    grid-template-areas:
+      "checklist referral"
+      "activity referral";
+    align-items: start;
+  }
+  .seeker-dashboard__checklist {
+    grid-area: checklist;
+  }
+  .seeker-dashboard__activity-panel {
+    grid-area: activity;
+  }
+  .seeker-dashboard__referral-panel {
+    grid-area: referral;
+  }
   .seeker-dashboard__activity {
     list-style: none;
     margin: 0;
@@ -309,6 +335,9 @@
     .seeker-dashboard__grid,
     .referral-tracking__grid {
       grid-template-columns: 1fr;
+    }
+    .seeker-dashboard__grid--metrics {
+      grid-template-areas: "checklist" "activity" "referral";
     }
     .seeker-dashboard__cta {
       align-items: flex-start;
