@@ -35,6 +35,10 @@ It does not replace a lawyer or provide case-outcome predictions.
 
 ## User Roles
 
+Administrator Justice Services management now includes Firestore-backed drafts,
+editing, source-reviewed publication, archiving and deletion of unused drafts.
+See [service management and verification](docs/service-management.md).
+
 - Justice seeker: describes a problem and follows suggested next steps.
 - Demo provider: reviews assigned demonstration referrals and updates status.
 - Administrator: maintains services, pathways, and verification records.
