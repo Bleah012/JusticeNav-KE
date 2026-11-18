@@ -1,4 +1,5 @@
 import { apiOrigin } from "../auth/session";
+import { reviewToday } from "../catalog/reviewDate";
 import {
   checkedDate,
   parseDirectoryService,
@@ -44,7 +45,7 @@ function object(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 function date(value: unknown): string {
-  if (!checkedDate(value) || value > new Date().toISOString().slice(0, 10))
+  if (!checkedDate(value) || value > reviewToday())
     throw new AdminApiError(502);
   return value;
 }

@@ -1,5 +1,5 @@
-import { ConnectedAdminCatalog } from "../components/ConnectedAdminCatalog";
+import { PathwayManagement } from "../components/PathwayManagement";
 
 export function AdminPathwaysPage() {
-  return <ConnectedAdminCatalog kind="pathways" />;
+  return <PathwayManagement />;
 }

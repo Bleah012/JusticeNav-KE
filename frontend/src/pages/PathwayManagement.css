@@ -1,0 +1,46 @@
+@layer components {
+  .pathway-management__editor {
+    margin-top: 24px;
+  }
+  .pathway-management__editor > fieldset {
+    border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .pathway-management__editor .seeker-page__panel {
+    margin-block: 24px;
+  }
+  .pathway-management__editor h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .pathway-management__editor textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+  .pathway-management__editor small {
+    color: var(--muted);
+  }
+  .pathway-management__item {
+    min-width: 0;
+    border: 1px solid var(--line);
+    padding: 20px;
+    margin-block: 20px;
+    background: var(--surface);
+  }
+  .pathway-management__item > label {
+    margin-bottom: 16px;
+  }
+  .pathway-management__item > legend {
+    padding-inline: 8px;
+    font-weight: 500;
+  }
+  .service-management__modal li {
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 760px) {
+    .pathway-management__item {
+      padding: 16px;
+    }
+  }
+}

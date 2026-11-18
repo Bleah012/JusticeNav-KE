@@ -27,8 +27,9 @@ No credentials or live records are needed by automated tests.
 Without a configured Firebase project, public browsing continues to use the
 reviewed JSON baseline and management writes report unavailable storage. With a
 configured project, failed Firestore reads return 503; they do not silently show
-old JSON content or report an empty catalogue. Resources and pathways continue
-to use their reviewed source files in this batch.
+old JSON content or report an empty catalogue. Resources continue to use their
+reviewed source file. [Pathways are now managed separately](pathway-management.md)
+with transactionally protected service links.
 
 New services start as drafts. Publishing or editing a published entry requires
 an explicit source-review acknowledgement and a review note. The editor supports

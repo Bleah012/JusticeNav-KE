@@ -24,6 +24,8 @@ from .demo_referrals import FirebaseProviderDirectory, FirestoreDemoReferrals
 from .demo_referrals import router as demo_referral_router
 from .notifications import FirestoreNotificationStore, NotificationStore
 from .notifications import router as notification_router
+from .pathway_management import FirestorePathwayRepository, ManagedPathwayStore
+from .pathway_management import router as pathway_management_router
 from .pathways import PathwayStore
 from .pathways import router as pathway_router
 from .profiles import FirestoreProfileStore, ProfileStore
@@ -53,6 +55,7 @@ def create_app(
     demo_referral_store=None,
     demo_provider_directory=None,
     service_repository=None,
+    pathway_repository=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -90,9 +93,26 @@ def create_app(
         else seed_catalog
     )
     app.include_router(catalog_router)
-    app.state.pathway_store = (
-        pathway_store if pathway_store is not None else PathwayStore()
+    seed_pathways = pathway_store if pathway_store is not None else PathwayStore()
+    app.state.pathway_repository = (
+        pathway_repository
+        if pathway_repository is not None
+        else FirestorePathwayRepository(settings, app.state.service_repository)
     )
+    managed_pathways = pathway_repository is not None or (
+        pathway_store is None and settings.firebase_project_id
+    )
+    app.state.pathway_store = (
+        ManagedPathwayStore(seed_pathways, app.state.pathway_repository)
+        if managed_pathways
+        else seed_pathways
+    )
+    if (
+        managed_pathways
+        and isinstance(app.state.service_repository, FirestoreServiceRepository)
+        and isinstance(app.state.pathway_repository, FirestorePathwayRepository)
+    ):
+        app.state.service_repository.pathway_repository = app.state.pathway_repository
     app.include_router(pathway_router)
     app.state.checklist_store = (
         checklist_store
@@ -120,6 +140,7 @@ def create_app(
     app.include_router(notification_router)
     app.include_router(admin_catalog_router)
     app.include_router(service_management_router)
+    app.include_router(pathway_management_router)
     app.state.demo_referrals_enabled = settings.app_env in {"development", "test"}
     app.state.demo_referral_store = (
         demo_referral_store
@@ -138,6 +159,13 @@ def create_app(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/admin/pathway-records"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid pathway input. Check the fields, checklist items, source review and saved revision."
+                },
+            )
         if request.url.path.startswith("/api/v1/admin/service-records"):
             return JSONResponse(
                 status_code=422,

@@ -283,7 +283,8 @@ Public read-only endpoints:
 - `GET /api/v1/pathways/{pathwayId}`
 - `GET /api/v1/pathways/{pathwayId}/preparation`
 
-Records are versioned in `app/public_pathways.json`. Official source links and
+The reviewed baseline is versioned in `app/public_pathways.json`; with Firebase
+configured, published guides now come from managed Firestore storage. Official source links and
 project check dates accompany each guide and its preparation prompts. Public
 reads do not require a token. With Firebase configured, linked-service checks
 read the managed Firestore service catalogue. Missing or invalid catalogues
@@ -391,6 +392,15 @@ Demonstration assignment, review started and review completed each queue an unre
 
 References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions), [default index ordering](https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the__name__field).
 
+## Administrator pathway management
+
+Pathways now support persistent drafts, full guide and preparation-item editing,
+reviewed publication, archiving and deletion of unused drafts. The verified admin
+API is `/api/v1/admin/pathway-records`. With Firebase configured, public pathway
+reads use Firestore. Service references are checked transactionally, assessment
+mapping links are protected, and existing saved user snapshots remain intact.
+See [pathway storage, API and live checks](../docs/pathway-management.md).
+
 ## Administrator service management
 
 `/admin/services` now supports persistent drafts, profile edits, reviewed
@@ -403,7 +413,7 @@ See [storage, API contract and acceptance checks](../docs/service-management.md)
 
 `GET /api/v1/admin/overview`, `GET /api/v1/admin/services` and `GET /api/v1/admin/pathways` require the verified Firebase `role: admin` claim. Authentication runs before catalogue loading. Missing or invalid credentials return 401. A verified seeker or provider receives 403. Catalogue loading failures return a generic 503. Responses include the verified UID and `readOnly: true`, with `Cache-Control: no-store`.
 
-Overview totals count published service, pathway and resource records. With Firebase configured, services come from the managed Firestore catalogue; resources and pathways still use reviewed source files. Services use the public directory projection. Pathways validate every service reference against the published service catalogue. These compatibility endpoints return public catalogue data only. Account and referral analytics are a separate feature.
+Overview totals count published service, pathway and resource records. With Firebase configured, services and pathways come from managed Firestore catalogues; resources still use the reviewed source file. Services use the public directory projection. Pathways validate every service reference against the published service catalogue. These compatibility endpoints return public catalogue data only. Account and referral analytics are a separate feature.
 
 For browser testing, use an existing development account you control in `justicenav-ke`. Copy its UID from Firebase Authentication → Users and enter it locally when prompted. From the repository root, inspect its role first.
 
