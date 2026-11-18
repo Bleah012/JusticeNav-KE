@@ -1,0 +1,594 @@
+@layer components {
+  .home-cubes {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    min-width: 0;
+    justify-self: end;
+  }
+
+  .home-cubes__stage {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 320px;
+    overflow: hidden;
+    border: 1px solid rgba(254, 254, 252, 0.25);
+    border-radius: 8px;
+    background: var(--navy-2);
+  }
+
+  .home-cubes__stage .home-cubes__loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(1.25);
+  }
+
+  .home-cubes__control {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    margin-top: 8px;
+    padding: 8px 0;
+    border: 0;
+    color: var(--canvas);
+    background: transparent;
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .home-cubes__control:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .home-cubes__control:focus-visible {
+    outline: 2px solid var(--canvas);
+    outline-offset: 4px;
+  }
+
+  .home-cubes[data-paused="true"] .home-cubes__loader *,
+  .home-cubes[data-paused="true"] .home-cubes__loader::before,
+  .home-cubes[data-paused="true"] .home-cubes__loader::after,
+  .home-cubes[data-paused="true"] .home-cubes__loader *::before,
+  .home-cubes[data-paused="true"] .home-cubes__loader *::after {
+    animation-play-state: paused;
+  }
+  /* From Uiverse.io by Admin12121 */
+  .home-cubes__loader {
+    --duration: 4.5s;
+    --primary: #b9b9b9;
+    --primary-light: var(--canvas);
+    --primary-rgba: rgba(185, 185, 185, 0);
+    width: 200px;
+    height: 320px;
+    position: relative;
+    transform-style: preserve-3d;
+  }
+
+  .home-cubes__loader:before, .home-cubes__loader:after {
+    --r: 20.5deg;
+    content: "";
+    width: 320px;
+    height: 140px;
+    position: absolute;
+    right: 32%;
+    bottom: -11px;
+    /* Match the hero surface behind the assembly animation. */
+    background: var(--navy-2);
+    transform: translateZ(200px) rotate(var(--r));
+    animation: home-cubes-mask var(--duration) linear forwards infinite;
+  }
+
+  .home-cubes__loader:after {
+    --r: -20.5deg;
+    right: auto;
+    left: 32%;
+  }
+
+  .home-cubes__loader .ground {
+    position: absolute;
+    left: -50px;
+    bottom: -120px;
+    transform-style: preserve-3d;
+    transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+  }
+
+  .home-cubes__loader .ground div {
+    transform: rotateX(90deg) rotateY(0deg) translate(-48px, -120px) translateZ(100px) scale(0);
+    width: 200px;
+    height: 200px;
+    background: var(--primary);
+    background: linear-gradient(45deg, var(--primary) 0%, var(--primary) 50%, var(--primary-light) 50%, var(--primary-light) 100%);
+    transform-style: preserve-3d;
+    animation: home-cubes-ground var(--duration) linear forwards infinite;
+  }
+
+  .home-cubes__loader .ground div:before, .home-cubes__loader .ground div:after {
+    --rx: 90deg;
+    --ry: 0deg;
+    --x: 44px;
+    --y: 162px;
+    --z: -50px;
+    content: "";
+    width: 156px;
+    height: 300px;
+    opacity: 0;
+    background: linear-gradient(var(--primary), var(--primary-rgba));
+    position: absolute;
+    transform: rotateX(var(--rx)) rotateY(var(--ry)) translate(var(--x), var(--y)) translateZ(var(--z));
+    animation: home-cubes-ground-shine var(--duration) linear forwards infinite;
+  }
+
+  .home-cubes__loader .ground div:after {
+    --rx: 90deg;
+    --ry: 90deg;
+    --x: 0;
+    --y: 177px;
+    --z: 150px;
+  }
+
+  .home-cubes__loader .box {
+    --x: 0;
+    --y: 0;
+    position: absolute;
+    animation: var(--duration) linear forwards infinite;
+    transform: translate(var(--x), var(--y));
+  }
+
+  .home-cubes__loader .box div {
+    background-color: var(--primary);
+    width: 48px;
+    height: 48px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: var(--duration) ease forwards infinite;
+    transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+  }
+
+  .home-cubes__loader .box div:before, .home-cubes__loader .box div:after {
+    --rx: 90deg;
+    --ry: 0deg;
+    --z: 24px;
+    --y: -24px;
+    --x: 0;
+    content: "";
+    position: absolute;
+    background-color: inherit;
+    width: inherit;
+    height: inherit;
+    transform: rotateX(var(--rx)) rotateY(var(--ry)) translate(var(--x), var(--y)) translateZ(var(--z));
+    filter: brightness(var(--b, 1.2));
+  }
+
+  .home-cubes__loader .box div:after {
+    --rx: 0deg;
+    --ry: 90deg;
+    --x: 24px;
+    --y: 0;
+    --b: 1.4;
+  }
+
+  .home-cubes__loader .box.box0 {
+    --x: -220px;
+    --y: -120px;
+    left: 58px;
+    top: 108px;
+  }
+
+  .home-cubes__loader .box.box1 {
+    --x: -260px;
+    --y: 120px;
+    left: 25px;
+    top: 120px;
+  }
+
+  .home-cubes__loader .box.box2 {
+    --x: 120px;
+    --y: -190px;
+    left: 58px;
+    top: 64px;
+  }
+
+  .home-cubes__loader .box.box3 {
+    --x: 280px;
+    --y: -40px;
+    left: 91px;
+    top: 120px;
+  }
+
+  .home-cubes__loader .box.box4 {
+    --x: 60px;
+    --y: 200px;
+    left: 58px;
+    top: 132px;
+  }
+
+  .home-cubes__loader .box.box5 {
+    --x: -220px;
+    --y: -120px;
+    left: 25px;
+    top: 76px;
+  }
+
+  .home-cubes__loader .box.box6 {
+    --x: -260px;
+    --y: 120px;
+    left: 91px;
+    top: 76px;
+  }
+
+  .home-cubes__loader .box.box7 {
+    --x: -240px;
+    --y: 200px;
+    left: 58px;
+    top: 87px;
+  }
+
+  .home-cubes__loader .box0 {
+    animation-name: home-cubes-box-move0;
+  }
+
+  .home-cubes__loader .box0 div {
+    animation-name: home-cubes-box-scale0;
+  }
+
+  .home-cubes__loader .box1 {
+    animation-name: home-cubes-box-move1;
+  }
+
+  .home-cubes__loader .box1 div {
+    animation-name: home-cubes-box-scale1;
+  }
+
+  .home-cubes__loader .box2 {
+    animation-name: home-cubes-box-move2;
+  }
+
+  .home-cubes__loader .box2 div {
+    animation-name: home-cubes-box-scale2;
+  }
+
+  .home-cubes__loader .box3 {
+    animation-name: home-cubes-box-move3;
+  }
+
+  .home-cubes__loader .box3 div {
+    animation-name: home-cubes-box-scale3;
+  }
+
+  .home-cubes__loader .box4 {
+    animation-name: home-cubes-box-move4;
+  }
+
+  .home-cubes__loader .box4 div {
+    animation-name: home-cubes-box-scale4;
+  }
+
+  .home-cubes__loader .box5 {
+    animation-name: home-cubes-box-move5;
+  }
+
+  .home-cubes__loader .box5 div {
+    animation-name: home-cubes-box-scale5;
+  }
+
+  .home-cubes__loader .box6 {
+    animation-name: home-cubes-box-move6;
+  }
+
+  .home-cubes__loader .box6 div {
+    animation-name: home-cubes-box-scale6;
+  }
+
+  .home-cubes__loader .box7 {
+    animation-name: home-cubes-box-move7;
+  }
+
+  .home-cubes__loader .box7 div {
+    animation-name: home-cubes-box-scale7;
+  }
+
+  @keyframes home-cubes-box-move0 {
+    12% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    25%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale0 {
+    6% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    14%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move1 {
+    16% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    29%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale1 {
+    10% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    18%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move2 {
+    20% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    33%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale2 {
+    14% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    22%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move3 {
+    24% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    37%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale3 {
+    18% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    26%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move4 {
+    28% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    41%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale4 {
+    22% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    30%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move5 {
+    32% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    45%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale5 {
+    26% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    34%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move6 {
+    36% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    49%, 52% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale6 {
+    30% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    38%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-box-move7 {
+    40% {
+      transform: translate(var(--x), var(--y));
+    }
+
+    52%, 53% {
+      transform: translate(0, 0);
+    }
+
+    80% {
+      transform: translate(0, -32px);
+    }
+
+    90%, 100% {
+      transform: translate(0, 188px);
+    }
+  }
+
+  @keyframes home-cubes-box-scale7 {
+    34% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(0);
+    }
+
+    42%, 100% {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+  }
+
+  @keyframes home-cubes-ground {
+    0%, 65% {
+      transform: rotateX(90deg) rotateY(0deg) translate(-48px, -120px) translateZ(100px) scale(0);
+    }
+
+    75%, 90% {
+      transform: rotateX(90deg) rotateY(0deg) translate(-48px, -120px) translateZ(100px) scale(1);
+    }
+
+    100% {
+      transform: rotateX(90deg) rotateY(0deg) translate(-48px, -120px) translateZ(100px) scale(0);
+    }
+  }
+
+  @keyframes home-cubes-ground-shine {
+    0%, 70% {
+      opacity: 0;
+    }
+
+    75%, 87% {
+      opacity: 0.2;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes home-cubes-mask {
+    0%, 65% {
+      opacity: 0;
+    }
+
+    66%, 100% {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .home-cubes {
+      width: min(100%, 400px);
+      justify-self: center;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .home-cubes__stage .home-cubes__loader {
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-cubes__loader *,
+    .home-cubes__loader::before,
+    .home-cubes__loader::after,
+    .home-cubes__loader *::before,
+    .home-cubes__loader *::after {
+      animation: none !important;
+    }
+
+    .home-cubes__loader .box {
+      transform: translate(0, 0);
+    }
+
+    .home-cubes__loader .box div {
+      transform: rotateY(-47deg) rotateX(-15deg) rotateZ(15deg) scale(1);
+    }
+
+    .home-cubes__loader::before,
+    .home-cubes__loader::after,
+    .home-cubes__control {
+      display: none;
+    }
+  }
+}

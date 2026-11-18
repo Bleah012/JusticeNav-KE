@@ -2,6 +2,7 @@ import { Outlet, Route, Routes } from "react-router";
 import { PublicHeader } from "./components/PublicHeader";
 import { SeekerLayout } from "./components/SeekerLayout";
 import { HomePage } from "./pages/HomePage";
+import { AboutPage } from "./pages/AboutPage";
 import { SignInPage } from "./pages/SignInPage";
 import { SignUpPage } from "./pages/SignUpPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
@@ -62,6 +63,7 @@ function App() {
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/services" element={<PublicServicesPage />} />
           <Route
             path="/services/:serviceId"

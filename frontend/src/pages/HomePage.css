@@ -1,13 +1,13 @@
 @layer components {
-  /* Keep the opening full-width with the next section visible below it. */
+  /* Pair the opening copy with a decorative animation on the existing palette. */
   .home-hero {
     position: relative;
     isolation: isolate;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    min-height: min(760px, calc(100svh - 172px));
-    padding: 64px 24px 58px;
+    min-height: 660px;
+    padding: 76px 24px 64px;
     color: var(--canvas);
     background: var(--navy-2);
   }
@@ -28,16 +28,29 @@
     position: absolute;
     inset: 0;
     z-index: 0;
-    background: rgba(0, 0, 0, 0.55);
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.82),
+      rgba(0, 0, 0, 0.62)
+    );
     pointer-events: none;
   }
 
-  .home-hero__copy {
+  .home-hero__inner {
     position: relative;
     z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 64px;
+    width: min(1200px, 100%);
+    margin-inline: auto;
+  }
+
+  .home-hero__copy {
+    min-width: 0;
     width: 100%;
-    max-width: 930px;
-    text-align: center;
+    text-align: left;
   }
 
   .home-hero__badge {
@@ -62,30 +75,30 @@
   }
 
   .home-hero h1 {
-    margin: 16px 0 12px;
-    font-size: 48px;
+    margin: 24px 0 16px;
+    font-size: 36px;
     line-height: 1;
   }
 
   .home-hero h2 {
-    max-width: 920px;
-    margin: 0 auto 24px;
-    font-size: 72px;
-    line-height: 1;
+    max-width: 700px;
+    margin: 0 0 24px;
+    font-size: clamp(52px, 5.5vw, 80px);
+    line-height: 1.06;
     text-wrap: balance;
   }
 
   .home-hero__lead {
     max-width: 680px;
-    margin: 0 auto 28px;
-    font-size: 16px;
+    margin: 0 0 28px;
+    font-size: 18px;
     line-height: 1.5;
   }
 
   .home-hero__actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 12px;
   }
 
@@ -103,7 +116,7 @@
   .home-hero__trust {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 18px;
     margin-top: 26px;
     font-size: 12px;
@@ -143,7 +156,7 @@
     gap: 80px;
     width: min(1200px, calc(100% - 48px));
     margin-inline: auto;
-    padding: 32px 0 80px;
+    padding: 88px 0;
     scroll-margin-top: 88px;
   }
 
@@ -174,7 +187,7 @@
   .home-journey {
     min-width: 0;
     padding: 32px;
-    border: 1px solid var(--ink);
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--teal-soft);
   }
@@ -302,7 +315,7 @@
   }
 
   .home-how__steps li {
-    min-height: 220px;
+    min-height: 210px;
     padding: 24px 20px;
     border-top: 1px solid rgba(10, 10, 10, 0.45);
   }
@@ -313,7 +326,7 @@
   }
 
   .home-how__steps h3 {
-    margin: 45px 0 8px;
+    margin: 30px 0 8px;
     font-size: 27px;
     font-weight: 300;
   }
@@ -324,6 +337,11 @@
   }
 
   @media (max-width: 1100px) {
+    .home-hero__inner {
+      gap: 28px;
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    }
+
     .home-intro {
       gap: 40px;
     }
@@ -335,8 +353,14 @@
 
   @media (max-width: 760px) {
     .home-hero {
-      min-height: min(680px, calc(100svh - 164px));
-      padding: 40px 20px 54px;
+      min-height: auto;
+      padding: 44px 20px 58px;
+    }
+
+    .home-hero__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 36px;
+      max-width: 600px;
     }
 
     .home-hero__photo {
@@ -344,20 +368,19 @@
     }
 
     .home-hero h1 {
-      font-size: 32px;
+      font-size: 30px;
     }
 
     .home-hero h2 {
-      font-size: 48px;
+      font-size: clamp(46px, 8.5vw, 64px);
     }
 
     .home-hero__actions {
-      width: min(360px, 100%);
-      margin-inline: auto;
+      width: 100%;
     }
 
     .home-hero__actions .btn {
-      width: 100%;
+      width: auto;
     }
 
     .home-hero__trust {
@@ -368,6 +391,7 @@
       grid-template-columns: 1fr;
       gap: 30px;
       width: min(600px, calc(100% - 32px));
+      padding-top: 62px;
       padding-bottom: 62px;
       scroll-margin-top: 80px;
     }
@@ -405,28 +429,28 @@
 
   @media (max-width: 420px) {
     .home-hero h2 {
-      font-size: 40px;
+      font-size: 44px;
     }
   }
 
-  @media (max-height: 700px) {
+  @media (min-width: 761px) and (max-height: 700px) {
     .home-hero {
       padding: 20px 16px 40px;
     }
 
     .home-hero h1 {
       margin: 10px 0;
-      font-size: 24px;
+      font-size: 28px;
     }
 
     .home-hero h2 {
       margin-bottom: 16px;
-      font-size: 32px;
+      font-size: 40px;
     }
 
     .home-hero__lead {
       margin-bottom: 16px;
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .home-hero__trust {

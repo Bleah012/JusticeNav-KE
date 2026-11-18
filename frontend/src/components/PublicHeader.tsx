@@ -104,9 +104,9 @@ export function PublicHeader() {
             <NavLink to="/resources" onClick={closeMenu}>
               Resources
             </NavLink>
-            <a href="/#about" onClick={closeMenu}>
+            <NavLink to="/about" onClick={closeMenu}>
               About
-            </a>
+            </NavLink>
             <Link
               className="public-header__mobile-action"
               to={accountPath}
