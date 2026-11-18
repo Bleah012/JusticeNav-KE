@@ -31,7 +31,7 @@ type Modal =
       record: ServiceRecord;
     };
 
-function Field({
+export function Field({
   name,
   label,
   value = "",
@@ -80,7 +80,7 @@ function Field({
   );
 }
 
-function ReviewFields() {
+export function ReviewFields() {
   return (
     <div className="service-management__review">
       <Field
@@ -92,8 +92,7 @@ function ReviewFields() {
       />
       <label className="service-management__check">
         <input type="checkbox" name="reviewed" required />I reviewed the
-        official sources and confirm these details are ready for the public
-        directory.
+        official sources and confirm these details are ready for publication.
       </label>
     </div>
   );

@@ -1,7 +1,7 @@
 """Public, source-backed catalogue reads; no authentication or Firestore writes."""
 
 import re
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated, Literal
 from urllib.parse import urlsplit
@@ -33,6 +33,11 @@ Identifier = Annotated[
 ]
 Text = Annotated[StrictStr, Field(min_length=1, max_length=2000)]
 Category = Literal["preparation", "self-representation", "consumer", "civil"]
+
+
+def review_today() -> date:
+    """Use the Africa/Nairobi calendar day for manual source review dates."""
+    return datetime.now(timezone(timedelta(hours=3))).date()
 
 
 def official_url(value: str) -> str:

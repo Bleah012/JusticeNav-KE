@@ -1,4 +1,5 @@
 import { apiOrigin } from "../auth/session";
+import { reviewToday } from "../catalog/reviewDate";
 import {
   checkedDate,
   parseService,
@@ -58,7 +59,7 @@ export function parseServiceRecord(value: unknown): ServiceRecord {
   if (
     !service.sourceReview ||
     !checkedDate(service.sourceReview.checkedOn) ||
-    service.sourceReview.checkedOn > new Date().toISOString().slice(0, 10) ||
+    service.sourceReview.checkedOn > reviewToday() ||
     typeof row.publication !== "string" ||
     !["draft", "published", "archived"].includes(String(row.publication)) ||
     typeof row.everPublished !== "boolean" ||
@@ -156,7 +157,7 @@ export function prepareServiceCommand(command: ServiceCommand) {
       service = parseService(command.service, id);
       if (
         !service.sourceReview ||
-        service.sourceReview.checkedOn > new Date().toISOString().slice(0, 10)
+        service.sourceReview.checkedOn > reviewToday()
       )
         throw new Error();
     } catch {

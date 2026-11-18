@@ -97,8 +97,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <Info size={20} aria-hidden="true" />
             <p>
               Your administrator role is checked by the API. Justice Services
-              supports draft editing and reviewed publication. Overview and
-              Pathways show published catalogue information. Referrals lets you
+              and Pathways support draft editing and reviewed publication.
+              Overview shows published catalogue totals. Referrals lets you
               assign school demonstrations shared by seekers.
             </p>
           </div>

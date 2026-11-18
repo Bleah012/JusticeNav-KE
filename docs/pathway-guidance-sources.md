@@ -1,5 +1,9 @@
 # Pathway guidance and preparation provenance
 
+The source file below is the reviewed baseline. Published pathway edits now
+persist in Firestore through [administrator pathway management](pathway-management.md).
+Existing saved user snapshots remain independent of current editorial revisions.
+
 Project review date: **2026-11-03**, Africa/Nairobi calendar date. This is a
 versioned editorial guide, not a complete national register or legal opinion.
 Official content was reviewed through web retrieval, which may include cached

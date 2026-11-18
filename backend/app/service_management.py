@@ -1,7 +1,7 @@
 """Administrator service editing with revision checks and atomic Firestore persistence."""
 
 import os
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from threading import Lock
 from typing import Annotated, Literal
 from uuid import uuid4
@@ -19,6 +19,7 @@ from .catalog import (
     CatalogUnavailable,
     Identifier,
     ServiceProfile,
+    review_today,
 )
 from .pathways import PathwayUnavailable
 
@@ -79,7 +80,7 @@ class ServiceSave(CatalogModel):
                     check(item)
 
         check(self.service.model_dump())
-        if self.service.source_review.checked_on > date.today():
+        if self.service.source_review.checked_on > review_today():
             raise ValueError("Source check cannot be in the future")
         return self
 
@@ -178,7 +179,7 @@ def transition(state, identifier, change, uid, protected):
             if change.publication == "published" and (
                 not change.reviewed
                 or not change.review_note.strip()
-                or previous.service.source_review.checked_on > date.today()
+                or previous.service.source_review.checked_on > review_today()
             ):
                 raise ServiceProblem(422)
             record = previous.model_copy(
@@ -211,6 +212,7 @@ class FirestoreServiceRepository:
     def __init__(self, settings, seed=None):
         self.settings = settings
         self.seed = seed if seed is not None else CatalogStore()
+        self.pathway_repository = None
         self._client, self._lock = None, Lock()
 
     def client(self):
@@ -249,6 +251,12 @@ class FirestoreServiceRepository:
         ) as error:
             raise CatalogUnavailable from error
 
+    def read_in_transaction(self, client, transaction):
+        reference = client.collection("publicCatalogue").document("services-v1")
+        return self.decode(
+            reference.get(transaction=transaction, retry=None, timeout=10)
+        )
+
     def change(self, identifier, change, uid, protected):
         try:
             client = self.client()
@@ -260,8 +268,18 @@ class FirestoreServiceRepository:
                 previous = self.decode(
                     reference.get(transaction=transaction, retry=None, timeout=10)
                 )
+                protected_ids = protected
+                if self.pathway_repository is not None:
+                    pathways = self.pathway_repository.read_in_transaction(
+                        client, transaction
+                    )
+                    protected_ids = {
+                        row.pathway.service_id
+                        for row in pathways.records
+                        if row.publication == "published"
+                    }
                 state, record, audit = transition(
-                    previous, identifier, change, uid, protected
+                    previous, identifier, change, uid, protected_ids
                 )
                 # Firestore accepts timestamps, but not Python calendar-date objects.
                 transaction.set(reference, state.model_dump(mode="json", by_alias=True))
