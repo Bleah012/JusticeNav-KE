@@ -13,6 +13,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router";
+import { HomeCubeAnimation } from "../components/HomeCubeAnimation";
+import { HomeTypewriter } from "../components/HomeTypewriter";
 import "../components/ui/Button.css";
 import "./HomePage.css";
 
@@ -32,40 +34,53 @@ export function HomePage() {
           height={1333}
           fetchPriority="high"
         />
-        <div className="home-hero__copy">
-          <span className="home-hero__badge">
-            <Sparkles size={14} aria-hidden="true" />
-            AI-assisted justice navigation for Kenya
-          </span>
-          <h1 id="home-title">JusticeNav KE</h1>
-          <h2>Not sure where to start with a legal problem?</h2>
-          <p className="home-hero__lead">
-            Describe your situation in your own words. We&rsquo;ll help you
-            identify potentially relevant pathways, understand published
-            requirements, and find verified services.
-          </p>
-          <div className="home-hero__actions">
-            <Link className="btn btn-primary" to="/app/assessments/new">
-              Find my next step <ArrowRight size={18} aria-hidden="true" />
-            </Link>
-            <Link className="btn btn-secondary" to="/services">
-              Explore justice services
-            </Link>
+        <div className="home-hero__inner">
+          <div className="home-hero__copy">
+            <span className="home-hero__badge">
+              <Sparkles size={14} aria-hidden="true" />
+              AI-assisted justice navigation for Kenya
+            </span>
+            <h1 id="home-title">
+              <HomeTypewriter text="JusticeNav KE" startAfter={80} interval={30} />
+            </h1>
+            <h2>
+              <HomeTypewriter
+                text="Not sure where to start with a legal problem?"
+                startAfter={500}
+                interval={28}
+              />
+            </h2>
+            <p className="home-hero__lead">
+              <HomeTypewriter
+                text="Describe your situation in your own words. We’ll help you identify potentially relevant pathways, understand published requirements, and find verified services."
+                startAfter={1800}
+                interval={13}
+              />
+            </p>
+            <div className="home-hero__actions">
+              <Link className="btn btn-primary" to="/app/assessments/new">
+                Find my next step <ArrowRight size={18} aria-hidden="true" />
+              </Link>
+              <Link className="btn btn-secondary" to="/services">
+                Explore justice services
+              </Link>
+            </div>
+            <div className="home-hero__trust">
+              <span>
+                <Sparkles size={18} aria-hidden="true" />
+                AI-assisted navigation
+              </span>
+              <span>
+                <ShieldCheck size={18} aria-hidden="true" />
+                Verified sources
+              </span>
+              <span>
+                <Info size={18} aria-hidden="true" />
+                Not legal advice
+              </span>
+            </div>
           </div>
-          <div className="home-hero__trust">
-            <span>
-              <Sparkles size={18} aria-hidden="true" />
-              AI-assisted navigation
-            </span>
-            <span>
-              <ShieldCheck size={18} aria-hidden="true" />
-              Verified sources
-            </span>
-            <span>
-              <Info size={18} aria-hidden="true" />
-              Not legal advice
-            </span>
-          </div>
+          <HomeCubeAnimation />
         </div>
         <p className="home-hero__credit">
           Photo by Edmond Dant&egrave;s on Pexels
@@ -367,7 +382,7 @@ export function HomePage() {
             </nav>
             <nav aria-labelledby="footer-company">
               <h2 id="footer-company">Company</h2>
-              <a href="#about">About</a>
+              <Link to="/about">About</Link>
               <Link to="/admin">Admin portal</Link>
             </nav>
             <nav aria-labelledby="footer-legal">

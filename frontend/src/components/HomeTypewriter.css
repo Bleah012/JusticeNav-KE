@@ -1,0 +1,75 @@
+@layer components {
+  .home-typewriter {
+    position: relative;
+  }
+
+  .home-typewriter__accessible {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
+  }
+
+  .home-typewriter__word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .home-typewriter__letter {
+    position: relative;
+    display: inline-block;
+    opacity: 0;
+    animation: home-typewriter-reveal 100ms ease-out var(--letter-delay) forwards;
+  }
+
+  .home-typewriter__letter::after {
+    content: "";
+    position: absolute;
+    top: 0.12em;
+    right: -0.04em;
+    width: 1px;
+    height: 0.85em;
+    background: currentColor;
+    opacity: 0;
+    animation: home-typewriter-caret var(--letter-interval) linear var(--letter-delay);
+  }
+
+  @keyframes home-typewriter-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(0.06em);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes home-typewriter-caret {
+    0%, 99% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .home-typewriter__letter {
+      animation: none;
+      opacity: 1;
+    }
+
+    .home-typewriter__letter::after {
+      display: none;
+      animation: none;
+    }
+  }
+}

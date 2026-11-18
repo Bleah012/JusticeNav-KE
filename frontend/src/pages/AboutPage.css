@@ -1,0 +1,171 @@
+@layer components {
+  .about-page__container {
+    width: min(1200px, calc(100% - 48px));
+    margin-inline: auto;
+  }
+
+  .about-page__hero {
+    padding-block: 80px;
+    color: var(--canvas);
+    background: var(--navy-2);
+  }
+
+  .about-page__eyebrow {
+    display: inline-block;
+    padding: 4px 8px;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .about-page h1 {
+    margin: 26px 0 18px;
+    font-size: clamp(48px, 5.5vw, 76px);
+    line-height: 1.06;
+  }
+
+  .about-page__statement {
+    margin: 0 0 18px;
+    font-family: var(--font-heading);
+    font-size: clamp(28px, 3vw, 38px);
+    line-height: 1.2;
+  }
+
+  .about-page__lead {
+    max-width: 740px;
+    margin: 0 0 30px;
+    font-size: 18px;
+  }
+
+  .about-page__hero .btn-primary {
+    color: var(--ink);
+    background: var(--canvas);
+    border-color: var(--canvas);
+  }
+
+  .about-page__hero a:focus-visible {
+    outline: 2px solid var(--canvas);
+    outline-offset: 4px;
+  }
+
+  .about-page__purpose,
+  .about-page__scope {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 72px;
+    padding-block: 80px;
+  }
+
+  .about-page h2 {
+    max-width: 720px;
+    margin: 18px 0 24px;
+    font-size: clamp(36px, 4vw, 50px);
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  .about-page p {
+    overflow-wrap: anywhere;
+  }
+
+  .about-page__body p:first-child {
+    margin-top: 0;
+  }
+
+  .about-page__features {
+    padding-block: 72px;
+    background: var(--teal-soft);
+    border-block: 1px solid var(--line);
+  }
+
+  .about-page__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 36px;
+  }
+
+  .about-page__card {
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--canvas);
+  }
+
+  .about-page h3 {
+    margin: 20px 0 12px;
+    font-size: 30px;
+    line-height: 1.15;
+  }
+
+  .about-page__card p,
+  .about-page__note p:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .about-page__note {
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--warning-soft);
+  }
+
+  .about-page__links,
+  .about-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .about-page__links a {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .about-page__next {
+    padding-block: 64px;
+    border-top: 1px solid var(--line);
+    background: var(--teal-soft);
+  }
+
+  .about-page__next h2 {
+    margin-top: 0;
+  }
+
+  @media (max-width: 760px) {
+    .about-page__container {
+      width: calc(100% - 32px);
+    }
+
+    .about-page__hero,
+    .about-page__features,
+    .about-page__next {
+      padding-block: 52px;
+    }
+
+    .about-page__lead {
+      font-size: 17px;
+    }
+
+    .about-page__purpose,
+    .about-page__scope,
+    .about-page__cards {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .about-page__purpose,
+    .about-page__scope {
+      padding-block: 52px;
+    }
+
+    .about-page__card,
+    .about-page__note {
+      padding: 24px;
+    }
+  }
+}
