@@ -10,7 +10,10 @@ Institutions were not contacted and live application/filing flows were not teste
 `checkedOn` is the project's review date, not the publisher's update date or a
 guarantee of live availability. No auto-refresh or official certification is claimed.
 
-The maintained file is `backend/app/public_catalog.json`. Text is brief, original
+The reviewed baseline file is `backend/app/public_catalog.json`. Administrator
+service changes are now persisted in Firestore and only published entries appear
+publicly; see [service management](service-management.md). Resources remain in
+the reviewed file. Text is brief, original
 paraphrase of published facts; full documents, guide images and logos are not copied.
 
 | Catalogue record          | Primary source and basis                                                                                                                                                                                                                                                     |

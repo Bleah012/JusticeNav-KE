@@ -1,5 +1,5 @@
-import { ConnectedAdminCatalog } from "../components/ConnectedAdminCatalog";
+import { ServiceManagement } from "../components/ServiceManagement";
 
 export function AdminServicesPage() {
-  return <ConnectedAdminCatalog kind="services" />;
+  return <ServiceManagement />;
 }

@@ -30,6 +30,8 @@ from .profiles import FirestoreProfileStore, ProfileStore
 from .profiles import router as profile_router
 from .referrals import FirestoreReferralStore, ReferralStore
 from .referrals import router as referral_router
+from .service_management import FirestoreServiceRepository, ManagedCatalogStore
+from .service_management import router as service_management_router
 
 
 class HealthResponse(BaseModel):
@@ -50,6 +52,7 @@ def create_app(
     notification_store: NotificationStore | None = None,
     demo_referral_store=None,
     demo_provider_directory=None,
+    service_repository=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -74,8 +77,17 @@ def create_app(
         else FirestoreAssessmentStore(settings)
     )
     app.include_router(assessment_router)
+    seed_catalog = catalog_store if catalog_store is not None else CatalogStore()
+    app.state.service_repository = (
+        service_repository
+        if service_repository is not None
+        else FirestoreServiceRepository(settings)
+    )
     app.state.catalog_store = (
-        catalog_store if catalog_store is not None else CatalogStore()
+        ManagedCatalogStore(seed_catalog, app.state.service_repository)
+        if service_repository is not None
+        or (catalog_store is None and settings.firebase_project_id)
+        else seed_catalog
     )
     app.include_router(catalog_router)
     app.state.pathway_store = (
@@ -107,6 +119,7 @@ def create_app(
     )
     app.include_router(notification_router)
     app.include_router(admin_catalog_router)
+    app.include_router(service_management_router)
     app.state.demo_referrals_enabled = settings.app_env in {"development", "test"}
     app.state.demo_referral_store = (
         demo_referral_store
@@ -125,6 +138,13 @@ def create_app(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/admin/service-records"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid service input. Check the fields, source review and saved revision."
+                },
+            )
         if request.url.path.startswith("/api/v1/demo-referrals"):
             return JSONResponse(
                 status_code=422,
@@ -171,7 +191,7 @@ def create_app(
         CORSMiddleware,
         allow_origins=[settings.frontend_origin],
         allow_credentials=False,
-        allow_methods=["GET", "PUT"],
+        allow_methods=["GET", "PUT", "DELETE"],
         allow_headers=["Authorization", "Content-Type"],
     )
 

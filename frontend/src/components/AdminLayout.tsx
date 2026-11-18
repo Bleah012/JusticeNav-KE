@@ -57,7 +57,7 @@ function AdminNavigation() {
   );
 }
 
-// Verify role on the route and each catalogue API request; editing remains unavailable.
+// Verify the role on routes and API calls before exposing administrative operations.
 export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <div className="seeker-shell admin-shell">
@@ -66,7 +66,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </a>
       <aside className="seeker-shell__sidebar">
         <AppBrand />
-        <span className="admin-pages__role">Administrator Â· preview</span>
+        <span className="admin-pages__role">
+          Administrator &middot; preview
+        </span>
         <AdminNavigation />
         <p className="seeker-shell__disclaimer">
           <Info size={18} aria-hidden="true" />
@@ -94,10 +96,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice" id="admin-prototype-note">
             <Info size={20} aria-hidden="true" />
             <p>
-              Your administrator role is checked by the API. Overview, Justice
-              Services and Pathways show read-only published catalogue
-              information. Referrals lets you assign school demonstrations
-              shared by seekers.
+              Your administrator role is checked by the API. Justice Services
+              supports draft editing and reviewed publication. Overview and
+              Pathways show published catalogue information. Referrals lets you
+              assign school demonstrations shared by seekers.
             </p>
           </div>
           {children}

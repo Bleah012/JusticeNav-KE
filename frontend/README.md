@@ -321,7 +321,9 @@ Run all existing frontend suites plus `node --test tests/notifications.test.cjs`
 
 ## Connected administrator catalogues
 
-Use `/admin`, `/admin/services` and `/admin/pathways` with a verified development admin account. Overview shows published catalogue counts. The service and pathway tables support local search, category filtering, sorting by source check date and pagination. The public-page links open the corresponding directory or pathway records, and the source links open the cited official sites.
+Use `/admin`, `/admin/services` and `/admin/pathways` with a verified development admin account. Overview shows published catalogue counts. Justice Services supports persistent draft creation, viewing, editing, reviewed publication, archiving and confirmed deletion of unused drafts. It includes local search and publication filters. The pathway table remains a read-only catalogue with category filtering, source-date sorting and pagination. Public-page and source links open the corresponding published information.
+
+Run `node --test tests/service-management.test.cjs` for service-management boundaries and state checks. Follow the [service CRUD acceptance guide](../docs/service-management.md) to verify the live Firestore workflow.
 
 The page checks the verified role before mounting its request controller. Every fetch sends the current account token to a fixed admin API path. The controller clears old data when the account or page changes and distinguishes permission denial, catalogue errors and confirmed empty results. Run `node --test tests/admin-catalog.test.cjs` from frontend for the new boundary and filtering checks.
 
