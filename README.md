@@ -43,6 +43,10 @@ Pathways also support persistent guide and preparation-item editing, reviewed
 publication, archiving and draft deletion, with protected service references and
 saved user snapshots. See [pathway management](docs/pathway-management.md).
 
+Resources now have administrator CRUD for source-backed links, categories and
+review dates, including reviewed publication, archiving and draft deletion.
+See [resource management](docs/resource-management.md).
+
 - Justice seeker: describes a problem and follows suggested next steps.
 - Demo provider: reviews assigned demonstration referrals and updates status.
 - Administrator: maintains services, pathways, and verification records.

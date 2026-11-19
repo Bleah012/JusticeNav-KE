@@ -12,8 +12,9 @@ guarantee of live availability. No auto-refresh or official certification is cla
 
 The reviewed baseline file is `backend/app/public_catalog.json`. Administrator
 service changes are now persisted in Firestore and only published entries appear
-publicly; see [service management](service-management.md). Resources remain in
-the reviewed file. Text is brief, original
+publicly; see [service management](service-management.md). Resource changes now
+use [resource management](resource-management.md), with the reviewed file as their
+baseline. Text is brief, original
 paraphrase of published facts; full documents, guide images and logos are not copied.
 
 | Catalogue record          | Primary source and basis                                                                                                                                                                                                                                                     |

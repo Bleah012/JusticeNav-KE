@@ -79,6 +79,16 @@ function CatalogueOverview({ value }: { value: AdminOverview }) {
               View pathways
             </Link>
           </section>
+          <section className="dashboard-metrics__card">
+            <h2>Resources</h2>
+            <p>
+              Maintain reviewed links and descriptions in the public resource
+              library.
+            </p>
+            <Link className="btn btn-secondary" to="/admin/resources">
+              Manage resources
+            </Link>
+          </section>
         </div>
       </div>
       <section className="seeker-page__panel">

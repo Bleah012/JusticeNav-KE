@@ -32,6 +32,11 @@ from .profiles import FirestoreProfileStore, ProfileStore
 from .profiles import router as profile_router
 from .referrals import FirestoreReferralStore, ReferralStore
 from .referrals import router as referral_router
+from .resource_management import (
+    FirestoreResourceRepository,
+    ManagedResourceCatalogStore,
+)
+from .resource_management import router as resource_management_router
 from .service_management import FirestoreServiceRepository, ManagedCatalogStore
 from .service_management import router as service_management_router
 
@@ -56,6 +61,7 @@ def create_app(
     demo_provider_directory=None,
     service_repository=None,
     pathway_repository=None,
+    resource_repository=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -92,6 +98,17 @@ def create_app(
         or (catalog_store is None and settings.firebase_project_id)
         else seed_catalog
     )
+    app.state.resource_repository = (
+        resource_repository
+        if resource_repository is not None
+        else FirestoreResourceRepository(settings)
+    )
+    if resource_repository is not None or (
+        catalog_store is None and settings.firebase_project_id
+    ):
+        app.state.catalog_store = ManagedResourceCatalogStore(
+            app.state.catalog_store, app.state.resource_repository
+        )
     app.include_router(catalog_router)
     seed_pathways = pathway_store if pathway_store is not None else PathwayStore()
     app.state.pathway_repository = (
@@ -141,6 +158,7 @@ def create_app(
     app.include_router(admin_catalog_router)
     app.include_router(service_management_router)
     app.include_router(pathway_management_router)
+    app.include_router(resource_management_router)
     app.state.demo_referrals_enabled = settings.app_env in {"development", "test"}
     app.state.demo_referral_store = (
         demo_referral_store
@@ -159,6 +177,13 @@ def create_app(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/admin/resource-records"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid resource input. Check the categories, official source, review date and saved revision."
+                },
+            )
         if request.url.path.startswith("/api/v1/admin/pathway-records"):
             return JSONResponse(
                 status_code=422,
