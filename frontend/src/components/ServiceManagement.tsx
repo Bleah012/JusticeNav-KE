@@ -39,6 +39,7 @@ export function Field({
   multiline = false,
   type = "text",
   help,
+  maxLength,
 }: {
   name: string;
   label: string;
@@ -47,6 +48,7 @@ export function Field({
   multiline?: boolean;
   type?: string;
   help?: string;
+  maxLength?: number;
 }) {
   return (
     <label className="admin-pages__field" htmlFor={`service-${name}`}>
@@ -60,7 +62,7 @@ export function Field({
           name={name}
           defaultValue={value}
           required={required}
-          maxLength={16000}
+          maxLength={maxLength ?? 16000}
           rows={3}
           aria-describedby={help ? `service-${name}-help` : undefined}
         />
@@ -71,7 +73,7 @@ export function Field({
           defaultValue={value}
           required={required}
           type={type}
-          maxLength={name === "id" ? 64 : 2000}
+          maxLength={maxLength ?? (name === "id" ? 64 : 2000)}
           aria-describedby={help ? `service-${name}-help` : undefined}
         />
       )}
@@ -86,6 +88,7 @@ export function ReviewFields() {
       <Field
         name="reviewNote"
         label="Source review note"
+        maxLength={1000}
         multiline
         required
         help="Describe what you checked against the linked official sources."

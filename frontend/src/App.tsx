@@ -31,6 +31,7 @@ import { AdminLayout } from "./components/AdminLayout";
 import { AdminOverviewPage } from "./pages/AdminOverviewPage";
 import { AdminServicesPage } from "./pages/AdminServicesPage";
 import { AdminPathwaysPage } from "./pages/AdminPathwaysPage";
+import { AdminResourcesPage } from "./pages/AdminResourcesPage";
 import { AdminReferralsPage } from "./pages/AdminReferralsPage";
 import { AdminVerificationPage } from "./pages/AdminVerificationPage";
 import { AdminAuditLogsPage } from "./pages/AdminAuditLogsPage";
@@ -109,7 +110,10 @@ function App() {
             path="/app/assessments/results"
             element={<ConnectedAssessmentResultsPage />}
           />
-          <Route path="/app/checklists/:checklistId" element={<PreparationChecklistPage />} />
+          <Route
+            path="/app/checklists/:checklistId"
+            element={<PreparationChecklistPage />}
+          />
           <Route
             path="/app/checklists/new"
             element={<PreparationChecklistPage />}
@@ -156,6 +160,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/services" element={<AdminServicesPage />} />
             <Route path="/admin/pathways" element={<AdminPathwaysPage />} />
+            <Route path="/admin/resources" element={<AdminResourcesPage />} />
             <Route path="/admin/pathways/new" element={<PathwayEditorPage />} />
             <Route
               path="/admin/pathways/:pathwayId/edit"

@@ -392,6 +392,13 @@ Demonstration assignment, review started and review completed each queue an unre
 
 References: [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions), [default index ordering](https://firebase.google.com/docs/firestore/query-data/index-overview#default_ordering_and_the__name__field).
 
+## Administrator resource management
+
+`/api/v1/admin/resource-records` supports persistent drafts, edits, reviewed
+publication, archiving and deletion of unused drafts. Published resources enter
+the public library and overview totals; internal metadata stays administrator-only.
+See [resource storage, API and live checks](../docs/resource-management.md).
+
 ## Administrator pathway management
 
 Pathways now support persistent drafts, full guide and preparation-item editing,
@@ -413,7 +420,7 @@ See [storage, API contract and acceptance checks](../docs/service-management.md)
 
 `GET /api/v1/admin/overview`, `GET /api/v1/admin/services` and `GET /api/v1/admin/pathways` require the verified Firebase `role: admin` claim. Authentication runs before catalogue loading. Missing or invalid credentials return 401. A verified seeker or provider receives 403. Catalogue loading failures return a generic 503. Responses include the verified UID and `readOnly: true`, with `Cache-Control: no-store`.
 
-Overview totals count published service, pathway and resource records. With Firebase configured, services and pathways come from managed Firestore catalogues; resources still use the reviewed source file. Services use the public directory projection. Pathways validate every service reference against the published service catalogue. These compatibility endpoints return public catalogue data only. Account and referral analytics are a separate feature.
+Overview totals count published service, pathway and resource records. With Firebase configured, all three use managed Firestore catalogues seeded from reviewed source files. Services use the public directory projection. Pathways validate every service reference against the published service catalogue. These compatibility endpoints return public catalogue data only. Account and referral analytics are a separate feature.
 
 For browser testing, use an existing development account you control in `justicenav-ke`. Copy its UID from Firebase Authentication → Users and enter it locally when prompted. From the repository root, inspect its role first.
 

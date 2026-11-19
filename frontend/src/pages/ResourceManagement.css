@@ -1,0 +1,46 @@
+@layer components {
+  .resource-management__filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(2, minmax(150px, 210px));
+    gap: 20px;
+    margin-block: 24px;
+  }
+  .resource-management__filters label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  .resource-management__filters input,
+  .resource-management__filters select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--line);
+    background: var(--canvas);
+  }
+  .service-management__modal .resource-management__categories {
+    padding: 20px;
+    border: 1px solid var(--line);
+    margin-block: 24px;
+    display: grid;
+    gap: 12px;
+  }
+  .resource-management__categories legend {
+    padding-inline: 8px;
+    font-weight: 500;
+  }
+  .resource-management__categories label {
+    display: flex;
+    align-items: start;
+    gap: 12px;
+  }
+  .resource-management__categories input {
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 760px) {
+    .resource-management__filters {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -321,7 +321,9 @@ Run all existing frontend suites plus `node --test tests/notifications.test.cjs`
 
 ## Connected administrator catalogues
 
-Use `/admin`, `/admin/services` and `/admin/pathways` with a verified development admin account. Overview shows published catalogue counts. Justice Services and Pathways support persistent draft creation, viewing, editing, reviewed publication, archiving and confirmed deletion of unused drafts. Both include local search and publication filters. The pathway editor includes guidance lists, starting steps, preparation checklist items and published service choices. Public-page and source links open the corresponding published information.
+Use `/admin`, `/admin/services`, `/admin/pathways` and `/admin/resources` with a verified development admin account. Overview shows published catalogue counts. Justice Services, Pathways and Resources support persistent draft creation, viewing, editing, reviewed publication, archiving and confirmed deletion of unused drafts. They include local search and publication filters. The pathway editor includes guidance lists, starting steps, preparation checklist items and published service choices. Resources adds category filters, ten-entry pages and official link metadata. Public-page and source links open the corresponding published information.
+
+Run `node --test tests/resource-management.test.cjs` for resource boundaries and confirmed-write checks. Follow the [resource CRUD acceptance guide](../docs/resource-management.md) for live Firestore and public-library verification.
 
 Run `node --test tests/pathway-management.test.cjs` for pathway writes, confirmation and lifecycle checks. Follow the [pathway CRUD acceptance guide](../docs/pathway-management.md) to verify live Firestore, nested editor refresh and preservation of saved user snapshots. Source-review dates use the Africa/Nairobi calendar day.
 

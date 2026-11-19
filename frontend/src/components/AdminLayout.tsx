@@ -3,6 +3,7 @@ import {
   Building2,
   ClipboardList,
   Clock,
+  FileText,
   Home,
   Info,
   Route,
@@ -22,6 +23,7 @@ const navigation = [
   { label: "Users", to: "/admin/users", icon: Users },
   { label: "Justice Services", to: "/admin/services", icon: Building2 },
   { label: "Pathways", to: "/admin/pathways", icon: Route },
+  { label: "Resources", to: "/admin/resources", icon: FileText },
   { label: "Referrals", to: "/admin/referrals", icon: ClipboardList },
   {
     label: "Content Verification",
@@ -96,10 +98,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <div className="seeker-page__notice" id="admin-prototype-note">
             <Info size={20} aria-hidden="true" />
             <p>
-              Your administrator role is checked by the API. Justice Services
-              and Pathways support draft editing and reviewed publication.
-              Overview shows published catalogue totals. Referrals lets you
-              assign school demonstrations shared by seekers.
+              Your administrator role is checked by the API. Justice Services,
+              Pathways and Resources support draft editing and reviewed
+              publication. Overview shows published catalogue totals. Referrals
+              lets you assign school demonstrations shared by seekers.
             </p>
           </div>
           {children}
