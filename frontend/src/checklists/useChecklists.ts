@@ -29,8 +29,9 @@ export function useChecklistEditor(uid: string, id: string, pathwayId?: string) 
   return { api, resource, state };
 }
 export function useChecklistList(uid: string, status?: ChecklistStatus, after?: string) {
-  const [resource] = useState(() => new ChecklistResource((signal) => apiFor(uid).list({ status, after }, signal)));
+  const [api] = useState(() => apiFor(uid));
+  const [resource] = useState(() => new ChecklistResource((signal) => api.list({ status, after }, signal)));
   const state = useSyncExternalStore(resource.subscribe, resource.snapshot, resource.snapshot);
   useEffect(() => resource.start(), [resource]);
-  return { resource, state };
+  return { api, resource, state };
 }

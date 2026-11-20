@@ -102,6 +102,20 @@ class ChecklistUpdate(CatalogModel):
         return self
 
 
+class ChecklistDelete(CatalogModel):
+    expected_revision: int = Field(strict=True, ge=1)
+
+
+class ChecklistDeleted(CatalogModel):
+    uid: StrictStr = Field(min_length=1, max_length=128)
+    deleted_id: Identifier
+    revision: int = Field(strict=True, ge=1)
+
+
+class DeletionMarker(ChecklistDeleted):
+    deleted_at: AwareDatetime
+
+
 def progress(items, checked):
     return (
         "empty"
@@ -217,6 +231,7 @@ def read_record(snapshot, uid, identifier):
 
 class ChecklistStore(Protocol):
     def get(self, uid: str, identifier: str) -> ChecklistRecord: ...
+    def delete(self, uid: str, identifier: str, revision: int) -> ChecklistDeleted: ...
     def save(
         self,
         uid: str,
@@ -258,6 +273,41 @@ class FirestoreChecklistStore:
         except STORAGE_ERRORS as error:
             raise ChecklistUnavailable from error
 
+    def _deletion(self, uid, identifier):
+        return (
+            self._collection(uid)
+            .parent.collection("deletedChecklists")
+            .document(identifier)
+        )
+
+    def delete(self, uid, identifier, revision):
+        try:
+            reference = self._collection(uid).document(identifier)
+            marker = self._deletion(uid, identifier)
+
+            @firestore.transactional
+            def remove(transaction):
+                record = read_record(
+                    reference.get(transaction=transaction, retry=None, timeout=10),
+                    uid,
+                    identifier,
+                )
+                if record.revision != revision:
+                    raise ChecklistConflict
+                receipt = ChecklistDeleted(
+                    uid=uid, deletedId=identifier, revision=revision
+                )
+                tombstone = DeletionMarker(
+                    **receipt.model_dump(), deletedAt=datetime.now(UTC)
+                )
+                transaction.create(marker, tombstone.model_dump(by_alias=True))
+                transaction.delete(reference)
+                return receipt
+
+            return remove(self._client.transaction(max_attempts=3))
+        except STORAGE_ERRORS as error:
+            raise ChecklistUnavailable from error
+
     def save(self, uid, identifier, update, template=None):
         try:
             reference = self._collection(uid).document(identifier)
@@ -270,6 +320,15 @@ class FirestoreChecklistStore:
                 previous = (
                     read_record(snapshot, uid, identifier) if snapshot.exists else None
                 )
+                if previous is None:
+                    marker = self._deletion(uid, identifier).get(
+                        transaction=transaction, retry=None, timeout=10
+                    )
+                    if marker.exists:
+                        deleted = DeletionMarker.model_validate(marker.to_dict())
+                        if deleted.uid != uid or deleted.deleted_id != identifier:
+                            raise ChecklistUnavailable
+                        raise ChecklistMissing
                 result = next_record(uid, identifier, previous, update, template)
                 data = result.model_dump(by_alias=True)
                 # Firestore stores timestamps but does not encode Python calendar dates.
@@ -393,4 +452,24 @@ def save_my_checklist(
         ChecklistConflict,
         ChecklistInvalid,
     ) as error:
+        raise http_error(error) from error
+
+
+@router.delete("/{identifier}", response_model=ChecklistDeleted)
+def delete_my_checklist(
+    identifier: Identifier,
+    update: ChecklistDelete,
+    user: UserDependency,
+    store: StoreDependency,
+):
+    try:
+        result = store.delete(user.uid, identifier, update.expected_revision)
+        if (
+            result.uid != user.uid
+            or result.deleted_id != identifier
+            or result.revision != update.expected_revision
+        ):
+            raise ChecklistUnavailable
+        return result
+    except (ChecklistMissing, ChecklistUnavailable, ChecklistConflict) as error:
         raise http_error(error) from error

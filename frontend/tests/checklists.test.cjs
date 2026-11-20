@@ -170,3 +170,199 @@ test("a save timeout retains the loaded revision and blocks ambiguous retries", 
   assert.equal(resource.snapshot().needsReload, true); assert.equal(resource.snapshot().value.revision, 1);
   pending.resolve(record({ revision: 2 })); await tick(); assert.equal(resource.snapshot().value.revision, 1); resource.stop();
 });
+
+test("DELETE sends only the saved revision and requires exact owner, ID and revision confirmation", async () => {
+  const receipt = { uid: UID, deletedId: ID, revision: 1 };
+  await api(async (url, options) => {
+    assert.equal(url, `http://localhost:8000/api/v1/checklists/${ID}`);
+    assert.equal(options.method, "DELETE");
+    assert.deepEqual(JSON.parse(options.body), { expectedRevision: 1 });
+    assert.equal(options.headers.Authorization, "Bearer test-ephemeral-token");
+    assert.equal(options.headers["Content-Type"], "application/json");
+    assert.equal(options.credentials, "omit");
+    assert.equal(options.redirect, "error");
+    return response(receipt);
+  }).remove(ID, 1, signal());
+  for (const changes of [
+    { uid: "foreign" },
+    { deletedId: OTHER },
+    { revision: 2 },
+    { revision: true },
+  ])
+    await assert.rejects(
+      api(async () => response({ ...receipt, ...changes })).remove(
+        ID,
+        1,
+        signal(),
+      ),
+    );
+  let calls = 0;
+  const invalid = api(async () => {
+    calls++;
+    return response(receipt);
+  });
+  for (const revision of [0, -1, true, "1", NaN])
+    await assert.rejects(invalid.remove(ID, revision, signal()));
+  await assert.rejects(invalid.remove("../bad", 1, signal()));
+  assert.equal(calls, 0);
+});
+
+test("delete errors never parse response bodies and account changes discard late receipts", async () => {
+  for (const status of [401, 403, 404, 409, 503]) {
+    let parsed = false;
+    await assert.rejects(
+      api(async () => ({
+        ok: false,
+        status,
+        json: async () => {
+          parsed = true;
+          return {};
+        },
+      })).remove(ID, 1, signal()),
+      (error) => error.status === status,
+    );
+    assert.equal(parsed, false);
+  }
+  for (const phase of ["token", "http", "json"]) {
+    let current,
+      calls = 0;
+    const account = {
+      uid: UID,
+      getIdToken: async () => {
+        if (phase === "token") current = null;
+        return "old";
+      },
+    };
+    current = account;
+    const client = api(
+      async () => {
+        calls++;
+        if (phase === "http") current = null;
+        return {
+          ok: true,
+          json: async () => {
+            if (phase === "json") current = null;
+            return { uid: UID, deletedId: ID, revision: 1 };
+          },
+        };
+      },
+      () => current,
+    );
+    await assert.rejects(client.remove(ID, 1, signal()));
+    assert.equal(calls, phase === "token" ? 0 : 1);
+  }
+});
+
+test("delete keeps the loaded row until confirmation and refreshed list, blocking double submits", async () => {
+  const confirmation = deferred(),
+    refresh = deferred();
+  let loads = 0,
+    writes = 0;
+  const original = { checklists: [summary()], nextCursor: null };
+  const resource = new ChecklistResource(() =>
+    ++loads === 1 ? Promise.resolve(original) : refresh.promise,
+  );
+  const stop = resource.start();
+  await tick();
+  const deleting = resource.mutate(async (previous) => {
+    writes++;
+    await confirmation.promise;
+    return previous;
+  }, "delete");
+  await tick();
+  assert.equal(resource.snapshot().value.checklists.length, 1);
+  assert.equal(resource.snapshot().notice, "");
+  await resource.mutate(async (previous) => {
+    writes++;
+    return previous;
+  }, "delete");
+  assert.equal(writes, 1);
+  confirmation.resolve();
+  await tick();
+  assert.equal(resource.snapshot().saving, true);
+  assert.equal(resource.snapshot().value.checklists.length, 1);
+  refresh.resolve({ checklists: [], nextCursor: null });
+  await deleting;
+  assert.equal(resource.snapshot().value.checklists.length, 0);
+  assert.equal(resource.snapshot().notice, "Checklist deleted.");
+  stop();
+});
+
+test("stale or uncertain deletion requires reload and never reports success", async () => {
+  for (const failure of [
+    new ChecklistError(409),
+    new ChecklistError(502),
+    Error("PRIVATE"),
+  ]) {
+    const resource = new ChecklistResource(async () => ({
+      checklists: [summary()],
+      nextCursor: null,
+    }));
+    const stop = resource.start();
+    await tick();
+    let writes = 0;
+    await resource.mutate(async () => {
+      writes++;
+      throw failure;
+    }, "delete");
+    assert.equal(resource.snapshot().needsReload, true);
+    assert.equal(resource.snapshot().notice, "");
+    assert.equal(resource.snapshot().value.checklists.length, 1);
+    assert(!resource.snapshot().error.includes("PRIVATE"));
+    await resource.mutate(async (previous) => {
+      writes++;
+      return previous;
+    }, "delete");
+    assert.equal(writes, 1);
+    stop();
+  }
+});
+
+test("confirmed deletion followed by failed reload clears stale rows with an accurate message", async () => {
+  let loads = 0;
+  const resource = new ChecklistResource(async () => {
+    if (++loads === 2) throw new ChecklistError(503);
+    return { checklists: loads === 1 ? [summary()] : [], nextCursor: null };
+  });
+  const stop = resource.start();
+  await tick();
+  await resource.mutate(async (previous) => previous, "delete");
+  assert.equal(resource.snapshot().status, "error");
+  assert.match(resource.snapshot().message, /was deleted/);
+  assert.equal(resource.snapshot().value, undefined);
+  await resource.reload();
+  assert.equal(resource.snapshot().value.checklists.length, 0);
+  stop();
+});
+
+test("delete timeout and unmounted refresh discard late outcomes", async () => {
+  const pending = deferred();
+  const resource = new ChecklistResource(
+    async () => ({ checklists: [summary()], nextCursor: null }),
+    15,
+  );
+  const stop = resource.start();
+  await tick();
+  await resource.mutate(() => pending.promise, "delete");
+  assert.equal(resource.snapshot().needsReload, true);
+  assert.equal(resource.snapshot().notice, "");
+  pending.resolve({ checklists: [], nextCursor: null });
+  await tick();
+  assert.equal(resource.snapshot().value.checklists.length, 1);
+  stop();
+  let loads = 0;
+  const reload = deferred();
+  const late = new ChecklistResource(() =>
+    ++loads === 1
+      ? Promise.resolve({ checklists: [summary()], nextCursor: null })
+      : reload.promise,
+  );
+  const cleanup = late.start();
+  await tick();
+  const deleting = late.mutate(async (previous) => previous, "delete");
+  await tick();
+  cleanup();
+  reload.resolve({ checklists: [], nextCursor: null });
+  await deleting;
+  assert.equal(late.snapshot().status, "loading");
+});

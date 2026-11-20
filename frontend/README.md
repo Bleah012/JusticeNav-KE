@@ -354,3 +354,21 @@ provider**. No UID entry is needed. Sign in as that provider, start and complete
 review, then confirm the seeker’s status history and notifications. A provider
 registered for another service must not appear. The existing development role
 setup still applies once when preparing provider accounts.
+
+## Delete a saved checklist
+
+In My Checklists, choose **Delete checklist** and accept the browser confirmation.
+Cancel makes no request. The API checks the current account and saved revision.
+The list refreshes only after an exact deletion receipt; repeated clicks are
+blocked. Conflicts and uncertain outcomes require **Reload checklists** before
+another deletion. Confirmed deletion with failed list refresh is reported separately.
+A refreshed dashboard excludes the removed checklist. Assessments/referrals and
+previous notification history are kept; deleted checklist links show not found.
+
+Live check: create a non-sensitive checklist, save a tick, then open My Checklists.
+Cancel deletion once and confirm it stays. Delete it, refresh, and confirm it stays
+absent. Check the dashboard count, another account's checklist, and an old editor
+or direct URL. In two tabs, save an edit in one and delete the stale revision in
+the other; reload must be required. The existing create/view/update flow must
+continue working. Automated checks remain in tests/checklists.test.cjs and
+backend/tests/test_checklists.py.
