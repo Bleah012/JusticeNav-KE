@@ -100,6 +100,13 @@ export function PrivacyNoticePage() {
               notifications remain; their checklist link may no longer open a
               record. Assessments and referrals are kept separately.
             </p>
+            <p>
+              Delete assessment in My Assessments removes its saved description
+              and clarification answers. Minimal deletion metadata and earlier
+              notifications remain. Saved checklists and referrals are separate
+              records and remain available. Links to the deleted assessment may
+              show not found.
+            </p>
           </section>
 
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">

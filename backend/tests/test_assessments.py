@@ -65,6 +65,7 @@ class Verifier:
 class MemoryStore:
     def __init__(self):
         self.records, self.calls, self.lock = {}, [], Lock()
+        self.deleted = set()
 
     def get(self, uid, identifier):
         self.calls.append(("get", uid, identifier))
@@ -76,11 +77,25 @@ class MemoryStore:
     def save(self, uid, identifier, update):
         with self.lock:
             self.calls.append(("save", uid, identifier))
+            if (uid, identifier) in self.deleted:
+                raise AssessmentMissing
             value = next_record(
                 uid, identifier, self.records.get((uid, identifier)), update
             )
             self.records[uid, identifier] = value
             return value
+
+    def delete(self, uid, identifier, revision):
+        with self.lock:
+            self.calls.append(("delete", uid, identifier))
+            record = self.get(uid, identifier)
+            if record.revision != revision:
+                raise AssessmentConflict
+            del self.records[uid, identifier]
+            self.deleted.add((uid, identifier))
+            return assessments.AssessmentDeleted(
+                uid=uid, deletedId=identifier, revision=revision
+            )
 
     def list(self, uid, status, cursor, limit):
         self.calls.append(("list", uid, status, cursor, limit))
@@ -464,6 +479,11 @@ def transaction_fixture(monkeypatch, saved=None):
     monkeypatch.setattr(
         store, "_collection", lambda uid: Mock(document=Mock(return_value=reference))
     )
+    monkeypatch.setattr(
+        store,
+        "_deletion",
+        Mock(return_value=Mock(get=Mock(return_value=Mock(exists=False)))),
+    )
     return store, reference, transaction
 
 
@@ -541,3 +561,341 @@ def test_invalid_saved_progress_is_not_a_generated_result():
         type(saved).model_validate(
             {**saved.model_dump(by_alias=True), "status": "awaiting-pathways"}
         )
+
+
+@pytest.mark.parametrize(
+    "token,expected", [(None, 401), ("invalid", 401), ("unavailable", 503)]
+)
+def test_delete_requires_authentication_before_storage(token, expected):
+    store = MemoryStore()
+    with client(store) as api:
+        response = api.request(
+            "DELETE",
+            URL + "/" + ID,
+            headers=headers(token) if token else {},
+            json={"expectedRevision": 1},
+        )
+    assert response.status_code == expected and not store.calls
+
+
+@pytest.mark.parametrize(
+    "status", ["draft", "needs-clarification", "awaiting-pathways"]
+)
+def test_delete_supports_each_saved_state_and_never_restores_old_reference(status):
+    store = MemoryStore()
+    with client(store) as api:
+        assert (
+            api.put(
+                URL + "/" + ID,
+                headers=headers(),
+                json=description(proceed=status != "draft"),
+            ).status_code
+            == 200
+        )
+        revision = 1
+        if status == "awaiting-pathways":
+            assert (
+                api.put(
+                    URL + "/" + ID, headers=headers(), json=clarification()
+                ).status_code
+                == 200
+            )
+            revision = 2
+        assert (
+            api.get(URL + "/" + ID, headers=headers()).json()["assessment"]["status"]
+            == status
+        )
+        response = api.request(
+            "DELETE",
+            URL + "/" + ID,
+            headers=headers(),
+            json={"expectedRevision": revision},
+        )
+        assert (
+            response.status_code == 200
+            and response.headers["cache-control"] == "no-store"
+        )
+        assert response.json() == {
+            "uid": "user-a",
+            "deletedId": ID,
+            "revision": revision,
+        }
+        assert api.get(URL + "/" + ID, headers=headers()).status_code == 404
+        assert (
+            api.get(
+                URL + f"/{ID}/issue-suggestion?revision={revision}", headers=headers()
+            ).status_code
+            == 404
+        )
+        assert api.get(URL, headers=headers()).json()["assessments"] == []
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=description()).status_code
+            == 404
+        )
+        assert (
+            api.put(
+                URL + "/" + ID,
+                headers=headers(),
+                json=description(expectedRevision=revision),
+            ).status_code
+            == 404
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": revision},
+            ).status_code
+            == 404
+        )
+
+
+def test_assessment_deletion_preserves_checklists_referrals_and_other_account():
+    from test_checklists import MemoryStore as Checklists
+    from test_checklists import body as checklist_body
+    from test_referrals import MemoryStore as Referrals
+    from test_referrals import body as referral_body
+
+    from app.dashboard import compose
+
+    store, checklists, referrals = MemoryStore(), Checklists(), Referrals()
+
+    class Dashboard:
+        def get(self, uid):
+            data = []
+            for source in (store, checklists, referrals):
+                rows = [
+                    record
+                    for (owner, _), record in source.records.items()
+                    if owner == uid
+                ]
+                data.append((len(rows), rows))
+            return compose(uid, *data)
+
+    with client(store) as api:
+        api.app.state.checklist_store = checklists
+        api.app.state.referral_store = referrals
+        api.app.state.dashboard_store = Dashboard()
+        notifications = Mock()
+        api.app.state.notification_store = notifications
+        for owner, identifier in [("user-a", ID), ("user-a", OTHER), ("user-b", ID)]:
+            assert (
+                api.put(
+                    URL + "/" + identifier, headers=headers(owner), json=description()
+                ).status_code
+                == 200
+            )
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=clarification()).status_code
+            == 200
+        )
+        assert (
+            api.put(
+                "/api/v1/checklists/" + ID, headers=headers(), json=checklist_body()
+            ).status_code
+            == 200
+        )
+        assert (
+            api.put(
+                "/api/v1/referrals/" + ID, headers=headers(), json=referral_body()
+            ).status_code
+            == 200
+        )
+        before_checklist = api.get("/api/v1/checklists/" + ID, headers=headers()).json()
+        before_referral = api.get("/api/v1/referrals/" + ID, headers=headers()).json()
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 409
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID + "?uid=user-b",
+                headers=headers(),
+                json={"expectedRevision": 2},
+            ).status_code
+            == 200
+        )
+        assert api.get(URL + "/" + ID, headers=headers("user-b")).status_code == 200
+        assert (
+            api.get("/api/v1/checklists/" + ID, headers=headers()).json()
+            == before_checklist
+        )
+        assert (
+            api.get("/api/v1/referrals/" + ID, headers=headers()).json()
+            == before_referral
+        )
+        dashboard = api.get("/api/v1/dashboard", headers=headers()).json()
+        assert dashboard["counts"] == {
+            "assessments": 1,
+            "checklists": 1,
+            "referrals": 1,
+        }
+        assert all(
+            row["kind"] != "assessment" or row["id"] != ID
+            for row in dashboard["activity"]
+        )
+    assert not notifications.mock_calls
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"expectedRevision": 0},
+        {"expectedRevision": -1},
+        {"expectedRevision": True},
+        {"expectedRevision": "1"},
+        {"expectedRevision": 1, "uid": "PRIVATE"},
+    ],
+)
+def test_invalid_delete_input_is_redacted_before_storage(payload):
+    store = MemoryStore()
+    with client(store) as api:
+        response = api.request(
+            "DELETE", URL + "/" + ID, headers=headers(), json=payload
+        )
+    assert (
+        response.status_code == 422
+        and "PRIVATE" not in response.text
+        and not store.calls
+    )
+
+
+def test_delete_cannot_target_another_owners_record_or_claim_foreign_success():
+    store = MemoryStore()
+    with client(store) as api:
+        assert (
+            api.put(
+                URL + "/" + ID, headers=headers("user-b"), json=description()
+            ).status_code
+            == 200
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 404
+        )
+        assert api.get(URL + "/" + ID, headers=headers("user-b")).status_code == 200
+    store = Mock()
+    with client(store) as api:
+        store.delete.side_effect = AssessmentUnavailable("PRIVATE")
+        response = api.request(
+            "DELETE", URL + "/" + ID, headers=headers(), json={"expectedRevision": 1}
+        )
+        assert response.status_code == 503 and "PRIVATE" not in response.text
+        store.delete.side_effect = None
+        store.delete.return_value = assessments.AssessmentDeleted(
+            uid="foreign", deletedId=ID, revision=1
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 503
+        )
+
+
+def test_firestore_deletion_is_atomic_revision_checked_and_metadata_only(monkeypatch):
+    from google.cloud.firestore_v1._helpers import encode_dict
+
+    saved = next_record(
+        "user-a", ID, None, DescriptionUpdate.model_validate(description())
+    )
+    store, reference, transaction = transaction_fixture(monkeypatch, saved)
+    receipt = store.delete("user-a", ID, 1)
+    assert receipt.model_dump(by_alias=True) == {
+        "uid": "user-a",
+        "deletedId": ID,
+        "revision": 1,
+    }
+    reference.get.assert_called_once_with(
+        transaction=transaction, retry=None, timeout=10
+    )
+    transaction.delete.assert_called_once_with(reference)
+    marker, data = transaction.create.call_args.args
+    assert marker is store._deletion.return_value
+    assert set(data) == {"uid", "deletedId", "revision", "deletedAt"}
+    assert "description" not in data and "answers" not in data
+    encode_dict(data)
+    assert transaction.create.call_count == 1
+    transaction.set.assert_not_called()
+    for value, revision, error in [
+        (saved, 2, AssessmentConflict),
+        (saved.model_copy(update={"uid": "foreign"}), 1, AssessmentUnavailable),
+        (None, 1, AssessmentMissing),
+    ]:
+        store, _, transaction = transaction_fixture(monkeypatch, value)
+        with pytest.raises(error):
+            store.delete("user-a", ID, revision)
+        transaction.delete.assert_not_called()
+        transaction.create.assert_not_called()
+
+
+def test_deletion_marker_prevents_a_late_first_save_and_is_owner_scoped(monkeypatch):
+    import hashlib
+    from datetime import UTC, datetime
+
+    from google.auth.credentials import AnonymousCredentials
+    from google.cloud.firestore_v1 import Client
+
+    store, _, transaction = transaction_fixture(monkeypatch)
+    marker = assessments.DeletionMarker(
+        uid="user-a", deletedId=ID, revision=1, deletedAt=datetime.now(UTC)
+    )
+    snapshot = store._deletion.return_value.get.return_value
+    snapshot.exists = True
+    snapshot.to_dict.return_value = marker.model_dump(by_alias=True)
+    with pytest.raises(AssessmentMissing):
+        store.save("user-a", ID, DescriptionUpdate.model_validate(description()))
+    transaction.create.assert_not_called()
+    transaction.set.assert_not_called()
+    snapshot.to_dict.return_value = marker.model_copy(
+        update={"uid": "foreign"}
+    ).model_dump(by_alias=True)
+    with pytest.raises(AssessmentUnavailable):
+        store.save("user-a", ID, DescriptionUpdate.model_validate(description()))
+    real = FirestoreAssessmentStore(Settings(_env_file=None))
+    real._client = Client(
+        project="assessment-delete-test", credentials=AnonymousCredentials()
+    )
+    owner = hashlib.sha256(b"user-a").hexdigest()
+    assert (
+        real._deletion("user-a", ID).path
+        == f"assessmentOwners/{owner}/deletedAssessments/{ID}"
+    )
+
+
+def test_concurrent_edit_and_delete_cannot_silently_overwrite_each_other():
+    store = MemoryStore()
+    store.save("user-a", ID, DescriptionUpdate.model_validate(description()))
+
+    def change(action):
+        try:
+            if action == "delete":
+                store.delete("user-a", ID, 1)
+            else:
+                store.save(
+                    "user-a",
+                    ID,
+                    DescriptionUpdate.model_validate(description(expectedRevision=1)),
+                )
+            return "ok"
+        except AssessmentMissing, AssessmentConflict:
+            return "blocked"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(change, ["delete", "edit"])) == ["blocked", "ok"]

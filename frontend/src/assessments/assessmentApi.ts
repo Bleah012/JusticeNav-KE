@@ -39,7 +39,7 @@ type Query = {
   status?: AssessmentStatus;
   after?: string;
 };
-type Request = (uid: string, id: string | null, method: "GET" | "PUT", body: unknown, signal: AbortSignal, query?: Query & { suggestionRevision?: number }) => Promise<unknown>;
+type Request = (uid: string, id: string | null, method: "GET" | "PUT" | "DELETE", body: unknown, signal: AbortSignal, query?: Query & { suggestionRevision?: number }) => Promise<unknown>;
 export class AssessmentError extends Error {
   readonly status: number;
   constructor(status: number) { super("Assessment request could not be completed"); this.status = status; }
@@ -53,7 +53,7 @@ export function createAssessmentRequest({ baseUrl, currentUser, request = fetch 
   request?: typeof fetch;
 }): Request {
   return async (uid, id, method, body, signal, query = {}) => {
-    if ((id !== null && !validId(id)) || (method === "PUT" && id === null) || (query.status && !validStatus(query.status)) || (query.after && !validId(query.after)))
+    if (!["GET", "PUT", "DELETE"].includes(method) || (id !== null && !validId(id)) || (method !== "GET" && (id === null || query.status || query.after)) || (query.status && !validStatus(query.status)) || (query.after && !validId(query.after)))
       throw new AssessmentError(422);
     const revision = query.suggestionRevision;
     if (revision !== undefined && (method !== "GET" || id === null ||
@@ -74,7 +74,7 @@ export function createAssessmentRequest({ baseUrl, currentUser, request = fetch 
       url.searchParams.set("status", query.status);
     if (query.after)
       url.searchParams.set("after", query.after);
-    const response = await request(url.href, { method, headers: { Authorization: `Bearer ${token}`, ...(method === "PUT" ? { "Content-Type": "application/json" } : {}) }, ...(method === "PUT" ? { body: JSON.stringify(body) } : {}), signal, credentials: "omit", cache: "no-store", redirect: "error", referrerPolicy: "no-referrer" });
+    const response = await request(url.href, { method, headers: { Authorization: `Bearer ${token}`, ...(method !== "GET" ? { "Content-Type": "application/json" } : {}) }, ...(method !== "GET" ? { body: JSON.stringify(body) } : {}), signal, credentials: "omit", cache: "no-store", redirect: "error", referrerPolicy: "no-referrer" });
     if (signal.aborted || currentUser() !== user)
       throw new AssessmentError(401);
     if (!response.ok)
@@ -108,6 +108,11 @@ export function parseAssessment(value: unknown, uid: string, id: string): Assess
 }
 export function createAssessmentApi(uid: string, request: Request) {
   return {
+    async remove(id: string, revision: number, signal: AbortSignal): Promise<void> {
+      if (!validId(id) || !Number.isSafeInteger(revision) || revision < 1) throw new AssessmentError(422);
+      const result = object(await request(uid, id, "DELETE", { expectedRevision: revision }, signal));
+      if (result.uid !== uid || result.deletedId !== id || result.revision !== revision) throw new AssessmentError(502);
+    },
     async get(id: string, signal: AbortSignal): Promise<Assessment> {
       const result = object(await request(uid, id, "GET", undefined, signal));
       return parseAssessment(result.assessment, uid, id);

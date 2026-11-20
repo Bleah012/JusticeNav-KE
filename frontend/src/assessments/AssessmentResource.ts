@@ -67,30 +67,77 @@ export class AssessmentResource<T> {
         this.publish({ status: "error", message: loadError(error) });
     }
   };
-  mutate = async (operation: (value: T, signal: AbortSignal) => Promise<T>): Promise<T | undefined> => {
+  mutate = async (
+    operation: (value: T, signal: AbortSignal) => Promise<T>,
+    mode: "save" | "delete" = "save",
+  ): Promise<T | undefined> => {
     const previous = this.value;
-    if (!this.active || previous.status !== "ready" || previous.saving || previous.needsReload)
+    if (
+      !this.active ||
+      previous.status !== "ready" ||
+      previous.saving ||
+      previous.needsReload
+    )
       return;
     this.invalidate();
     const ticket = this.epoch;
     this.publish({ ...previous, saving: true, error: "", notice: "" });
+    let confirmed = false;
     try {
-      const value = await this.deadline((signal) => operation(previous.value, signal));
-      if (!this.active || ticket !== this.epoch)
-        return;
-      this.publish({ status: "ready", value, saving: false, needsReload: false, error: "", notice: "Your assessment was saved." });
+      let value = await this.deadline((signal) =>
+        operation(previous.value, signal),
+      );
+      confirmed = true;
+      if (!this.active || ticket !== this.epoch) return;
+      if (mode === "delete") value = await this.deadline(this.loader);
+      if (!this.active || ticket !== this.epoch) return;
+      this.publish({
+        status: "ready",
+        value,
+        saving: false,
+        needsReload: false,
+        error: "",
+        notice:
+          mode === "delete"
+            ? "Assessment deleted."
+            : "Your assessment was saved.",
+      });
       return value;
-    }
-    catch (cause) {
-      if (!this.active || ticket !== this.epoch)
+    } catch (cause) {
+      if (!this.active || ticket !== this.epoch) return;
+      if (mode === "delete" && confirmed) {
+        this.publish({
+          status: "error",
+          message:
+            "The assessment was deleted, but the list could not be refreshed. Reload My Assessments.",
+        });
         return;
-      if (cause instanceof AssessmentError && [401, 403, 404].includes(cause.status)) {
+      }
+      if (
+        cause instanceof AssessmentError &&
+        [401, 403, 404].includes(cause.status)
+      ) {
         this.publish({ status: "error", message: loadError(cause) });
         return;
       }
       const invalid = cause instanceof AssessmentError && cause.status === 422;
       const conflict = cause instanceof AssessmentError && cause.status === 409;
-      this.publish({ ...previous, saving: false, notice: "", needsReload: !invalid, error: invalid ? "Check your description and answers before saving again." : conflict ? "This assessment changed in another tab. Reload its saved version before saving again. Your edits remain in this form until you reload." : "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Assessments." });
+      this.publish({
+        ...previous,
+        saving: false,
+        notice: "",
+        needsReload: !invalid,
+        error:
+          mode === "delete"
+            ? conflict
+              ? "This assessment changed. Reload My Assessments before deleting again."
+              : "Deletion could not be confirmed. Reload My Assessments and check whether it is still listed before trying again."
+            : invalid
+              ? "Check your description and answers before saving again."
+              : conflict
+                ? "This assessment changed in another tab. Reload its saved version before saving again. Your edits remain in this form until you reload."
+                : "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Assessments.",
+      });
     }
   };
 }

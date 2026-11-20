@@ -1,0 +1,13 @@
+@layer components {
+  .account-pages__assessments .my-assessments__actions {
+    display: flex;
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .account-pages__assessments .my-assessments__actions {
+      flex-basis: 100%;
+    }
+  }
+}

@@ -141,6 +141,22 @@ class AssessmentPage(BaseModel):
     next_cursor: Identifier | None = Field(alias="nextCursor", default=None)
 
 
+class AssessmentDelete(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=False)
+    expected_revision: int = Field(alias="expectedRevision", strict=True, ge=1)
+
+
+class AssessmentDeleted(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=False)
+    uid: StrictStr = Field(min_length=1, max_length=128)
+    deleted_id: Identifier = Field(alias="deletedId")
+    revision: int = Field(strict=True, ge=1)
+
+
+class DeletionMarker(AssessmentDeleted):
+    deleted_at: AwareDatetime = Field(alias="deletedAt")
+
+
 def next_record(
     uid: str,
     identifier: str,
@@ -184,6 +200,7 @@ def next_record(
 
 class AssessmentStore(Protocol):
     def get(self, uid: str, identifier: str) -> AssessmentRecord: ...
+    def delete(self, uid: str, identifier: str, revision: int) -> AssessmentDeleted: ...
     def save(
         self, uid: str, identifier: str, update: DescriptionUpdate | ClarificationUpdate
     ) -> AssessmentRecord: ...
@@ -230,6 +247,41 @@ class FirestoreAssessmentStore:
         except STORAGE_ERRORS as error:
             raise AssessmentUnavailable from error
 
+    def _deletion(self, uid, identifier):
+        return (
+            self._collection(uid)
+            .parent.collection("deletedAssessments")
+            .document(identifier)
+        )
+
+    def delete(self, uid, identifier, revision):
+        try:
+            reference = self._collection(uid).document(identifier)
+            marker = self._deletion(uid, identifier)
+
+            @firestore.transactional
+            def remove(transaction):
+                record = read_record(
+                    reference.get(transaction=transaction, retry=None, timeout=10),
+                    uid,
+                    identifier,
+                )
+                if record.revision != revision:
+                    raise AssessmentConflict
+                receipt = AssessmentDeleted(
+                    uid=uid, deletedId=identifier, revision=revision
+                )
+                tombstone = DeletionMarker(
+                    **receipt.model_dump(by_alias=True), deletedAt=datetime.now(UTC)
+                )
+                transaction.create(marker, tombstone.model_dump(by_alias=True))
+                transaction.delete(reference)
+                return receipt
+
+            return remove(self._client.transaction(max_attempts=3))
+        except STORAGE_ERRORS as error:
+            raise AssessmentUnavailable from error
+
     def save(self, uid, identifier, update):
         try:
             reference = self._collection(uid).document(identifier)
@@ -242,6 +294,15 @@ class FirestoreAssessmentStore:
                 previous = (
                     read_record(snapshot, uid, identifier) if snapshot.exists else None
                 )
+                if previous is None:
+                    marker = self._deletion(uid, identifier).get(
+                        transaction=transaction, retry=None, timeout=10
+                    )
+                    if marker.exists:
+                        deleted = DeletionMarker.model_validate(marker.to_dict())
+                        if deleted.uid != uid or deleted.deleted_id != identifier:
+                            raise AssessmentUnavailable
+                        raise AssessmentMissing
                 result = next_record(uid, identifier, previous, update)
                 data = result.model_dump(by_alias=True)
                 if previous:
@@ -373,4 +434,24 @@ def save_my_assessment(
             raise AssessmentUnavailable
         return AssessmentResponse(assessment=result)
     except (AssessmentUnavailable, AssessmentMissing, AssessmentConflict) as error:
+        raise http_error(error) from error
+
+
+@router.delete("/{identifier}", response_model=AssessmentDeleted)
+def delete_my_assessment(
+    identifier: Identifier,
+    update: AssessmentDelete,
+    user: UserDependency,
+    store: StoreDependency,
+):
+    try:
+        result = store.delete(user.uid, identifier, update.expected_revision)
+        if (
+            result.uid != user.uid
+            or result.deleted_id != identifier
+            or result.revision != update.expected_revision
+        ):
+            raise AssessmentUnavailable
+        return result
+    except (AssessmentMissing, AssessmentUnavailable, AssessmentConflict) as error:
         raise http_error(error) from error

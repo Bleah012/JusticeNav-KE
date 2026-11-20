@@ -180,3 +180,207 @@ test("HTTP error bodies are never parsed or shown to the user", async () => {
   await assert.rejects(request("user-a", id, "GET", undefined, signal()), (error) => error.status === 503 && !error.message.includes("private-details"));
   assert.equal(parsed, false);
 });
+
+const DELETE_UID = "user-a";
+const deleteUser = {uid: DELETE_UID, getIdToken: async () => "test-ephemeral-token"};
+const deleteResponse = value => ({ok:true,json:async () => value});
+const deleteSummary = (changes={}) => ({id,status:"draft",revision:1,createdAt:stamp,updatedAt:stamp,...changes});
+function deleteApi(request,currentUser=()=>deleteUser) {
+  return createAssessmentApi(DELETE_UID,createAssessmentRequest({baseUrl:"http://localhost:8000",currentUser,request}));
+}
+
+test("DELETE sends only the saved revision and requires exact owner, id and revision confirmation", async () => {
+  const receipt = { uid: DELETE_UID, deletedId: id, revision: 1 };
+  await deleteApi(async (url, options) => {
+    assert.equal(url, `http://localhost:8000/api/v1/assessments/${id}`);
+    assert.equal(options.method, "DELETE");
+    assert.deepEqual(JSON.parse(options.body), { expectedRevision: 1 });
+    assert.equal(options.headers.Authorization, "Bearer test-ephemeral-token");
+    assert.equal(options.headers["Content-Type"], "application/json");
+    assert.equal(options.credentials, "omit");
+    assert.equal(options.redirect, "error");
+    return deleteResponse(receipt);
+  }).remove(id, 1, signal());
+  for (const changes of [
+    { uid: "foreign" },
+    { deletedId: other },
+    { revision: 2 },
+    { revision: true },
+  ])
+    await assert.rejects(
+      deleteApi(async () => deleteResponse({ ...receipt, ...changes })).remove(
+        id,
+        1,
+        signal(),
+      ),
+    );
+  let calls = 0;
+  const invalid = deleteApi(async () => {
+    calls++;
+    return deleteResponse(receipt);
+  });
+  for (const revision of [0, -1, true, "1", NaN])
+    await assert.rejects(invalid.remove(id, revision, signal()));
+  await assert.rejects(invalid.remove("../bad", 1, signal()));
+  assert.equal(calls, 0);
+});
+
+test("delete errors never parse response bodies and account changes discard late receipts", async () => {
+  for (const status of [401, 403, 404, 409, 503]) {
+    let parsed = false;
+    await assert.rejects(
+      deleteApi(async () => ({
+        ok: false,
+        status,
+        json: async () => {
+          parsed = true;
+          return {};
+        },
+      })).remove(id, 1, signal()),
+      (error) => error.status === status,
+    );
+    assert.equal(parsed, false);
+  }
+  for (const phase of ["token", "http", "json"]) {
+    let current,
+      calls = 0;
+    const account = {
+      uid: DELETE_UID,
+      getIdToken: async () => {
+        if (phase === "token") current = null;
+        return "old";
+      },
+    };
+    current = account;
+    const client = deleteApi(
+      async () => {
+        calls++;
+        if (phase === "http") current = null;
+        return {
+          ok: true,
+          json: async () => {
+            if (phase === "json") current = null;
+            return { uid: DELETE_UID, deletedId: id, revision: 1 };
+          },
+        };
+      },
+      () => current,
+    );
+    await assert.rejects(client.remove(id, 1, signal()));
+    assert.equal(calls, phase === "token" ? 0 : 1);
+  }
+});
+
+test("delete keeps the loaded row until confirmation and refreshed list, blocking double submits", async () => {
+  const confirmation = deferred(),
+    refresh = deferred();
+  let loads = 0,
+    writes = 0;
+  const original = { assessments: [deleteSummary()], nextCursor: null };
+  const resource = new AssessmentResource(() =>
+    ++loads === 1 ? Promise.resolve(original) : refresh.promise,
+  );
+  const stop = resource.start();
+  await tick();
+  const deleting = resource.mutate(async (previous) => {
+    writes++;
+    await confirmation.promise;
+    return previous;
+  }, "delete");
+  await tick();
+  assert.equal(resource.snapshot().value.assessments.length, 1);
+  assert.equal(resource.snapshot().notice, "");
+  await resource.mutate(async (previous) => {
+    writes++;
+    return previous;
+  }, "delete");
+  assert.equal(writes, 1);
+  confirmation.resolve();
+  await tick();
+  assert.equal(resource.snapshot().saving, true);
+  assert.equal(resource.snapshot().value.assessments.length, 1);
+  refresh.resolve({ assessments: [], nextCursor: null });
+  await deleting;
+  assert.equal(resource.snapshot().value.assessments.length, 0);
+  assert.equal(resource.snapshot().notice, "Assessment deleted.");
+  stop();
+});
+
+test("stale or uncertain deletion requires reload and never reports success", async () => {
+  for (const failure of [
+    new AssessmentError(409),
+    new AssessmentError(502),
+    Error("PRIVATE"),
+  ]) {
+    const resource = new AssessmentResource(async () => ({
+      assessments: [deleteSummary()],
+      nextCursor: null,
+    }));
+    const stop = resource.start();
+    await tick();
+    let writes = 0;
+    await resource.mutate(async () => {
+      writes++;
+      throw failure;
+    }, "delete");
+    assert.equal(resource.snapshot().needsReload, true);
+    assert.equal(resource.snapshot().notice, "");
+    assert.equal(resource.snapshot().value.assessments.length, 1);
+    assert(!resource.snapshot().error.includes("PRIVATE"));
+    await resource.mutate(async (previous) => {
+      writes++;
+      return previous;
+    }, "delete");
+    assert.equal(writes, 1);
+    stop();
+  }
+});
+
+test("confirmed deletion followed by failed reload clears stale rows with an accurate message", async () => {
+  let loads = 0;
+  const resource = new AssessmentResource(async () => {
+    if (++loads === 2) throw new AssessmentError(503);
+    return { assessments: loads === 1 ? [deleteSummary()] : [], nextCursor: null };
+  });
+  const stop = resource.start();
+  await tick();
+  await resource.mutate(async (previous) => previous, "delete");
+  assert.equal(resource.snapshot().status, "error");
+  assert.match(resource.snapshot().message, /was deleted/);
+  assert.equal(resource.snapshot().value, undefined);
+  await resource.reload();
+  assert.equal(resource.snapshot().value.assessments.length, 0);
+  stop();
+});
+
+test("delete timeout and unmounted refresh discard late outcomes", async () => {
+  const pending = deferred();
+  const resource = new AssessmentResource(
+    async () => ({ assessments: [deleteSummary()], nextCursor: null }),
+    15,
+  );
+  const stop = resource.start();
+  await tick();
+  await resource.mutate(() => pending.promise, "delete");
+  assert.equal(resource.snapshot().needsReload, true);
+  assert.equal(resource.snapshot().notice, "");
+  pending.resolve({ assessments: [], nextCursor: null });
+  await tick();
+  assert.equal(resource.snapshot().value.assessments.length, 1);
+  stop();
+  let loads = 0;
+  const reload = deferred();
+  const late = new AssessmentResource(() =>
+    ++loads === 1
+      ? Promise.resolve({ assessments: [deleteSummary()], nextCursor: null })
+      : reload.promise,
+  );
+  const cleanup = late.start();
+  await tick();
+  const deleting = late.mutate(async (previous) => previous, "delete");
+  await tick();
+  cleanup();
+  reload.resolve({ assessments: [], nextCursor: null });
+  await deleting;
+  assert.equal(late.snapshot().status, "loading");
+});
