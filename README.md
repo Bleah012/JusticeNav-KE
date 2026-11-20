@@ -126,3 +126,11 @@ Administrators can open Overview, Justice Services and Pathways. The overview co
 ## Development referral workflow
 
 A seeker can share the reference and public source metadata from an existing saved request. An administrator assigns that demonstration to a development provider with a matching service membership. The provider records review and completion. The seeker sees those events in My Referrals and can withdraw sharing. The saved request retains its separate institutional delivery status.
+
+## Catalogue audit history
+
+Administrator → Audit Logs now reads successful Services, Pathways and Resources
+changes from their existing transactional audit collections. It supports record,
+action, reference and Kenya-date filters, event details and bounded cursor paging.
+The viewer never writes events or exposes saved case text. See the
+[audit-log guide](docs/audit-logs.md) for scope and live acceptance checks.

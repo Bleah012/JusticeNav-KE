@@ -54,7 +54,7 @@ The default Firestore document is `publicCatalogue/pathways-v1`. If absent,
 reads expose the reviewed JSON baseline without writing. The first mutation
 persists that baseline plus the change. Each mutation atomically appends a
 metadata-only event to `pathwayCatalogueAudit`. Public responses exclude internal
-notes, revisions and actor IDs. Audit viewer integration is a later batch.
+notes, revisions and actor IDs. Recorded changes appear in [Administrator Audit Logs](audit-logs.md).
 
 Limits: 30 live records, 1,000 reserved deleted IDs, 750,000 serialized UTF-8 bytes
 per state document, 10 entries per guidance list, 15 preparation items and 8

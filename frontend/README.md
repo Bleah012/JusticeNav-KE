@@ -336,3 +336,14 @@ The page checks the verified role before mounting its request controller. Every 
 In My Referrals, open a saved request and opt in to sharing the demonstration metadata. Use `/admin/referrals` to assign shared requests by a development provider UID. Use `/provider` as the assigned provider to start and complete a demo review. Return to My Referrals to read the event history or withdraw sharing. These views use the existing authenticated referral transport and refresh controls. A confirmed update changes the visible status. A conflict or uncertain save requires a refresh before retrying.
 
 Search and browsing remain in the account and catalogue routes. The demonstration queues page through twenty results at a time. Run `node --test tests/demo-referrals.test.cjs` from frontend to verify transport, metadata parsing and saved outcomes.
+
+## Connected administrator audit logs
+
+`/admin/audit-logs` displays recorded successful Services, Pathways and Resources
+changes. Apply record type, action, reference and inclusive Kenya-date filters;
+open read-only details and page through history. Refresh starts with newest events.
+Empty filtered pages may still offer Next. Actor UIDs, target references and saved
+revisions come from the API; descriptions and contacts are excluded. There are no
+edit, delete or export controls. Account changes and failures clear stale rows.
+Run `node --test tests/audit-logs.test.cjs` and follow the
+[live audit-log check](../docs/audit-logs.md).

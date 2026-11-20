@@ -70,8 +70,8 @@ storage returns 503. Error bodies do not echo submitted values or storage errors
 
 The earlier `/api/v1/admin/services` endpoint remains a read-only projection of
 published entries for compatibility. The management page uses the new endpoints.
-Audit events are recorded atomically; connecting their read-only administrator
-viewer is a later batch.
+Audit events are recorded atomically and appear in
+[Administrator Audit Logs](audit-logs.md).
 
 ## Local acceptance check
 

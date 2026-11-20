@@ -452,3 +452,13 @@ accepts manual answers. The request makes no assessment, notification or other
 Firestore write. The API fits the small synthetic corpus in memory on first use
 and reuses the fitted model for subsequent requests. See the
 [issue suggestion notes](../docs/issue-suggestions.md) for evaluation and limits.
+
+## Administrator catalogue audit reads
+
+`GET /api/v1/admin/audit-logs` requires the verified admin role and reads metadata
+from the three existing catalogue audit collections. Responses contain up to 25
+matching events, with cursor pagination and kind/action/reference/Kenya-date
+filters. Reads never append events; failures return redacted 503 rather than
+partial history. Default timestamp indexes are sufficient. No new credential,
+seed or Firestore rule is needed. See [audit-logs.md](../docs/audit-logs.md).
+Run `backend/tests/test_audit_logs.py` with the existing backend checks.

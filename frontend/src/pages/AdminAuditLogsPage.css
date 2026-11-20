@@ -1,0 +1,36 @@
+@layer components {
+  .audit-logs__filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin: 28px 0 20px;
+  }
+  .audit-logs__filters > label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .audit-logs__filters > .admin-pages__search {
+    flex-direction: row;
+    align-self: end;
+  }
+  .audit-logs__filters select,
+  .audit-logs__filters input {
+    min-width: 0;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+  }
+  .audit-logs__filters .seeker-page__actions {
+    align-self: end;
+    margin: 0;
+  }
+  @media (max-width: 760px) {
+    .audit-logs__filters {
+      grid-template-columns: 1fr;
+    }
+  }
+}
