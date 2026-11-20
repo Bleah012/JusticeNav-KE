@@ -79,6 +79,127 @@ const signal = () => new AbortController().signal;
 const result = (value) => ({ ok: true, json: async () => value });
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+const providerResponse = () => ({
+  uid: UID,
+  referralId: KEY,
+  serviceId: shared.serviceId,
+  providers: [{ uid: "provider-one", label: "Development Provider" }],
+});
+
+test("provider dropdown GET validates the exact referral, service and owner and strips extras", async () => {
+  const value = providerResponse();
+  value.providers[0].privateField = "PRIVATE";
+  const api = createDemoReferralApi({
+    ...options,
+    request: async (url, init) => {
+      assert.equal(
+        url,
+        `http://localhost:8000/api/v1/demo-referrals/admin/${KEY}/providers`,
+      );
+      assert.equal(init.method, "GET");
+      assert.equal(init.body, undefined);
+      return result(value);
+    },
+  });
+  const providers = await api.providers(shared, signal());
+  assert.equal(providers[0].label, "Development Provider");
+  assert.equal(providers[0].privateField, undefined);
+  for (const mutate of [
+    (value) => (value.uid = "foreign"),
+    (value) => (value.referralId = "c".repeat(64)),
+    (value) => (value.serviceId = "nlas-legal-aid"),
+    (value) => value.providers.push(value.providers[0]),
+    (value) => (value.providers[0].uid = "invalid uid"),
+    (value) => (value.providers[0].label = ""),
+    (value) => (value.providers[0].label = "PRIVATE\x00"),
+    (value) =>
+      (value.providers = Array.from({ length: 51 }, (_, i) => ({
+        uid: `provider-${i}`,
+        label: "Provider",
+      }))),
+  ]) {
+    const wrong = providerResponse();
+    mutate(wrong);
+    const read = createDemoReferralApi({
+      ...options,
+      request: async () => result(wrong),
+    });
+    await assert.rejects(read.providers(shared, signal()));
+  }
+});
+
+test("empty provider list succeeds, invalid records and failed reads cannot become choices", async () => {
+  const empty = providerResponse();
+  empty.providers = [];
+  const api = createDemoReferralApi({
+    ...options,
+    request: async () => result(empty),
+  });
+  assert.equal((await api.providers(shared, signal())).length, 0);
+  let calls = 0;
+  const invalid = createDemoReferralApi({
+    ...options,
+    request: async () => {
+      calls++;
+      return result(providerResponse());
+    },
+  });
+  await assert.rejects(invalid.providers(assigned, signal()));
+  await assert.rejects(invalid.providers({ ...shared, id: "bad" }, signal()));
+  assert.equal(calls, 0);
+  for (const status of [401, 403, 409, 503]) {
+    let parsed = false;
+    const failed = createDemoReferralApi({
+      ...options,
+      request: async () => ({
+        ok: false,
+        status,
+        json: async () => {
+          parsed = true;
+          return providerResponse();
+        },
+      }),
+    });
+    await assert.rejects(
+      failed.providers(shared, signal()),
+      (error) => error.status === status,
+    );
+    assert.equal(parsed, false);
+  }
+});
+
+test("provider dropdown account switch discards token, HTTP and JSON responses", async () => {
+  for (const phase of ["token", "http", "json"]) {
+    let current,
+      calls = 0;
+    const account = {
+      uid: UID,
+      getIdToken: async () => {
+        if (phase === "token") current = null;
+        return "old-token";
+      },
+    };
+    current = account;
+    const api = createDemoReferralApi({
+      ...options,
+      currentUser: () => current,
+      request: async () => {
+        calls++;
+        if (phase === "http") current = null;
+        return {
+          ok: true,
+          json: async () => {
+            if (phase === "json") current = null;
+            return providerResponse();
+          },
+        };
+      },
+    });
+    await assert.rejects(api.providers(shared, signal()));
+    assert.equal(calls, phase === "token" ? 0 : 1);
+  }
+});
+
 test("metadata parser strips extra fields and rejects fabricated history", () => {
   const parsed = parseDemoRecord({
     ...assigned,
