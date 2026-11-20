@@ -461,6 +461,17 @@ def test_all_save_adapters_queue_a_notification_using_the_same_transaction(
             return store.create("owner", RECORD, update, selection)
 
     store._client = connection
+    if kind == "referral":
+        monkeypatch.setattr(
+            store,
+            "_deletion",
+            lambda uid, identifier: Mock(get=Mock(return_value=Mock(exists=False))),
+        )
+        monkeypatch.setattr(
+            store,
+            "_workflow",
+            lambda uid, identifier: Mock(get=Mock(return_value=Mock(exists=False))),
+        )
     monkeypatch.setattr(
         store, "_collection", lambda uid: Mock(document=Mock(return_value=reference))
     )

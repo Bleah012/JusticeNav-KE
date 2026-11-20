@@ -313,7 +313,7 @@ Run all existing frontend tests plus `node --test tests/dashboard.test.cjs` from
 
 Opening or refreshing the page does not change unread status. Each unread row offers Mark as read. Mark displayed as read applies only to the currently displayed unread rows, not unseen pages or future saves. The controller blocks repeated actions while saving, waits for API confirmation and reloads the list before publishing Read badges. Uncertain failures clear the list and require reload before further writes. A confirmed write followed by a failed refresh is reported separately. The source-record link opens the current saved record, not an editable historical revision. Read state remains saved after browser refresh or sign-out.
 
-These notifications begin with successful saves after this feature is applied. Earlier records remain available in their normal lists but have no retroactively invented notifications. New saves of assessments/checklists create new updates; immutable older referral records are not resubmitted. Fixed titles/body copy are derived from notification kind, never user-entered descriptions or backend-supplied HTML. Read status is not institutional review, email delivery or proof that a person opened the linked record. Preferences, deletion and external notification delivery remain unavailable.
+These notifications begin with successful saves after this feature is applied. Earlier records remain available in their normal lists but have no retroactively invented notifications. New saves of assessments/checklists and edits of unshared referrals create new updates; older events are not resubmitted. Fixed titles/body copy are derived from notification kind, never user-entered descriptions or backend-supplied HTML. Read status is not institutional review, email delivery or proof that a person opened the linked record. Preferences, deletion and external notification delivery remain unavailable.
 
 Demonstration referral assignment, review started and review completed each add an unread update to the seeker's inbox. **View referral** opens the original private request and its current demonstration history. Earlier progress stays in referral history. Existing read controls apply to both progress updates and saved-record updates.
 
@@ -391,3 +391,34 @@ copies still open. Test a different account and an old editor. In two tabs, save
 an edit in one, then attempt stale deletion in the other; reload must be required.
 Existing description, clarification and optional suggestion flows must still work.
 Tests remain in tests/assessments.test.cjs and backend/tests/test_assessments.py.
+
+
+## Manage an unshared saved referral
+
+Open My Referrals, then View details. Manage saved request offers Edit request
+and Delete request only when the API confirms no sharing history exists. Edits
+allow contact fields and description, require a fresh acknowledgement, and keep
+the selected pathway/service and original save date. Save changes waits for an
+exact owner/reference/next-revision/field confirmation. Cancel editing discards
+local edits. No form values are saved in browser storage or page URLs.
+
+Delete request uses a confirmation dialog, sends only the expected revision in an
+authenticated DELETE body, validates the receipt and returns to the freshly
+loaded list. A stale or uncertain mutation blocks further writes until Reload
+referral checks the saved state. A deleted record returns not found; start a new
+request instead of reusing its old link. Historical notification links may no
+longer open it. Shared, withdrawn and completed demonstrations keep their history
+and cannot be edited or deleted. Sharing/withdrawal refreshes the management
+permission; the backend always enforces it even from an older tab.
+
+Live acceptance using non-sensitive development data:
+1. Save a new referral without sharing. Open details, edit name/description,
+   acknowledge and save. Refresh and verify the edits and original service.
+2. Cancel an edit and a deletion; verify the record stays unchanged.
+3. Confirm deletion of that unshared request. Refresh the list and dashboard,
+   and verify the old details link cannot reopen it. Other records stay present.
+4. Share another fresh request. Confirm edit/delete controls disappear; assign
+   a provider, complete review and verify seeker history and notifications.
+5. Withdraw sharing; confirm edit/delete stay unavailable. Another account must
+   not open or mutate either private request. Two-tab stale edits must require
+   reload rather than overwrite a newer save.

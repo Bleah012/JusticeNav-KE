@@ -136,9 +136,15 @@ export function PrivacyNoticePage() {
               the JusticeNav API in the request body, not in the page URL. The
               URL may contain an opaque request reference. Confirmation and
               tracking read your own saved record; they do not contact an
-              institution, verify contact details or send email or SMS. No
-              editing, deletion or retention automation applies to the private
-              request.
+              institution, verify contact details or send email or SMS. Before
+              demonstration sharing, you can edit your contact details and
+              description, or delete the request. Shared requests retain their
+              history and cannot be edited or deleted, even after withdrawal.
+              Deletion removes the private request fields and retains a minimal
+              owner/reference/revision/deletion-time marker to prevent an old
+              form from restoring it. Existing notifications remain; their link
+              may no longer open a deleted request. No automatic retention
+              schedule applies.
             </p>
             <p>
               Selecting Suggest a category asks the authenticated JusticeNav

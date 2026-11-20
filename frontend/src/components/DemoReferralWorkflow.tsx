@@ -65,9 +65,11 @@ function History({ record }: { record: DemoRecord }) {
 export function DemoReferralProgress({
   uid,
   referralId,
+  onChange,
 }: {
   uid: string;
   referralId: string;
+  onChange?: () => void;
 }) {
   const [api] = useState(() => apiFor(uid));
   const [resource] = useState(
@@ -106,11 +108,15 @@ export function DemoReferralProgress({
           variant="secondary"
           disabled={busy}
           onClick={() =>
-            void resource.mutate(
-              async (current, signal) =>
-                current ? api.withdraw(referralId, current, signal) : null,
-              { ...messages, success: "Sharing withdrawn." },
-            )
+            void resource
+              .mutate(
+                async (current, signal) =>
+                  current ? api.withdraw(referralId, current, signal) : null,
+                { ...messages, success: "Sharing withdrawn." },
+              )
+              .then((result) => {
+                if (result) onChange?.();
+              })
           }
         >
           Withdraw sharing
@@ -122,13 +128,14 @@ export function DemoReferralProgress({
           onSubmit={(event) => {
             event.preventDefault();
             if (consent)
-              void resource.mutate(
-                (_, signal) => api.share(referralId, signal),
-                {
+              void resource
+                .mutate((_, signal) => api.share(referralId, signal), {
                   ...messages,
                   success: "Shared for demonstration assignment.",
-                },
-              );
+                })
+                .then((result) => {
+                  if (result) onChange?.();
+                });
           }}
         >
           <label>

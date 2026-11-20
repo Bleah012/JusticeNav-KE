@@ -113,3 +113,47 @@ test("only one save starts and unknown outcome requires reload of same record",a
 test("late save response after unmount is discarded",async()=>{const pending=deferred();const resource=new ReferralResource(async()=>null);const stop=resource.start();await tick();const saving=resource.mutate(()=>pending.promise);await tick();stop();pending.resolve(record());assert.equal(await saving,undefined);assert.equal(resource.snapshot().status,"loading");});
 test("failed load is an error, not empty referrals or confirmation",async()=>{const resource=new ReferralResource(async()=>{throw new ReferralError(503);});const stop=resource.start();await tick();assert.equal(resource.snapshot().status,"error");stop();});
 test("timeout aborts and blocks another save pending reload",async()=>{const resource=new ReferralResource(async()=>null,15);const stop=resource.start();await tick();let aborted=false;await resource.mutate((value,signal)=>new Promise(()=>signal.addEventListener("abort",()=>{aborted=true;})));assert(aborted);assert(resource.snapshot().needsReload);stop();});
+
+const edited = (changes = {}) => record({ revision: 2, updatedAt: "2026-11-04T09:00:00.123457Z", acknowledgedAt: "2026-11-04T09:00:00.123457Z", description: "Updated test request", ...changes });
+test("edited records retain microsecond order and reject invalid revisions or acknowledgement dates", () => {
+  assert.equal(parseReferral(edited(),UID,ID).revision,2);
+  for(const changes of [{revision:0},{revision:1},{revision:1.1},{revision:Number.MAX_SAFE_INTEGER+1},{updatedAt:stamp,acknowledgedAt:stamp},{acknowledgedAt:stamp},{updatedAt:"2025-01-01T00:00:00Z",acknowledgedAt:"2025-01-01T00:00:00Z"}]) assert.throws(()=>parseReferral(edited(changes),UID,ID));
+});
+test("management requires explicit server modification permission", async () => {
+  for(const canModify of [true,false]) assert.equal((await api(async()=>response({referral:record(),canModify})).managed(ID,signal())).canModify,canModify);
+  for(const canModify of [undefined,"true",1]) await assert.rejects(api(async()=>response({referral:record(),canModify})).managed(ID,signal()));
+});
+test("edit whitelists private fields and validates the exact next saved revision", async()=>{
+  let sent;const clean={...contact,description:"Updated test request"};
+  const result=await api(async(url,options)=>{sent={url,options};return response({referral:edited()});}).update(record(),{...clean,uid:"foreign",serviceId:"injected",status:"completed"},signal());
+  assert.equal(result.revision,2);const payload=JSON.parse(sent.options.body);
+  assert.deepEqual(Object.keys(payload).sort(),["fullName","email","phone","contactMethod","description","acknowledged","expectedRevision"].sort());
+  assert.equal(payload.expectedRevision,1);assert.equal(sent.options.method,"PUT");assert(!sent.url.includes(clean.description));
+  for(const change of [{revision:3},{description:"not confirmed"},{savedAt:"2026-01-01T00:00:00Z"},{selection:{...source,service:{...source.service,name:"changed"}}},{uid:"foreign"}]) await assert.rejects(api(async()=>response({referral:edited(change)})).update(record(),clean,signal()));
+});
+test("delete requires an exact owner, reference and revision receipt",async()=>{
+  let sent;await api(async(url,options)=>{sent=options;return response({uid:UID,deletedId:ID,revision:2});}).remove(edited(),signal());
+  assert.equal(sent.method,"DELETE");assert.deepEqual(JSON.parse(sent.body),{expectedRevision:2});assert.equal(sent.headers["Content-Type"],"application/json");
+  for(const change of [{uid:"foreign"},{deletedId:"b".repeat(32)},{revision:1},{revision:"2"}]) await assert.rejects(api(async()=>response({uid:UID,deletedId:ID,revision:2,...change})).remove(edited(),signal()));
+});
+test("invalid edits never send HTTP and unsuccessful mutations never report success",async()=>{
+  let calls=0;const client=api(async()=>{calls++;throw Error("unexpected request");});
+  await assert.rejects(client.update(record(),{...contact,acknowledged:false},signal()));
+  await assert.rejects(client.remove(record({uid:"foreign"}),signal()));assert.equal(calls,0);
+  for(const status of [401,403,404,409,422,503]){
+    const failing=api(async()=>({ok:false,status}));
+    await assert.rejects(failing.update(record(),contact,signal()),error=>error.status===status);
+    await assert.rejects(failing.remove(record(),signal()),error=>error.status===status);
+  }
+});
+test("account changes discard edit and deletion responses",async()=>{
+  for(const operation of ["update","remove"]){let current=user;const client=api(async()=>({ok:true,json:async()=>{current=null;return operation==="update"?{referral:edited()}:{uid:UID,deletedId:ID,revision:1};}}),()=>current);
+    await assert.rejects(operation==="update"?client.update(record(),{...contact,description:"Updated test request"},signal()):client.remove(record(),signal()),error=>error.status===401);
+  }
+});
+test("uncertain deletion blocks retries and reload confirms absence",async()=>{
+  let loads=0,writes=0;const resource=new ReferralResource(async()=>{if(loads++)throw new ReferralError(404);return {record:record(),canModify:true};});const stop=resource.start();await tick();
+  await resource.mutate(async()=>{writes++;throw Error("lost receipt");},{unconfirmed:"Reload to check deletion."});
+  assert.equal(resource.snapshot().notice,"");assert(resource.snapshot().needsReload);await resource.mutate(async value=>{writes++;return value;});assert.equal(writes,1);
+  await resource.reload();assert.equal(resource.snapshot().status,"error");stop();
+});

@@ -211,4 +211,36 @@
   }
 }
 
-@layer components { .referral-request__fields { border: 0; padding: 0; margin: 0; min-width: 0; } .referral-request__fields legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+@layer components {
+  .referral-request__fields {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+  }
+  .referral-request__fields legend {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+.referral-management {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1rem;
+}
+.referral-management__fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 1rem;
+}
+.referral-management__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

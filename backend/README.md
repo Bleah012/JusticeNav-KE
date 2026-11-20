@@ -372,14 +372,14 @@ index, seed, migration or new dependency is needed.
 ## Private project referrals
 
 - `GET /api/v1/referrals/selection/{pathwayId}` resolves the existing catalogue's linked service and a versioned source snapshot. It creates nothing.
-- `PUT /api/v1/referrals/{32hexId}` creates one immutable request. Body: `pathwayId`, `serviceId`, `selectionVersion`, `fullName`, `email`, `phone` (nullable E.164), `contactMethod` (`email`/`phone`), `description` (1â€“1500), `acknowledged: true`, `expectedRevision: 0`.
+- `PUT /api/v1/referrals/{32hexId}` creates one private request. Body: `pathwayId`, `serviceId`, `selectionVersion`, `fullName`, `email`, `phone` (nullable E.164), `contactMethod` (`email`/`phone`), `description` (1â€“1500), `acknowledged: true`, `expectedRevision: 0`.
 - `GET /api/v1/referrals/{32hexId}` reads only the verified account's request. `GET /api/v1/referrals?after={32hexId}&limit=20` returns metadata-only pages in document-ID order, not chronological order. Limits are 1â€“50. Cursor records must belong to the same owner.
 
 Firestore namespace: `referralOwners/{sha256(uid)}/referrals/{32hexId}` in `(default)`. No new index or browser Firestore permission is required. Existing deny-all client rules stay in place. Admin SDK access uses the existing backend credentials; ownership is enforced by API paths and stored owner checks.
 
 The backend derives `uid`, revision 1, timestamps, `scope=school-demonstration`, `status=saved`, `deliveryStatus=not-sent`, acknowledgement version `project-request-v1`, and the immutable public snapshot. A transaction creates only once; repeats return 409 without overwriting. A source-version or service/pathway mismatch returns 409. Own missing records/cursors return 404, invalid inputs return redacted 422, unavailable/corrupt storage returns 503. Contact and description fields are omitted from list responses. Source-review dates are encoded as ISO calendar strings; server timestamps remain Firestore timestamps.
 
-Saving creates a private immutable request and an account update. The separate development workflow described below handles sharing and progress. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.
+Saving creates a private request and an account update. The separate development workflow described below handles sharing and progress. Use non-sensitive test inputs. Tests mock Firestore and token verification and never use live credentials.
 
 
 ## Own-account dashboard
@@ -390,7 +390,7 @@ Counts use an unbounded `count(alias="total")` query per owner collection, not t
 
 The response contains verified `uid`, strict nonnegative integer `counts` (`assessments`, `checklists`, `referrals`), `latestChecklist` (the existing safe checklist-summary fields), `latestReferral` (the existing referral-summary fields), `activity` (kind, opaque ID, saved timestamp and assessment status only) and `refreshedAt`. It excludes descriptions, clarification answers, personal names, emails, phone numbers, tokens and profile fields. Referrals retain only `status=saved` and `deliveryStatus=not-sent`.
 
-Activity merges at most six records from each kind, then returns the six most recent latest saves. Each kind/record appears once. It is not an event log. Latest checklist means greatest `(updatedAt, id)` in that account; its progress is saved selected items divided by that checklist's items, not account-wide completion or evidence verification. Latest referral means greatest `(updatedAt, id)`; current referral records are immutable. Counts, recent queries and refresh time are separate reads, not a transactionally atomic snapshot; refresh after concurrent changes. Detected contradictory results fail closed and can be retried.
+Activity merges at most six records from each kind, then returns the six most recent latest saves. Each kind/record appears once. It is not an event log. Latest checklist means greatest `(updatedAt, id)` in that account; its progress is saved selected items divided by that checklist's items, not account-wide completion or evidence verification. Latest referral means greatest `(updatedAt, id)`; unshared referrals can be edited; deleted referrals leave the active collection. Counts, recent queries and refresh time are separate reads, not a transactionally atomic snapshot; refresh after concurrent changes. Detected contradictory results fail closed and can be retried.
 
 The installed Firestore SDK can decode an integer-zero aggregate as `0.0`. The adapter normalizes only this zero representation; nonintegral, negative, boolean, unsafe or unexpected values are rejected. Regression tests exercise the real SDK decoder and query builders with network methods mocked. No live credentials are used in tests.
 
@@ -502,3 +502,36 @@ state rather than an incomplete list. Account labels use Firebase display name
 and email (with a generic fallback). Only administrators receive these choices.
 An empty list means no active provider is registered for the service. A failed
 lookup shows a retry state. This does not represent institutional referral delivery.
+
+
+## Referral edits and deletion before sharing
+
+`GET /api/v1/referrals/{id}` additionally returns `canModify`, true only while no
+`demoReferralWorkflows/{scoped_key(uid,id)}` document exists. This is a UI hint;
+all writes enforce the same policy in Firestore transactions. Any sharing history,
+including withdrawn/completed history, locks editing and deletion with 409.
+
+`PUT /api/v1/referrals/{id}` also accepts an edit body containing only `fullName`,
+`email`, nullable `phone`, `contactMethod`, `description`, `acknowledged: true`,
+and positive `expectedRevision`. It compares revisions, updates those private
+fields, advances revision and acknowledgement/update timestamps, and queues a
+metadata-only saved notification atomically. Original `savedAt`, selected public
+snapshot, status and delivery status stay fixed. Creation still requires revision
+0 and the original selection fields; extras and invalid inputs return redacted 422.
+
+`DELETE /api/v1/referrals/{id}` accepts `{ "expectedRevision": <current revision> }`
+and confirms `{ "uid": <verified owner>, "deletedId": <id>, "revision": <revision> }`.
+It deletes the private record and atomically creates a minimal marker at
+`referralOwners/{sha256(uid)}/deletedReferrals/{id}` with owner, reference,
+revision and deletion time. An old create cannot resurrect that reference (404).
+There is no cascade deletion or deletion notification. Previous notifications
+remain, but their source link returns 404. Dashboard counts reflect active records
+on refresh. Foreign/missing records return 404; stale writes return 409; storage
+failures return 503. A lost response must be resolved by GET before another write.
+
+Sharing now rereads the owned private record and its revision inside the handoff
+transaction. Edit/delete transactions read the same handoff document before
+writing. Concurrent sharing and editing/deletion therefore retry or conflict,
+rather than creating a handoff pointing to a deleted or changed private record.
+Existing revision-1 records require no migration. No dependencies, credentials,
+client permissions, indexes or deployment settings change.
