@@ -142,3 +142,12 @@ requests, before any demonstration sharing. Shared requests retain their history
 and stay locked after withdrawal or completion. The existing three-role
 demonstration flow remains available. See the backend and frontend READMEs for
 the API contract and acceptance checks.
+
+## Administrator account creation
+
+Administrator → Users now reads Firebase Authentication account metadata and
+creates separate provider or administrator accounts. Providers select a published
+service and become available in matching demonstration assignments. Public
+registration continues to create seekers. Existing accounts cannot be re-roled,
+disabled or deleted from this page. See the backend and frontend guides for setup
+and acceptance checks.

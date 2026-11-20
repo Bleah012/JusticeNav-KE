@@ -140,6 +140,13 @@ export function TermsOfUsePage() {
               to the JusticeNav API. Signing in does not establish eligibility,
               create a saved assessment or send a referral to an institution.
             </p>
+            <p>
+              Public registration creates a seeker account. Only an authenticated
+              administrator can create a provider or administrator account
+              through User management. Provider accounts are associated with
+              one published service for the school demonstration. Creating an
+              account does not establish institutional authority or partnership.
+            </p>
           </section>
 
           <section id="terms-sources" aria-labelledby="terms-sources-title">

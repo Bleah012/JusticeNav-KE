@@ -535,3 +535,43 @@ writing. Concurrent sharing and editing/deletion therefore retry or conflict,
 rather than creating a handoff pointing to a deleted or changed private record.
 Existing revision-1 records require no migration. No dependencies, credentials,
 client permissions, indexes or deployment settings change.
+
+## Administrator account creation
+
+`GET /api/v1/admin/users?after={cursor}` requires a verified admin token and calls
+Firebase Authentication with `max_results=50`. It returns the requesting admin UID,
+account name/email, role, disabled status, provider service, creation/sign-in times
+and a next cursor. It never returns password hashes, tokens, arbitrary custom
+claims, private profiles, assessments or referrals. Counts and filters in the UI
+apply to the current page, not to the complete project user population.
+
+`PUT /api/v1/admin/users/{32hexCreationId}` accepts `name`, `email`, `password`
+(12–128 characters), `role` (`provider` or `admin`), nullable `serviceId` (required
+only for a provider) and `confirmed: true`. Provider services must currently be
+published in the managed catalogue. Extra fields are rejected. Validation errors
+are redacted. Public self-registration remains seeker-only; no existing-account
+role editing, disable, delete or export endpoint is added.
+
+The Admin SDK creates UID `jn-{creationId}` disabled, assigns the exact new role
+and provider membership, reads back those claims, enables the account, then reads
+back the active account before confirming. The initial password is used only by
+Firebase Authentication creation; it is not stored in Firestore, returned, printed
+or added to a page URL. No welcome email is sent and the creating administrator
+stays signed in. Use Firebase password reset separately when needed.
+
+A duplicate email/creation UID returns 409 and never changes the existing account.
+If setup is interrupted the response is 503, not success; an account may already
+exist and may remain disabled. `GET /api/v1/admin/users/created/{creationId}` reads
+that exact UID without writing. Reload accounts inspects this reference before
+allowing another attempt. After a full page reload, inspect the account by email
+in the Users list or Firebase Console before trying again. Do not automatically
+retry a write or enable a partially configured account without checking its role.
+If an account is disabled after an interrupted creation, inspect its role and
+provider membership locally in Firebase Console; use the existing local role tool
+only when needed, then enable the account after verifying the intended setup.
+
+These operations reuse the configured backend Firebase Admin credentials. The
+credential must permit Firebase Authentication listing, creation, custom-claim
+updates and enabling accounts. No Firestore collections, client rules, indexes,
+seeding, migrations or new packages are required. The first admin is still set up
+with the existing local role tool. Tests mock all Firebase operations.
