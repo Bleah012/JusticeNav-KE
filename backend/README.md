@@ -321,6 +321,9 @@ Authenticated endpoints:
 - `GET /api/v1/checklists/{checklistId}`: owner's saved source snapshot and progress.
 - `PUT /api/v1/checklists/{checklistId}`: explicit create/update with pathwayId,
   templateVersion, checkedIds and expectedRevision. Other fields are rejected.
+- `DELETE /api/v1/checklists/{checklistId}`: delete the verified account's checklist
+  with JSON `expectedRevision` matching its saved revision. The response confirms
+  uid, deletedId and that revision. Stale data returns 409; missing data returns 404.
 
 Storage is `checklistOwners/{sha256(uid)}/checklists/{32-hex-reference}` in the
 existing default Firestore database. The API derives the owner from the verified
@@ -341,9 +344,18 @@ browser database access; Admin SDK IAM and these API owner checks govern access.
 
 The browser blocks duplicate submits and uncertain retries until reload. A timeout
 cannot establish whether a server commit occurred; the same ID is retained for
-recovery. No delete, referral, notification, upload or institutional verification is
-added. Saved ticks are preparation progress only. The adapter follows the existing
+recovery. Saved ticks are preparation progress only. The adapter follows the existing
 transaction pattern; see [Firestore transactions](https://firebase.google.com/docs/firestore/manage-data/transactions).
+
+Deletion uses one transaction to check owner/revision, remove the checklist and
+reserve its opaque ID in `checklistOwners/{sha256(uid)}/deletedChecklists/{id}`.
+This minimal marker contains only owner/reference, revision and deletion time; a
+late create or stale editor cannot restore that reference. New checklists use new
+IDs. Markers are outside the active collection, so refreshed dashboard counts and
+recent-checklist results reflect deletion. Assessments, referrals and existing
+notification history are unchanged; an old checklist notification may open a 404.
+Deletion creates no new notification. Existing credentials and rules apply; no
+index, seed, migration or new dependency is needed.
 
 
 ## Private project referrals

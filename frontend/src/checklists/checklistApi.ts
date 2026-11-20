@@ -57,7 +57,7 @@ export function parseChecklist(value: unknown, uid: string, id: string): Checkli
 }
 // Only validated opaque references and fixed filters enter URLs. Progress is a PUT body.
 export function createChecklistApi({ baseUrl, uid, currentUser, request = fetch }: { baseUrl: string; uid: string; currentUser: () => User | null; request?: typeof fetch }) {
-  async function read(path: string, method: "GET" | "PUT", body: unknown, signal: AbortSignal, query?: Query) {
+  async function read(path: string, method: "GET" | "PUT" | "DELETE", body: unknown, signal: AbortSignal, query?: Query) {
     const user = currentUser();
     const active = () => !signal.aborted && currentUser() === user && user?.uid === uid;
     if (!user || !active()) throw new ChecklistError(401);
@@ -66,7 +66,7 @@ export function createChecklistApi({ baseUrl, uid, currentUser, request = fetch 
     const url = new URL(`${apiOrigin(baseUrl)}/api/v1/checklists${path}`);
     if (query?.status) url.searchParams.set("status", query.status);
     if (query?.after) url.searchParams.set("after", query.after);
-    const response = await request(url.href, { method, headers: { Authorization: `Bearer ${token}`, ...(method === "PUT" ? { "Content-Type": "application/json" } : {}) }, ...(method === "PUT" ? { body: JSON.stringify(body) } : {}), signal, credentials: "omit", redirect: "error", cache: "no-store", referrerPolicy: "no-referrer" });
+    const response = await request(url.href, { method, headers: { Authorization: `Bearer ${token}`, ...(method !== "GET" ? { "Content-Type": "application/json" } : {}) }, ...(method !== "GET" ? { body: JSON.stringify(body) } : {}), signal, credentials: "omit", redirect: "error", cache: "no-store", referrerPolicy: "no-referrer" });
     if (!active()) throw new ChecklistError(401);
     if (!response.ok) throw new ChecklistError(response.status);
     const value: unknown = await response.json();
@@ -81,6 +81,24 @@ export function createChecklistApi({ baseUrl, uid, currentUser, request = fetch 
     },
     async get(id: string, signal: AbortSignal) {
       checkId(id); return parseChecklist(object(await read(`/${id}`, "GET", undefined, signal)).checklist, uid, id);
+    },
+    async remove(
+      id: string,
+      revision: number,
+      signal: AbortSignal,
+    ): Promise<void> {
+      checkId(id);
+      if (!Number.isSafeInteger(revision) || revision < 1)
+        throw new ChecklistError(422);
+      const result = object(
+        await read(`/${id}`, "DELETE", { expectedRevision: revision }, signal),
+      );
+      if (
+        result.uid !== uid ||
+        result.deletedId !== id ||
+        result.revision !== revision
+      )
+        throw new ChecklistError(502);
     },
     async save(id: string, template: ChecklistTemplate, checkedIds: string[], revision: number, signal: AbortSignal) {
       checkId(id); const validated = parseTemplate(template);

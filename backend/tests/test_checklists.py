@@ -46,6 +46,7 @@ class Verifier:
 class MemoryStore:
     def __init__(self):
         self.records, self.calls, self.lock = {}, [], Lock()
+        self.deleted = set()
 
     def get(self, uid, identifier):
         self.calls.append(("get", uid, identifier))
@@ -57,11 +58,25 @@ class MemoryStore:
     def save(self, uid, identifier, update, template=None):
         with self.lock:
             self.calls.append(("save", uid, identifier))
+            if (uid, identifier) in self.deleted:
+                raise ChecklistMissing
             record = next_record(
                 uid, identifier, self.records.get((uid, identifier)), update, template
             )
             self.records[uid, identifier] = record
             return record
+
+    def delete(self, uid, identifier, revision):
+        with self.lock:
+            self.calls.append(("delete", uid, identifier))
+            record = self.get(uid, identifier)
+            if record.revision != revision:
+                raise ChecklistConflict
+            self.deleted.add((uid, identifier))
+            del self.records[uid, identifier]
+            return checklists.ChecklistDeleted(
+                uid=uid, deletedId=identifier, revision=revision
+            )
 
     def list(self, uid, status, cursor, limit):
         self.calls.append(("list", uid, cursor))
@@ -395,6 +410,11 @@ def transaction_fixture(monkeypatch, record=None):
     monkeypatch.setattr(
         store, "_collection", lambda uid: Mock(document=Mock(return_value=reference))
     )
+    monkeypatch.setattr(
+        store,
+        "_deletion",
+        Mock(return_value=Mock(get=Mock(return_value=Mock(exists=False)))),
+    )
     return store, reference, transaction
 
 
@@ -514,3 +534,259 @@ def test_empty_template_is_empty_not_complete_and_snapshots_cannot_be_switched()
             ChecklistUpdate.model_validate(body(checked=["foreign-item"])),
             template(),
         )
+
+
+@pytest.mark.parametrize(
+    "token,expected", [(None, 401), ("invalid", 401), ("unavailable", 503)]
+)
+def test_delete_requires_authentication_before_storage(token, expected):
+    store = MemoryStore()
+    with client(store) as api:
+        result = api.request(
+            "DELETE",
+            URL + "/" + ID,
+            headers=headers(token) if token else {},
+            json={"expectedRevision": 1},
+        )
+    assert result.status_code == expected and not store.calls
+
+
+def test_delete_uses_saved_revision_owner_scope_and_refreshes_dashboard():
+    from app.dashboard import compose
+
+    store = MemoryStore()
+
+    class Dashboard:
+        def get(self, uid):
+            rows = [
+                record for (owner, _), record in store.records.items() if owner == uid
+            ]
+            return compose(uid, (0, []), (len(rows), rows), (0, []))
+
+    with client(store) as api:
+        api.app.state.dashboard_store = Dashboard()
+        untouched = Mock()
+        api.app.state.assessment_store = untouched
+        api.app.state.referral_store = untouched
+        api.app.state.notification_store = untouched
+        for owner, identifier in [("user-a", ID), ("user-a", OTHER), ("user-b", ID)]:
+            assert (
+                api.put(
+                    URL + "/" + identifier, headers=headers(owner), json=body()
+                ).status_code
+                == 200
+            )
+        assert (
+            api.get("/api/v1/dashboard", headers=headers()).json()["counts"][
+                "checklists"
+            ]
+            == 2
+        )
+        assert (
+            api.put(
+                URL + "/" + ID,
+                headers=headers(),
+                json=body(revision=1, checked=[template().items[0].id]),
+            ).status_code
+            == 200
+        )
+        stale = api.request(
+            "DELETE", URL + "/" + ID, headers=headers(), json={"expectedRevision": 1}
+        )
+        assert stale.status_code == 409
+        deleted = api.request(
+            "DELETE",
+            URL + "/" + ID + "?uid=user-b",
+            headers=headers(),
+            json={"expectedRevision": 2},
+        )
+        assert (
+            deleted.status_code == 200
+            and deleted.headers["cache-control"] == "no-store"
+        )
+        assert deleted.json() == {"uid": "user-a", "deletedId": ID, "revision": 2}
+        assert api.get(URL + "/" + ID, headers=headers()).status_code == 404
+        assert api.get(URL + "/" + ID, headers=headers("user-b")).status_code == 200
+        assert [
+            row["id"] for row in api.get(URL, headers=headers()).json()["checklists"]
+        ] == [OTHER]
+        dashboard = api.get("/api/v1/dashboard", headers=headers()).json()
+        assert (
+            dashboard["counts"]["checklists"] == 1
+            and dashboard["latestChecklist"]["id"] == OTHER
+        )
+        assert all(row["id"] != ID for row in dashboard["activity"])
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=body()).status_code == 404
+        )
+        assert (
+            api.put(
+                URL + "/" + ID, headers=headers(), json=body(revision=2)
+            ).status_code
+            == 404
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 2},
+            ).status_code
+            == 404
+        )
+    assert not untouched.mock_calls
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {},
+        {"expectedRevision": 0},
+        {"expectedRevision": -1},
+        {"expectedRevision": True},
+        {"expectedRevision": "1"},
+        {"expectedRevision": 1, "uid": "PRIVATE"},
+    ],
+)
+def test_invalid_delete_input_is_redacted_before_storage(payload):
+    store = MemoryStore()
+    with client(store) as api:
+        result = api.request("DELETE", URL + "/" + ID, headers=headers(), json=payload)
+    assert (
+        result.status_code == 422 and "PRIVATE" not in result.text and not store.calls
+    )
+
+
+def test_delete_cannot_target_another_owners_record():
+    store = MemoryStore()
+    with client(store) as api:
+        assert (
+            api.put(URL + "/" + ID, headers=headers("user-b"), json=body()).status_code
+            == 200
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 404
+        )
+        assert api.get(URL + "/" + ID, headers=headers("user-b")).status_code == 200
+
+
+def test_delete_storage_failure_and_foreign_confirmation_are_not_success():
+    store = Mock()
+    with client(store) as api:
+        store.delete.side_effect = ChecklistUnavailable("PRIVATE")
+        response = api.request(
+            "DELETE", URL + "/" + ID, headers=headers(), json={"expectedRevision": 1}
+        )
+        assert response.status_code == 503 and "PRIVATE" not in response.text
+        store.delete.side_effect = None
+        store.delete.return_value = checklists.ChecklistDeleted(
+            uid="foreign", deletedId=ID, revision=1
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 503
+        )
+
+
+def test_firestore_delete_is_atomic_revision_checked_and_keeps_only_marker(monkeypatch):
+    store, reference, transaction = transaction_fixture(monkeypatch, saved())
+    marker = store._deletion.return_value
+    result = store.delete("user-a", ID, 1)
+    assert result.model_dump(by_alias=True) == {
+        "uid": "user-a",
+        "deletedId": ID,
+        "revision": 1,
+    }
+    reference.get.assert_called_once_with(
+        transaction=transaction, retry=None, timeout=10
+    )
+    transaction.delete.assert_called_once_with(reference)
+    marker_ref, data = transaction.create.call_args.args
+    assert marker_ref is marker and set(data) == {
+        "uid",
+        "deletedId",
+        "revision",
+        "deletedAt",
+    }
+    encode_dict(data)
+    assert transaction.create.call_count == 1
+    transaction.set.assert_not_called()
+    for existing, revision, error in [
+        (saved(), 2, ChecklistConflict),
+        (saved().model_copy(update={"uid": "foreign"}), 1, ChecklistUnavailable),
+        (None, 1, ChecklistMissing),
+    ]:
+        store, _, transaction = transaction_fixture(monkeypatch, existing)
+        with pytest.raises(error):
+            store.delete("user-a", ID, revision)
+        transaction.delete.assert_not_called()
+        transaction.create.assert_not_called()
+
+
+def test_deleted_reference_cannot_be_recreated_by_a_late_first_save(monkeypatch):
+    from datetime import UTC, datetime
+
+    store, _, transaction = transaction_fixture(monkeypatch)
+    marker = checklists.DeletionMarker(
+        uid="user-a", deletedId=ID, revision=1, deletedAt=datetime.now(UTC)
+    )
+    snapshot = store._deletion.return_value.get.return_value
+    snapshot.exists = True
+    snapshot.to_dict.return_value = marker.model_dump(by_alias=True)
+    with pytest.raises(ChecklistMissing):
+        store.save("user-a", ID, ChecklistUpdate.model_validate(body()), template())
+    transaction.create.assert_not_called()
+    transaction.set.assert_not_called()
+    snapshot.to_dict.return_value = marker.model_copy(
+        update={"uid": "foreign"}
+    ).model_dump(by_alias=True)
+    with pytest.raises(ChecklistUnavailable):
+        store.save("user-a", ID, ChecklistUpdate.model_validate(body()), template())
+
+
+def test_marker_path_is_outside_active_checklists_and_uses_hashed_owner():
+    import hashlib
+
+    from google.auth.credentials import AnonymousCredentials
+    from google.cloud.firestore_v1 import Client
+
+    store = FirestoreChecklistStore(Settings(_env_file=None))
+    store._client = Client(
+        project="checklist-delete-test", credentials=AnonymousCredentials()
+    )
+    owner = hashlib.sha256(b"user-a").hexdigest()
+    assert (
+        store._deletion("user-a", ID).path
+        == f"checklistOwners/{owner}/deletedChecklists/{ID}"
+    )
+
+
+def test_concurrent_edit_and_delete_cannot_silently_overwrite_each_other():
+    store = MemoryStore()
+    store.save("user-a", ID, ChecklistUpdate.model_validate(body()), template())
+
+    def change(action):
+        try:
+            if action == "delete":
+                store.delete("user-a", ID, 1)
+            else:
+                store.save(
+                    "user-a", ID, ChecklistUpdate.model_validate(body(revision=1))
+                )
+            return "ok"
+        except ChecklistMissing, ChecklistConflict:
+            return "blocked"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        assert sorted(pool.map(change, ["delete", "edit"])) == ["blocked", "ok"]

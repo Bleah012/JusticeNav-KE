@@ -67,30 +67,77 @@ export class ChecklistResource<T> {
         this.publish({ status: "error", message: loadError(error) });
     }
   };
-  mutate = async (operation: (value: T, signal: AbortSignal) => Promise<T>): Promise<T | undefined> => {
+  mutate = async (
+    operation: (value: T, signal: AbortSignal) => Promise<T>,
+    mode: "save" | "delete" = "save",
+  ): Promise<T | undefined> => {
     const previous = this.value;
-    if (!this.active || previous.status !== "ready" || previous.saving || previous.needsReload)
+    if (
+      !this.active ||
+      previous.status !== "ready" ||
+      previous.saving ||
+      previous.needsReload
+    )
       return;
     this.invalidate();
     const ticket = this.epoch;
     this.publish({ ...previous, saving: true, error: "", notice: "" });
+    let confirmed = false;
     try {
-      const value = await this.deadline((signal) => operation(previous.value, signal));
-      if (!this.active || ticket !== this.epoch)
-        return;
-      this.publish({ status: "ready", value, saving: false, needsReload: false, error: "", notice: "Your checklist was saved." });
+      let value = await this.deadline((signal) =>
+        operation(previous.value, signal),
+      );
+      confirmed = true;
+      if (!this.active || ticket !== this.epoch) return;
+      if (mode === "delete") value = await this.deadline(this.loader);
+      if (!this.active || ticket !== this.epoch) return;
+      this.publish({
+        status: "ready",
+        value,
+        saving: false,
+        needsReload: false,
+        error: "",
+        notice:
+          mode === "delete"
+            ? "Checklist deleted."
+            : "Your checklist was saved.",
+      });
       return value;
-    }
-    catch (cause) {
-      if (!this.active || ticket !== this.epoch)
+    } catch (cause) {
+      if (!this.active || ticket !== this.epoch) return;
+      if (mode === "delete" && confirmed) {
+        this.publish({
+          status: "error",
+          message:
+            "The checklist was deleted, but the list could not be refreshed. Reload My Checklists.",
+        });
         return;
-      if (cause instanceof ChecklistError && [401, 403, 404].includes(cause.status)) {
+      }
+      if (
+        cause instanceof ChecklistError &&
+        [401, 403, 404].includes(cause.status)
+      ) {
         this.publish({ status: "error", message: loadError(cause) });
         return;
       }
       const invalid = cause instanceof ChecklistError && cause.status === 422;
       const conflict = cause instanceof ChecklistError && cause.status === 409;
-      this.publish({ ...previous, saving: false, notice: "", needsReload: !invalid, error: invalid ? "Check the preparation items before saving again." : conflict ? "This checklist or source template changed. Reload its saved version before saving again. Your edits remain in this form until you reload." : "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Checklists." });
+      this.publish({
+        ...previous,
+        saving: false,
+        notice: "",
+        needsReload: !invalid,
+        error:
+          mode === "delete"
+            ? conflict
+              ? "This checklist changed. Reload My Checklists before deleting again."
+              : "Deletion could not be confirmed. Reload My Checklists and check whether it is still listed before trying again."
+            : invalid
+              ? "Check the preparation items before saving again."
+              : conflict
+                ? "This checklist or source template changed. Reload its saved version before saving again. Your edits remain in this form until you reload."
+                : "The save could not be confirmed. Reload to check the saved version before trying again. You can also check My Checklists.",
+      });
     }
   };
 }

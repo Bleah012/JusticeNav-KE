@@ -93,6 +93,13 @@ export function PrivacyNoticePage() {
               timestamps in Firestore. Unsaved edits remain in page memory and
               are discarded on refresh or departure.
             </p>
+            <p>
+              Delete checklist in My Checklists removes that saved checklist
+              and its preparation progress. Minimal deletion metadata is retained
+              to prevent old tabs from restoring it. Earlier saved-record
+              notifications remain; their checklist link may no longer open a
+              record. Assessments and referrals are kept separately.
+            </p>
           </section>
 
           <section id="privacy-forms" aria-labelledby="privacy-forms-title">
