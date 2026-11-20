@@ -12,6 +12,8 @@ from pydantic import BaseModel
 from .admin_catalog import router as admin_catalog_router
 from .assessments import AssessmentStore, FirestoreAssessmentStore
 from .assessments import router as assessment_router
+from .audit_logs import FirestoreAuditRepository
+from .audit_logs import router as audit_logs_router
 from .auth import CurrentUser, FirebaseTokenVerifier, TokenVerifier, get_current_user
 from .catalog import CatalogStore
 from .catalog import router as catalog_router
@@ -62,6 +64,7 @@ def create_app(
     service_repository=None,
     pathway_repository=None,
     resource_repository=None,
+    audit_repository=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -159,6 +162,12 @@ def create_app(
     app.include_router(service_management_router)
     app.include_router(pathway_management_router)
     app.include_router(resource_management_router)
+    app.state.audit_repository = (
+        audit_repository
+        if audit_repository is not None
+        else FirestoreAuditRepository(settings)
+    )
+    app.include_router(audit_logs_router)
     app.state.demo_referrals_enabled = settings.app_env in {"development", "test"}
     app.state.demo_referral_store = (
         demo_referral_store
@@ -177,6 +186,13 @@ def create_app(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/admin/audit-logs"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid audit filters or cursor. Reload the first page."
+                },
+            )
         if request.url.path.startswith("/api/v1/admin/resource-records"):
             return JSONResponse(
                 status_code=422,

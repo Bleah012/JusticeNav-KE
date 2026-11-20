@@ -20,6 +20,7 @@ export function AdminOperationsTable<T>({
   columns,
   rowKey,
   emptyTitle,
+  paginate = true,
 }: {
   title: string;
   subject: string;
@@ -29,13 +30,16 @@ export function AdminOperationsTable<T>({
   columns: readonly AdminColumn<T>[];
   rowKey: (record: T) => string;
   emptyTitle: string;
+  paginate?: boolean;
 }) {
   const [page, setPage] = useState(1);
   const pageSize = 10;
   const pageCount = Math.max(1, Math.ceil((records?.length ?? 0) / pageSize));
   const currentPage = Math.min(page, pageCount);
-  const visible =
-    records?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ?? [];
+  const visible = !paginate
+    ? (records ?? [])
+    : (records?.slice((currentPage - 1) * pageSize, currentPage * pageSize) ??
+      []);
 
   return (
     <>
@@ -98,7 +102,7 @@ export function AdminOperationsTable<T>({
           </tbody>
         </table>
       </div>
-      {records && (
+      {records && paginate && (
         <div className="admin-pages__pagination">
           <span role="status">
             {records.length

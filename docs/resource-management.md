@@ -36,7 +36,7 @@ The Firestore document is `publicCatalogue/resources-v1`. Reads of a missing
 document expose the baseline without writing. The first explicit mutation saves
 that baseline and the change. Each subsequent write uses a revision-checked
 transaction and atomically creates metadata in `resourceCatalogueAudit`.
-Connecting the read-only audit viewer is a later batch.
+View recorded changes in [Administrator Audit Logs](audit-logs.md).
 
 Limits are 100 live entries, 1,000 reserved deleted references and 750,000 UTF-8
 bytes of serialized state. Archived entries count toward the live-entry bound.

@@ -1,172 +1,178 @@
-import { useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Info, Search } from "lucide-react";
+import { useAuth } from "../auth/useAuth";
+import { backendUrl, firebaseAuth } from "../auth/firebaseClient";
+import { AdminResource } from "../admin/AdminResource";
+import type { AdminState } from "../admin/AdminResource";
+import {
+  auditKinds,
+  auditVerbs,
+  auditParameters,
+  createAuditApi,
+  initialAuditFilters,
+  formatAuditDate,
+} from "../admin/auditApi";
+import type {
+  AuditEvent,
+  AuditFilters,
+  AuditPage,
+  AuditVerb,
+} from "../admin/auditApi";
 import { AdminOperationsTable } from "../components/AdminOperationsTable";
 import type { AdminColumn } from "../components/AdminOperationsTable";
 import { AdminRecordDialog } from "../components/AdminRecordDialog";
+import { AdminDataState } from "../components/AdminDataState";
 import { Button } from "../components/ui/Button";
-import { formatAdminDate } from "../types/adminData";
-import type { AdminData } from "../types/adminData";
-import {
-  auditActions,
-  auditOutcomeLabels,
-  kenyaDateKey,
-  validAdminAuditEvents,
-} from "../types/adminOperationsData";
-import type { AdminAuditEvent } from "../types/adminOperationsData";
-import { referralDate } from "../types/referralData";
 import "./AdminOperations.css";
+import "./AdminAuditLogsPage.css";
 
-// List recorded server metadata without inventing, appending or changing audit history.
-export function AdminAuditLogsPage({
-  data = { status: "unavailable" },
+function actionLabel(event: AuditEvent) {
+  return `${auditKinds[event.targetKind]} · ${auditVerbs[event.action.split(".")[1] as AuditVerb]}`;
+}
+
+export function AuditLogsView({
+  state,
+  filters,
+  page,
+  onApply,
+  onReload,
+  onPrevious,
+  onNext,
 }: {
-  data?: AdminData<readonly AdminAuditEvent[]>;
+  state: AdminState<AuditPage>;
+  filters: AuditFilters;
+  page: number;
+  onApply: (filters: AuditFilters) => void;
+  onReload: () => void;
+  onPrevious: () => void;
+  onNext: (cursor: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const [action, setAction] = useState("all");
-  const [outcome, setOutcome] = useState("all");
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
+  const [draft, setDraft] = useState(filters);
+  const [filterError, setFilterError] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const records =
-    data.status === "ready" && validAdminAuditEvents(data.value)
-      ? data.value
-      : null;
-  const invalidRange = Boolean(
-    (from && !formatAdminDate(from)) ||
-    (to && !formatAdminDate(to)) ||
-    (from && to && from > to),
-  );
-  const needle = query.trim().toLocaleLowerCase();
-  const filtered = records
-    ? records
-        .filter((item) => {
-          const day = kenyaDateKey(item.occurredAt);
-          return (
-            (!needle ||
-              `${item.id} ${item.targetReference ?? ""}`
-                .toLocaleLowerCase()
-                .includes(needle)) &&
-            (action === "all" || item.action === action) &&
-            (outcome === "all" || item.outcome === outcome) &&
-            (!from || Boolean(day && day >= from)) &&
-            (!to || Boolean(day && day <= to))
-          );
-        })
-        .sort((a, b) => Date.parse(b.occurredAt) - Date.parse(a.occurredAt))
-    : null;
-  const selected = records?.find((item) => item.id === selectedId) ?? null;
-  const columns: AdminColumn<AdminAuditEvent>[] = [
+  const value = state.status === "ready" ? state.value : null;
+  const selected = value?.events.find((event) => event.id === selectedId);
+  const columns: AdminColumn<AuditEvent>[] = [
     {
       key: "time",
       label: "Time (Kenya)",
-      render: (item) => (
-        <time dateTime={item.occurredAt}>{referralDate(item.occurredAt)}</time>
+      render: (event) => (
+        <time dateTime={event.occurredAt}>
+          {formatAuditDate(event.occurredAt)}
+        </time>
       ),
     },
     {
       key: "actor",
-      label: "Actor",
-      render: (item) => item.actorReference || "Not available",
+      label: "Actor UID",
+      render: (event) => event.actorReference,
     },
-    {
-      key: "action",
-      label: "Action",
-      render: (item) => auditActions[item.action].label,
-    },
+    { key: "action", label: "Action", render: actionLabel },
     {
       key: "target",
       label: "Target",
-      render: (item) => (
+      render: (event) => (
         <>
-          {item.targetKind}
-          <small>{item.targetReference || "Not available"}</small>
+          {auditKinds[event.targetKind]}
+          <small>{event.targetReference}</small>
         </>
       ),
     },
-    {
-      key: "outcome",
-      label: "Result",
-      render: (item) => (
-        <span className="seeker-page__badge">
-          {auditOutcomeLabels[item.outcome]}
-        </span>
-      ),
-    },
+    { key: "revision", label: "Revision", render: (event) => event.revision },
+    { key: "result", label: "Result", render: () => "Succeeded" },
     {
       key: "details",
       label: "Details",
-      render: (item) => (
-        <Button variant="ghost" onClick={() => setSelectedId(item.id)}>
+      render: (event) => (
+        <Button variant="ghost" onClick={() => setSelectedId(event.id)}>
           View event
         </Button>
       ),
     },
   ];
-
+  const field = (name: keyof AuditFilters, value: string) =>
+    setDraft((previous) => ({ ...previous, [name]: value }));
   return (
     <>
       <header className="seeker-page__heading admin-pages__heading">
         <div>
           <span className="seeker-page__eyebrow">Administration</span>
           <h1>Audit logs</h1>
-          <p>Review recorded administrative actions and their outcomes.</p>
+          <p>Review saved changes to Services, Pathways and Resources.</p>
         </div>
-        <Button disabled title="Audit export is currently unavailable.">
-          Export logs
+        <Button
+          variant="secondary"
+          onClick={onReload}
+          disabled={state.status === "loading"}
+        >
+          Refresh audit logs
         </Button>
       </header>
       <div className="seeker-page__notice">
         <Info size={20} aria-hidden="true" />
         <p>
-          This is a read-only audit view. Export is currently unavailable.
-          Opening or filtering this page does not create or modify audit events.
-          Private assessment descriptions and contact details are not shown.
+          Read-only catalogue history, newest first. These events record
+          successful saved changes. Seeded catalogue entries, failed attempts,
+          sign-ins and referral activity are outside this history. Opening or
+          filtering this page does not create events. Private descriptions,
+          contacts and review notes are excluded.
         </p>
       </div>
       <form
-        className="admin-pages__toolbar"
+        className="audit-logs__filters"
         role="search"
-        onSubmit={(event) => event.preventDefault()}
+        onSubmit={(event) => {
+          event.preventDefault();
+          try {
+            auditParameters(draft, null);
+            setFilterError("");
+            onApply({ ...draft, query: draft.query.trim() });
+          } catch {
+            setFilterError(
+              "Check the date range. From must be on or before To.",
+            );
+          }
+        }}
       >
-        <label className="admin-pages__search" htmlFor="admin-audit-search">
+        <label className="admin-pages__search">
           <Search size={18} aria-hidden="true" />
           <span className="admin-pages__sr-only">
-            Search event or target references
+            Search event, actor or target references
           </span>
           <input
-            id="admin-audit-search"
             type="search"
             maxLength={200}
             autoComplete="off"
-            placeholder="Search event or target references…"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Event, actor or target reference…"
+            value={draft.query}
+            onChange={(event) => field("query", event.target.value)}
           />
         </label>
         <label>
-          <span>Action</span>
+          <span>Record type</span>
           <select
-            value={action}
-            onChange={(event) => setAction(event.target.value)}
+            aria-label="Record type"
+            value={draft.kind}
+            onChange={(event) => field("kind", event.target.value)}
           >
-            <option value="all">All actions</option>
-            {Object.entries(auditActions).map(([value, item]) => (
-              <option key={value} value={value}>
-                {item.label}
+            <option value="all">All record types</option>
+            {Object.entries(auditKinds).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
               </option>
             ))}
           </select>
         </label>
         <label>
-          <span>Result</span>
+          <span>Action</span>
           <select
-            value={outcome}
-            onChange={(event) => setOutcome(event.target.value)}
+            aria-label="Action"
+            value={draft.action}
+            onChange={(event) => field("action", event.target.value)}
           >
-            <option value="all">All results</option>
-            {Object.entries(auditOutcomeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
+            <option value="all">All actions</option>
+            {Object.entries(auditVerbs).map(([key, label]) => (
+              <option key={key} value={key}>
                 {label}
               </option>
             ))}
@@ -176,47 +182,89 @@ export function AdminAuditLogsPage({
           <span>From date (Kenya)</span>
           <input
             type="date"
-            value={from}
-            onChange={(event) => setFrom(event.target.value)}
-            aria-invalid={invalidRange || undefined}
-            aria-describedby={invalidRange ? "audit-date-error" : undefined}
+            value={draft.from}
+            onChange={(event) => field("from", event.target.value)}
+            aria-invalid={!!filterError || undefined}
+            aria-describedby={filterError ? "audit-filter-error" : undefined}
           />
         </label>
         <label>
           <span>To date (Kenya)</span>
           <input
             type="date"
-            value={to}
-            onChange={(event) => setTo(event.target.value)}
-            aria-invalid={invalidRange || undefined}
-            aria-describedby={invalidRange ? "audit-date-error" : undefined}
+            value={draft.to}
+            onChange={(event) => field("to", event.target.value)}
+            aria-invalid={!!filterError || undefined}
+            aria-describedby={filterError ? "audit-filter-error" : undefined}
           />
         </label>
+        <div className="seeker-page__actions">
+          <Button type="submit">Apply filters</Button>
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={() => {
+              setDraft(initialAuditFilters);
+              setFilterError("");
+              onApply(initialAuditFilters);
+            }}
+          >
+            Clear filters
+          </Button>
+        </div>
       </form>
-      {invalidRange ? (
+      {filterError && (
         <p
-          id="audit-date-error"
-          className="admin-operations__filter-error"
+          id="audit-filter-error"
           role="alert"
+          className="admin-operations__filter-error"
         >
-          Enter valid dates with the from date on or before the to date.
+          {filterError}
         </p>
-      ) : (
-        <AdminOperationsTable
-          key={JSON.stringify([query, action, outcome, from, to])}
-          title="Audit logs"
-          subject="Audit information"
-          records={filtered}
-          status={data.status}
-          retry={data.status === "error" ? data.retry : undefined}
-          columns={columns}
-          rowKey={(item) => item.id}
-          emptyTitle={
-            records?.length
-              ? "No audit events match these filters."
-              : "No audit events to display."
-          }
-        />
+      )}
+      <p className="admin-operations__note">
+        Filters apply across recorded history. Up to 25 matching events appear
+        per page. A page can be empty while more history remains; use Next to
+        continue. Refresh starts with the newest events.
+      </p>
+      <AdminOperationsTable
+        title="Catalogue audit logs"
+        subject="Audit information"
+        records={value?.events ?? null}
+        status={state.status}
+        retry={onReload}
+        columns={columns}
+        rowKey={(event) => event.id}
+        emptyTitle={
+          value?.nextCursor
+            ? "No matching events on this page. More history remains."
+            : "No matching audit events."
+        }
+        paginate={false}
+      />
+      {value && (
+        <div className="admin-pages__pagination">
+          <span role="status">
+            {value.events.length} event{value.events.length === 1 ? "" : "s"} on
+            page {page}
+          </span>
+          <div>
+            <Button
+              variant="secondary"
+              disabled={page === 1}
+              onClick={onPrevious}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!value.nextCursor}
+              onClick={() => value.nextCursor && onNext(value.nextCursor)}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
       {selected && (
         <AdminRecordDialog
@@ -224,45 +272,95 @@ export function AdminAuditLogsPage({
           onClose={() => setSelectedId(null)}
         >
           <dl className="seeker-page__details">
-            <div>
-              <dt>Event ID</dt>
-              <dd>{selected.id}</dd>
-            </div>
-            <div>
-              <dt>Time (Kenya)</dt>
-              <dd>
-                <time dateTime={selected.occurredAt}>
-                  {referralDate(selected.occurredAt)}
-                </time>
-              </dd>
-            </div>
-            <div>
-              <dt>Actor reference</dt>
-              <dd>{selected.actorReference || "Not available"}</dd>
-            </div>
-            <div>
-              <dt>Action</dt>
-              <dd>{auditActions[selected.action].label}</dd>
-            </div>
-            <div>
-              <dt>Target type</dt>
-              <dd>{selected.targetKind}</dd>
-            </div>
-            <div>
-              <dt>Target reference</dt>
-              <dd>{selected.targetReference || "Not available"}</dd>
-            </div>
-            <div>
-              <dt>Result</dt>
-              <dd>{auditOutcomeLabels[selected.outcome]}</dd>
-            </div>
+            {[
+              ["Event ID", selected.id],
+              ["Time (Kenya)", formatAuditDate(selected.occurredAt)],
+              ["Actor UID", selected.actorReference],
+              ["Action", actionLabel(selected)],
+              ["Target reference", selected.targetReference],
+              ["Saved revision", selected.revision],
+              ["Result", "Succeeded"],
+            ].map(([label, text]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{text}</dd>
+              </div>
+            ))}
           </dl>
           <p className="admin-operations__note">
-            Read-only event metadata. Audit events cannot be edited or deleted
-            from this page.
+            Recorded event metadata remains available after a draft is deleted
+            or a published entry is archived. This page cannot edit or delete
+            events.
           </p>
         </AdminRecordDialog>
       )}
     </>
+  );
+}
+
+export function AuditLogsReader({
+  loader,
+  ...props
+}: Omit<Parameters<typeof AuditLogsView>[0], "state"> & {
+  loader: (signal: AbortSignal) => Promise<AuditPage>;
+}) {
+  const [resource] = useState(() => new AdminResource(loader));
+  const state = useSyncExternalStore(
+    resource.subscribe,
+    resource.snapshot,
+    resource.snapshot,
+  );
+  useEffect(() => resource.start(), [resource]);
+  return <AuditLogsView {...props} state={state} />;
+}
+
+export function AuditLogsWorkspace({
+  read,
+}: {
+  read: ReturnType<typeof createAuditApi>;
+}) {
+  const [filters, setFilters] = useState(initialAuditFilters);
+  const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const [page, setPage] = useState(0);
+  const [refresh, setRefresh] = useState(0);
+  return (
+    <AuditLogsReader
+      key={JSON.stringify([filters, cursors[page], refresh])}
+      loader={(signal) => read(filters, cursors[page], signal)}
+      filters={filters}
+      page={page + 1}
+      onApply={(value) => {
+        setFilters(value);
+        setCursors([null]);
+        setPage(0);
+        setRefresh((value) => value + 1);
+      }}
+      onReload={() => {
+        setCursors([null]);
+        setPage(0);
+        setRefresh((value) => value + 1);
+      }}
+      onPrevious={() => setPage((value) => Math.max(0, value - 1))}
+      onNext={(cursor) => {
+        setCursors((previous) => [...previous.slice(0, page + 1), cursor]);
+        setPage((value) => value + 1);
+      }}
+    />
+  );
+}
+
+export function AdminAuditLogsPage() {
+  const { session } = useAuth();
+  if (session.status !== "ready" || session.identity.role !== "admin")
+    return <AdminDataState subject="Audit information" status="forbidden" />;
+  return (
+    <AuditLogsWorkspace
+      key={session.identity.uid}
+      read={createAuditApi({
+        baseUrl: backendUrl,
+        uid: session.identity.uid,
+        currentUser: () => firebaseAuth().currentUser,
+      })}
+    />
   );
 }
