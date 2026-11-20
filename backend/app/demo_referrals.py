@@ -1,7 +1,5 @@
 """Consent, assignment and progress for metadata-only development referrals."""
 
-import hashlib
-import json
 import os
 from datetime import UTC, datetime
 from threading import Lock
@@ -18,7 +16,13 @@ from .catalog import CatalogModel, Text
 from .catalog import Identifier as PublicId
 from .notification_events import queue_referral_progress
 from .referrals import Identifier as ReferralId
-from .referrals import ReferralMissing, ReferralUnavailable
+from .referrals import (
+    ReferralMissing,
+    ReferralUnavailable,
+    referral_collection,
+    scoped_key,
+)
+from .referrals import read_record as read_private_referral
 
 Key = Annotated[StrictStr, Field(pattern=r"^[a-f0-9]{64}$")]
 Uid = Annotated[StrictStr, Field(min_length=1, max_length=128, pattern=r"^\S+$")]
@@ -48,12 +52,6 @@ class Unavailable(Exception):
 
 class MembershipDenied(Exception):
     pass
-
-
-def scoped_key(uid, identifier):
-    return hashlib.sha256(
-        json.dumps([uid, identifier], separators=(",", ":")).encode()
-    ).hexdigest()
 
 
 class Event(CatalogModel):
@@ -280,12 +278,24 @@ class FirestoreDemoReferrals:
         except STORAGE_ERRORS as error:
             raise Unavailable from error
 
-    def change(self, key, transition):
+    def change(self, key, transition, source=None):
         try:
             reference = self._collection().document(key)
 
             @firestore.transactional
             def write(transaction):
+                if source is not None:
+                    # Sharing must read the private request in this transaction too.
+                    private = referral_collection(self._client, source.uid).document(
+                        source.id
+                    )
+                    current = read_private_referral(
+                        private.get(transaction=transaction, retry=None, timeout=5),
+                        source.uid,
+                        source.id,
+                    )
+                    if current.revision != source.revision:
+                        raise Conflict
                 previous = self._read(
                     reference.get(transaction=transaction, retry=None, timeout=5)
                 )
@@ -427,7 +437,9 @@ def share(referral_id: ReferralId, _consent: Consent, request: Request, user: Se
         return owner_response(
             user,
             referral_id,
-            request.app.state.demo_referral_store.change(candidate.id, create),
+            request.app.state.demo_referral_store.change(
+                candidate.id, create, source=source
+            ),
         )
 
     return execute(save)

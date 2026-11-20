@@ -134,3 +134,11 @@ changes from their existing transactional audit collections. It supports record,
 action, reference and Kenya-date filters, event details and bounded cursor paging.
 The viewer never writes events or exposes saved case text. See the
 [audit-log guide](docs/audit-logs.md) for scope and live acceptance checks.
+
+## Seeker referral management
+
+Seekers can edit contact details and descriptions, or delete their own saved
+requests, before any demonstration sharing. Shared requests retain their history
+and stay locked after withdrawal or completion. The existing three-role
+demonstration flow remains available. See the backend and frontend READMEs for
+the API contract and acceptance checks.

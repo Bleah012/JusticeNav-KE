@@ -166,7 +166,7 @@ export function TermsOfUsePage() {
           <section id="terms-referrals" aria-labelledby="terms-referrals-title">
             <h2 id="terms-referrals-title">Referrals and organisations</h2>
             <p>
-              Save referral request creates a private, immutable student-project
+              Save referral request creates a private student-project
               record in your account. It stores your request fields, public
               service and pathway context, and the version and time of your
               acknowledgement that this is a project-only save. It does not
@@ -178,6 +178,13 @@ export function TermsOfUsePage() {
               delivery, review or response. This acknowledgement is not
               permission for model training or unrelated reuse. Contact
               organisations through their official channels.
+            </p>
+            <p>
+              Before sharing a demonstration, you can edit your request contact
+              details and description or delete the request. Editing preserves
+              its selected pathway and service. Shared requests keep their
+              history and cannot be edited or deleted, including after sharing
+              is withdrawn. Create a new request if changes are needed then.
             </p>
             <p>
               Naming or linking to an organisation does not establish its

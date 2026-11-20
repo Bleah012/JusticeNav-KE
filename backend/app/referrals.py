@@ -1,11 +1,11 @@
-"""Private, immutable project requests. No institutional delivery or status workflow."""
+"""Private project requests; edits and deletion are allowed before sharing only."""
 
 import hashlib
 import json
 import os
 import re
 import unicodedata
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from threading import Lock
 from typing import Annotated, Literal, Protocol
 
@@ -35,6 +35,24 @@ class ReferralUnavailable(Exception):
 
 class ReferralConflict(Exception):
     """The request already exists or the source selection changed."""
+
+
+class ReferralLocked(ReferralConflict):
+    """A demonstration history exists and must remain tied to its saved request."""
+
+
+def scoped_key(uid, identifier):
+    return hashlib.sha256(
+        json.dumps([uid, identifier], separators=(",", ":")).encode()
+    ).hexdigest()
+
+
+def referral_collection(connection, uid):
+    return (
+        connection.collection("referralOwners")
+        .document(hashlib.sha256(uid.encode()).hexdigest())
+        .collection("referrals")
+    )
 
 
 class NamedPathway(CatalogModel):
@@ -150,16 +168,21 @@ class ReferralRecord(ContactDetails):
     scope: Literal["school-demonstration"]
     status: Literal["saved"]
     delivery_status: Literal["not-sent"]
-    revision: int = Field(strict=True, ge=1, le=1)
+    revision: int = Field(strict=True, ge=1, le=9007199254740991)
     acknowledgement_version: Literal["project-request-v1"]
     saved_at: AwareDatetime
     acknowledged_at: AwareDatetime
     updated_at: AwareDatetime
 
     @model_validator(mode="after")
-    def immutable_dates(self):
-        if self.saved_at != self.updated_at or self.saved_at != self.acknowledged_at:
-            raise ValueError("Invalid immutable record timestamps")
+    def saved_dates(self):
+        if (
+            self.updated_at != self.acknowledged_at
+            or self.updated_at < self.saved_at
+            or (self.revision == 1 and self.saved_at != self.updated_at)
+            or (self.revision > 1 and self.updated_at <= self.saved_at)
+        ):
+            raise ValueError("Invalid saved request timestamps")
         return self
 
 
@@ -179,6 +202,53 @@ class ReferralPage(CatalogModel):
 
 class ReferralResponse(CatalogModel):
     referral: ReferralRecord
+
+
+class ManagedReferralResponse(ReferralResponse):
+    can_modify: bool
+
+
+class ReferralEdit(ContactDetails):
+    expected_revision: int = Field(strict=True, ge=1, le=9007199254740990)
+    acknowledged: bool = Field(strict=True)
+
+    @field_validator("acknowledged")
+    @classmethod
+    def accepted(cls, value):
+        if value is not True:
+            raise ValueError("Acknowledgement required")
+        return value
+
+
+class ReferralDelete(CatalogModel):
+    expected_revision: int = Field(strict=True, ge=1, le=9007199254740991)
+
+
+class ReferralDeleted(CatalogModel):
+    uid: StrictStr = Field(min_length=1, max_length=128)
+    deleted_id: Identifier
+    revision: int = Field(strict=True, ge=1)
+
+
+class DeletionMarker(ReferralDeleted):
+    deleted_at: AwareDatetime
+
+
+def edit_record(previous, update):
+    if previous.revision != update.expected_revision:
+        raise ReferralConflict
+    now = max(datetime.now(UTC), previous.updated_at + timedelta(microseconds=1))
+    return ReferralRecord.model_validate(
+        {
+            **previous.model_dump(by_alias=True),
+            **update.model_dump(
+                include=set(ContactDetails.model_fields), by_alias=True
+            ),
+            "revision": previous.revision + 1,
+            "updatedAt": now,
+            "acknowledgedAt": now,
+        }
+    )
 
 
 def summary(record):
@@ -229,6 +299,11 @@ def read_record(snapshot, uid, identifier):
 
 class ReferralStore(Protocol):
     def get(self, uid: str, identifier: str) -> ReferralRecord: ...
+    def can_modify(self, uid: str, identifier: str) -> bool: ...
+    def edit(
+        self, uid: str, identifier: str, update: ReferralEdit
+    ) -> ReferralRecord: ...
+    def delete(self, uid: str, identifier: str, revision: int) -> ReferralDeleted: ...
     def create(
         self,
         uid: str,
@@ -251,12 +326,91 @@ class FirestoreReferralStore:
                 self._client = firestore.client(
                     app=get_firebase_app(self.settings), database_id="(default)"
                 )
-        owner = hashlib.sha256(uid.encode()).hexdigest()
-        return (
-            self._client.collection("referralOwners")
-            .document(owner)
-            .collection("referrals")
+        return referral_collection(self._client, uid)
+
+    def _workflow(self, uid, identifier):
+        self._collection(uid)
+        return self._client.collection("demoReferralWorkflows").document(
+            scoped_key(uid, identifier)
         )
+
+    def _deletion(self, uid, identifier):
+        return (
+            self._collection(uid)
+            .parent.collection("deletedReferrals")
+            .document(identifier)
+        )
+
+    def can_modify(self, uid, identifier):
+        try:
+            return not self._workflow(uid, identifier).get(retry=None, timeout=5).exists
+        except STORAGE_ERRORS as error:
+            raise ReferralUnavailable from error
+
+    def edit(self, uid, identifier, update):
+        try:
+            reference = self._collection(uid).document(identifier)
+
+            @firestore.transactional
+            def write(transaction):
+                previous = read_record(
+                    reference.get(transaction=transaction, retry=None, timeout=10),
+                    uid,
+                    identifier,
+                )
+                if (
+                    self._workflow(uid, identifier)
+                    .get(transaction=transaction, retry=None, timeout=5)
+                    .exists
+                ):
+                    raise ReferralLocked
+                result = edit_record(previous, update)
+                data = result.model_dump(by_alias=True)
+                data["selection"] = result.selection.model_dump(
+                    by_alias=True, mode="json"
+                )
+                transaction.set(reference, data)
+                queue_saved_update(self._client, transaction, uid, "referral", result)
+                return result
+
+            return write(self._client.transaction(max_attempts=3))
+        except STORAGE_ERRORS as error:
+            raise ReferralUnavailable from error
+
+    def delete(self, uid, identifier, revision):
+        try:
+            reference = self._collection(uid).document(identifier)
+
+            @firestore.transactional
+            def remove(transaction):
+                previous = read_record(
+                    reference.get(transaction=transaction, retry=None, timeout=10),
+                    uid,
+                    identifier,
+                )
+                if previous.revision != revision:
+                    raise ReferralConflict
+                if (
+                    self._workflow(uid, identifier)
+                    .get(transaction=transaction, retry=None, timeout=5)
+                    .exists
+                ):
+                    raise ReferralLocked
+                receipt = ReferralDeleted(
+                    uid=uid, deletedId=identifier, revision=revision
+                )
+                marker = DeletionMarker(
+                    **receipt.model_dump(), deletedAt=datetime.now(UTC)
+                )
+                transaction.create(
+                    self._deletion(uid, identifier), marker.model_dump(by_alias=True)
+                )
+                transaction.delete(reference)
+                return receipt
+
+            return remove(self._client.transaction(max_attempts=3))
+        except STORAGE_ERRORS as error:
+            raise ReferralUnavailable from error
 
     def get(self, uid, identifier):
         try:
@@ -280,6 +434,20 @@ class FirestoreReferralStore:
                 if snapshot.exists:
                     read_record(snapshot, uid, identifier)
                     raise ReferralConflict
+                marker = self._deletion(uid, identifier).get(
+                    transaction=transaction, retry=None, timeout=10
+                )
+                if marker.exists:
+                    deleted = DeletionMarker.model_validate(marker.to_dict())
+                    if deleted.uid != uid or deleted.deleted_id != identifier:
+                        raise ReferralUnavailable
+                    raise ReferralMissing
+                if (
+                    self._workflow(uid, identifier)
+                    .get(transaction=transaction, retry=None, timeout=5)
+                    .exists
+                ):
+                    raise ReferralLocked
                 result = make_record(uid, identifier, update, selection)
                 data = result.model_dump(by_alias=True)
                 data["selection"] = result.selection.model_dump(
@@ -324,10 +492,15 @@ StoreDependency = Annotated[ReferralStore, Depends(get_store)]
 def http_error(error):
     if isinstance(error, ReferralMissing):
         return HTTPException(404, "Referral not found.")
+    if isinstance(error, ReferralLocked):
+        return HTTPException(
+            409,
+            "Shared referrals keep their recorded history and cannot be edited or deleted. Create a new request if needed.",
+        )
     if isinstance(error, ReferralConflict):
         return HTTPException(
             409,
-            "Request already exists or source selection changed. Reload before continuing.",
+            "Request changed, already exists, or source selection changed. Reload before continuing.",
         )
     return HTTPException(503, "Referral storage is currently unavailable.")
 
@@ -351,7 +524,7 @@ def list_my_referrals(
         raise http_error(error) from error
 
 
-@router.get("/{identifier}", response_model=ReferralResponse)
+@router.get("/{identifier}", response_model=ManagedReferralResponse)
 def get_my_referral(
     identifier: Identifier, user: UserDependency, store: StoreDependency
 ):
@@ -359,7 +532,9 @@ def get_my_referral(
         result = store.get(user.uid, identifier)
         if result.uid != user.uid or result.id != identifier:
             raise ReferralUnavailable
-        return ReferralResponse(referral=result)
+        return ManagedReferralResponse(
+            referral=result, canModify=store.can_modify(user.uid, identifier)
+        )
     except (ReferralMissing, ReferralUnavailable) as error:
         raise http_error(error) from error
 
@@ -367,17 +542,40 @@ def get_my_referral(
 @router.put("/{identifier}", response_model=ReferralResponse)
 def create_my_referral(
     identifier: Identifier,
-    update: ReferralCreate,
+    update: ReferralCreate | ReferralEdit,
     user: UserDependency,
     store: StoreDependency,
     request: Request,
 ):
-    """Create once. Saving does not enqueue messages or contact an organisation."""
+    """Create a request, or edit its private fields before demonstration sharing."""
     try:
-        selection = current_selection(request, update.pathway_id)
-        result = store.create(user.uid, identifier, update, selection)
+        if isinstance(update, ReferralCreate):
+            selection = current_selection(request, update.pathway_id)
+            result = store.create(user.uid, identifier, update, selection)
+        else:
+            result = store.edit(user.uid, identifier, update)
         if result.uid != user.uid or result.id != identifier:
             raise ReferralUnavailable
         return ReferralResponse(referral=result)
+    except (ReferralMissing, ReferralUnavailable, ReferralConflict) as error:
+        raise http_error(error) from error
+
+
+@router.delete("/{identifier}", response_model=ReferralDeleted)
+def delete_my_referral(
+    identifier: Identifier,
+    update: ReferralDelete,
+    user: UserDependency,
+    store: StoreDependency,
+):
+    try:
+        result = store.delete(user.uid, identifier, update.expected_revision)
+        if (
+            result.uid != user.uid
+            or result.deleted_id != identifier
+            or result.revision != update.expected_revision
+        ):
+            raise ReferralUnavailable
+        return result
     except (ReferralMissing, ReferralUnavailable, ReferralConflict) as error:
         raise http_error(error) from error

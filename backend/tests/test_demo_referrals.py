@@ -42,8 +42,12 @@ class MemoryStore:
     def get(self, key):
         return self.rows.get(key)
 
-    def change(self, key, transition):
+    def change(self, key, transition, source=None):
         with self.lock:
+            if source is not None and hasattr(self, "private_store"):
+                current = self.private_store.get(source.uid, source.id)
+                if current.revision != source.revision:
+                    raise demo.Conflict
             updated = transition(self.rows.get(key))
             self.rows[key] = updated
             self.writes += 1
@@ -62,6 +66,7 @@ def source(uid="seeker-one", ref=REFERRAL):
     return SimpleNamespace(
         uid=uid,
         id=ref,
+        revision=1,
         saved_at=datetime(2026, 1, 1, tzinfo=UTC),
         selection=SimpleNamespace(
             service=SimpleNamespace(id=SERVICE, name="Small Claims Courts"),
@@ -585,3 +590,108 @@ def test_provider_listing_remains_disabled_in_production():
             api.get(BASE + f"/admin/{KEY}/providers", headers=ADMIN).status_code == 404
         )
     directory.for_service.assert_not_called()
+
+
+@pytest.mark.parametrize("state", ["present", "deleted", "edited"])
+def test_firestore_sharing_rereads_private_record_in_same_transaction(
+    monkeypatch, state
+):
+    from test_referrals import body, selection
+
+    from app import referrals
+
+    private = referrals.make_record(
+        "seeker-one",
+        REFERRAL,
+        referrals.ReferralCreate.model_validate(body()),
+        referrals.ReferralSelection.model_validate(selection()),
+    )
+    store = demo.FirestoreDemoReferrals(Settings(_env_file=None))
+    connection = Client(project="isolated-test", credentials=AnonymousCredentials())
+    store._client = connection
+    transaction = connection.transaction()
+    monkeypatch.setattr(connection, "transaction", lambda **kwargs: transaction)
+    reads = []
+
+    def get(reference, **kwargs):
+        reads.append((reference.path, kwargs))
+        snapshot = Mock(exists=state != "deleted")
+        if reference.parent.id == "referrals":
+            current = (
+                referrals.edit_record(
+                    private,
+                    referrals.ReferralEdit.model_validate(
+                        {
+                            "fullName": "Test Person",
+                            "email": "test@example.test",
+                            "phone": None,
+                            "contactMethod": "email",
+                            "description": "Updated private description",
+                            "acknowledged": True,
+                            "expectedRevision": 1,
+                        }
+                    ),
+                )
+                if state == "edited"
+                else private
+            )
+            snapshot.to_dict.return_value = current.model_dump(by_alias=True)
+            return snapshot
+        return Mock(exists=False)
+
+    monkeypatch.setattr(DocumentReference, "get", get)
+    monkeypatch.setattr(demo.firestore, "transactional", lambda function: function)
+    candidate = demo.start_handoff(private, private.uid, private.id)
+    if state == "present":
+        assert (
+            store.change(candidate.id, lambda _: candidate, source=private) == candidate
+        )
+        assert len(reads) == 2 and len(transaction._write_pbs) == 1
+    else:
+        with pytest.raises(ReferralMissing if state == "deleted" else demo.Conflict):
+            store.change(candidate.id, lambda _: candidate, source=private)
+        assert not transaction._write_pbs
+    assert reads[0][0].endswith("/referrals/" + REFERRAL)
+    assert all(options["transaction"] is transaction for _, options in reads)
+
+
+def test_share_delete_race_never_leaves_workflow_without_private_request():
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import RLock
+
+    from test_referrals import MemoryStore as PrivateStore
+    from test_referrals import body, selection
+
+    from app import referrals
+
+    private, workflows = PrivateStore(), MemoryStore()
+    private.lock = workflows.lock = RLock()
+    private.workflows = workflows.rows
+    workflows.private_store = private
+    original = private.create(
+        "seeker-one",
+        REFERRAL,
+        referrals.ReferralCreate.model_validate(body()),
+        referrals.ReferralSelection.model_validate(selection()),
+    )
+    candidate = demo.start_handoff(original, original.uid, original.id)
+
+    def sharing():
+        try:
+            workflows.change(candidate.id, lambda _: candidate, source=original)
+            return "shared"
+        except ReferralMissing:
+            return "missing"
+
+    def deleting():
+        try:
+            private.delete("seeker-one", REFERRAL, 1)
+            return "deleted"
+        except referrals.ReferralLocked:
+            return "locked"
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        actions = [pool.submit(sharing), pool.submit(deleting)]
+        outcomes = [action.result() for action in actions]
+    assert outcomes in [["shared", "locked"], ["missing", "deleted"]]
+    assert bool(workflows.rows) == bool(private.records)

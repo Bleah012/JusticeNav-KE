@@ -53,6 +53,19 @@ export function useReferralRecord(uid: string, id: string) {
   useEffect(() => resource.start(), [resource]);
   return { resource, state };
 }
+export function useManagedReferral(uid: string, id: string) {
+  const [api] = useState(() => apiFor(uid));
+  const [resource] = useState(
+    () => new ReferralResource((signal) => api.managed(id, signal)),
+  );
+  const state = useSyncExternalStore(
+    resource.subscribe,
+    resource.snapshot,
+    resource.snapshot,
+  );
+  useEffect(() => resource.start(), [resource]);
+  return { api, resource, state };
+}
 export function useReferralList(uid: string, after?: string) {
   const [resource] = useState(
     () => new ReferralResource((signal) => apiFor(uid).list(after, signal)),

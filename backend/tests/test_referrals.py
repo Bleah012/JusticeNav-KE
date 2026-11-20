@@ -1,4 +1,4 @@
-"""Own-account immutable requests and truthful no-delivery states; cloud is mocked."""
+"""Own-account requests and truthful no-delivery states; cloud is mocked."""
 
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
@@ -40,6 +40,32 @@ class Verifier:
 class MemoryStore:
     def __init__(self):
         self.records, self.calls, self.lock = {}, [], Lock()
+        self.deleted, self.workflows = set(), {}
+
+    def can_modify(self, uid, identifier):
+        return referrals.scoped_key(uid, identifier) not in self.workflows
+
+    def edit(self, uid, identifier, update):
+        with self.lock:
+            previous = self.get(uid, identifier)
+            if not self.can_modify(uid, identifier):
+                raise referrals.ReferralLocked
+            result = referrals.edit_record(previous, update)
+            self.records[uid, identifier] = result
+            return result
+
+    def delete(self, uid, identifier, revision):
+        with self.lock:
+            previous = self.get(uid, identifier)
+            if previous.revision != revision:
+                raise ReferralConflict
+            if not self.can_modify(uid, identifier):
+                raise referrals.ReferralLocked
+            del self.records[uid, identifier]
+            self.deleted.add((uid, identifier))
+            return referrals.ReferralDeleted(
+                uid=uid, deletedId=identifier, revision=revision
+            )
 
     def get(self, uid, identifier):
         self.calls.append(("get", uid, identifier))
@@ -53,6 +79,10 @@ class MemoryStore:
             self.calls.append(("create", uid, identifier))
             if (uid, identifier) in self.records:
                 raise ReferralConflict
+            if (uid, identifier) in self.deleted:
+                raise ReferralMissing
+            if not self.can_modify(uid, identifier):
+                raise referrals.ReferralLocked
             record = make_record(uid, identifier, update, selection)
             self.records[uid, identifier] = record
             return record
@@ -168,7 +198,7 @@ def test_resolve_save_reload_truthful_status_and_metadata_only_list():
         }
         assert "description" not in str(page) and "test@example.test" not in str(page)
         assert response.headers["cache-control"] == "no-store"
-        assert api.delete(URL + "/" + ID, headers=headers()).status_code == 405
+        assert api.delete(URL + "/" + ID, headers=headers()).status_code == 422
 
 
 @pytest.mark.parametrize(
@@ -281,6 +311,16 @@ def test_firestore_create_is_atomic_and_payload_is_sdk_encodable(monkeypatch):
     reference, connection, transaction = Mock(), Mock(), Mock()
     reference.get.return_value.exists = False
     store._client = connection
+    monkeypatch.setattr(
+        store,
+        "_deletion",
+        lambda uid, identifier: Mock(get=Mock(return_value=Mock(exists=False))),
+    )
+    monkeypatch.setattr(
+        store,
+        "_workflow",
+        lambda uid, identifier: Mock(get=Mock(return_value=Mock(exists=False))),
+    )
     connection.transaction.return_value = transaction
     monkeypatch.setattr(
         store, "_collection", lambda uid: Mock(document=Mock(return_value=reference))
@@ -395,3 +435,244 @@ def test_firestore_list_bounds_rows_and_checks_cursor_owner(monkeypatch):
     anchor.to_dict.return_value = {**record.model_dump(by_alias=True), "uid": "foreign"}
     with pytest.raises(ReferralUnavailable):
         store.list("owner", ID, 20)
+
+
+def edit_body(**changes):
+    return {
+        **{
+            key: value
+            for key, value in body().items()
+            if key not in {"pathwayId", "serviceId", "selectionVersion"}
+        },
+        "expectedRevision": 1,
+        "description": "Revised non-sensitive request",
+        **changes,
+    }
+
+
+def test_edit_reopens_with_private_fields_and_original_context_then_delete():
+    store = MemoryStore()
+    with client(store) as api:
+        original = api.put(URL + "/" + ID, headers=headers(), json=body()).json()[
+            "referral"
+        ]
+        assert api.get(URL + "/" + ID, headers=headers()).json()["canModify"] is True
+        edited = api.put(
+            URL + "/" + ID,
+            headers=headers(),
+            json=edit_body(fullName="Updated Test Person"),
+        ).json()["referral"]
+        assert (
+            edited["revision"] == 2
+            and edited["description"] == "Revised non-sensitive request"
+        )
+        for key in ["selection", "savedAt", "scope", "status", "deliveryStatus"]:
+            assert edited[key] == original[key]
+        assert edited["updatedAt"] == edited["acknowledgedAt"] != original["savedAt"]
+        assert api.get(URL + "/" + ID, headers=headers()).json()["referral"] == edited
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=edit_body()).status_code
+            == 409
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 409
+        )
+        deleted = api.request(
+            "DELETE", URL + "/" + ID, headers=headers(), json={"expectedRevision": 2}
+        )
+        assert deleted.json() == {"uid": "owner", "deletedId": ID, "revision": 2}
+        assert api.get(URL + "/" + ID, headers=headers()).status_code == 404
+        assert api.get(URL, headers=headers()).json()["referrals"] == []
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=body()).status_code == 404
+        )
+        assert (
+            api.put(URL + "/" + OTHER, headers=headers(), json=body()).status_code
+            == 200
+        )
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"acknowledged": False},
+        {"uid": "foreign"},
+        {"serviceId": "nlas-legal-aid"},
+        {"revision": 20},
+        {"savedAt": "2026-01-01"},
+        {"description": ""},
+        {"expectedRevision": True},
+        {"expectedRevision": 9007199254740991},
+    ],
+)
+def test_edit_rejects_injected_fields_or_missing_acknowledgement(changes):
+    store = MemoryStore()
+    with client(store) as api:
+        api.put(URL + "/" + ID, headers=headers(), json=body())
+        result = api.put(URL + "/" + ID, headers=headers(), json=edit_body(**changes))
+        assert result.status_code == 422 and "test@example.test" not in result.text
+        assert store.get("owner", ID).revision == 1
+
+
+@pytest.mark.parametrize(
+    "status", ["shared", "assigned", "under-review", "completed", "withdrawn"]
+)
+def test_shared_history_locks_edit_and_delete_even_after_withdrawal(status):
+    store = MemoryStore()
+    with client(store) as api:
+        api.put(URL + "/" + ID, headers=headers(), json=body())
+        store.workflows[referrals.scoped_key("owner", ID)] = {"status": status}
+        assert api.get(URL + "/" + ID, headers=headers()).json()["canModify"] is False
+        assert (
+            api.put(URL + "/" + ID, headers=headers(), json=edit_body()).status_code
+            == 409
+        )
+        assert (
+            api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            ).status_code
+            == 409
+        )
+        assert store.get("owner", ID).revision == 1
+
+
+def test_foreign_and_signed_out_writes_do_not_change_referral():
+    store = MemoryStore()
+    with client(store) as api:
+        api.put(URL + "/" + ID, headers=headers(), json=body())
+        for auth, code in [(headers("foreign"), 404), ({}, 401)]:
+            assert (
+                api.put(URL + "/" + ID, headers=auth, json=edit_body()).status_code
+                == code
+            )
+            assert (
+                api.request(
+                    "DELETE", URL + "/" + ID, headers=auth, json={"expectedRevision": 1}
+                ).status_code
+                == code
+            )
+        assert store.get("owner", ID).revision == 1
+
+
+def test_competing_edits_have_one_winner():
+    store = MemoryStore()
+    with client(store) as api:
+        api.put(URL + "/" + ID, headers=headers(), json=body())
+        payload = edit_body()
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            responses = list(
+                pool.map(
+                    lambda _: (
+                        api.put(
+                            URL + "/" + ID, headers=headers(), json=payload
+                        ).status_code
+                    ),
+                    range(2),
+                )
+            )
+        assert sorted(responses) == [200, 409]
+        assert store.get("owner", ID).revision == 2
+
+
+@pytest.mark.parametrize("operation", ["edit", "delete", "can_modify"])
+def test_management_storage_failure_is_not_success(operation):
+    store = MemoryStore()
+    with client(store) as api:
+        api.put(URL + "/" + ID, headers=headers(), json=body())
+        setattr(
+            store, operation, Mock(side_effect=ReferralUnavailable("PRIVATE error"))
+        )
+        if operation == "edit":
+            response = api.put(URL + "/" + ID, headers=headers(), json=edit_body())
+        elif operation == "delete":
+            response = api.request(
+                "DELETE",
+                URL + "/" + ID,
+                headers=headers(),
+                json={"expectedRevision": 1},
+            )
+        else:
+            response = api.get(URL + "/" + ID, headers=headers())
+        assert response.status_code == 503 and "PRIVATE" not in response.text
+
+
+def management_store(monkeypatch, shared=False):
+    from google.auth.credentials import AnonymousCredentials
+    from google.cloud.firestore_v1 import Client, DocumentReference
+
+    connection = Client(project="isolated-test", credentials=AnonymousCredentials())
+    store = FirestoreReferralStore(Settings(_env_file=None))
+    store._client = connection
+    record = make_record(
+        "owner",
+        ID,
+        ReferralCreate.model_validate(body()),
+        referrals.ReferralSelection.model_validate(selection()),
+    )
+    snapshot = Mock(exists=True, id=ID)
+    snapshot.to_dict.return_value = record.model_dump(by_alias=True)
+    reads = []
+
+    def get(reference, **kwargs):
+        reads.append((reference.path, kwargs))
+        return snapshot if reference.parent.id == "referrals" else Mock(exists=shared)
+
+    monkeypatch.setattr(DocumentReference, "get", get)
+    monkeypatch.setattr(referrals.firestore, "transactional", lambda function: function)
+    return store, record, reads
+
+
+def test_firestore_edit_checks_history_and_writes_notification_atomically(monkeypatch):
+    store, record, reads = management_store(monkeypatch)
+    transaction = store._client.transaction()
+    monkeypatch.setattr(store._client, "transaction", lambda **kwargs: transaction)
+    result = store.edit("owner", ID, referrals.ReferralEdit.model_validate(edit_body()))
+    assert result.revision == 2 and result.saved_at == record.saved_at
+    assert len(reads) == 2 and all(
+        options["transaction"] is transaction for _, options in reads
+    )
+    assert reads[1][0].startswith("demoReferralWorkflows/")
+    writes = transaction._write_pbs
+    assert len(writes) == 2 and "notifications/" in writes[1].update.name
+    assert writes[1].update.fields["recordRevision"].integer_value == 2
+    assert "Revised non-sensitive" not in str(writes[1])
+
+
+def test_firestore_delete_checks_history_and_retains_minimal_marker(monkeypatch):
+    store, _, reads = management_store(monkeypatch)
+    transaction = store._client.transaction()
+    monkeypatch.setattr(store._client, "transaction", lambda **kwargs: transaction)
+    store.delete("owner", ID, 1)
+    assert len(reads) == 2 and all(
+        options["transaction"] is transaction for _, options in reads
+    )
+    assert len(transaction._write_pbs) == 2
+    marker, deleted = transaction._write_pbs
+    assert "deletedReferrals/" in marker.update.name and deleted.delete.endswith(
+        "/referrals/" + ID
+    )
+    assert set(marker.update.fields) == {"uid", "deletedId", "revision", "deletedAt"}
+
+
+@pytest.mark.parametrize("operation", ["edit", "delete"])
+def test_firestore_history_blocks_private_mutation_before_any_write(
+    monkeypatch, operation
+):
+    store, _, _ = management_store(monkeypatch, shared=True)
+    transaction = store._client.transaction()
+    monkeypatch.setattr(store._client, "transaction", lambda **kwargs: transaction)
+    with pytest.raises(referrals.ReferralLocked):
+        if operation == "edit":
+            store.edit("owner", ID, referrals.ReferralEdit.model_validate(edit_body()))
+        else:
+            store.delete("owner", ID, 1)
+    assert not transaction._write_pbs

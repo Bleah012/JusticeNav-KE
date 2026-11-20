@@ -27,7 +27,7 @@ export type Referral = Omit<Contact, "acknowledged"> & {
   scope: "school-demonstration";
   status: "saved";
   deliveryStatus: "not-sent";
-  revision: 1;
+  revision: number;
   acknowledgementVersion: "project-request-v1";
   savedAt: string;
   updatedAt: string;
@@ -41,6 +41,7 @@ export type ReferralSummary = {
   status: "saved";
   deliveryStatus: "not-sent";
 };
+export type ManagedReferral = { record: Referral; canModify: boolean };
 export type ReferralPage = {
   referrals: ReferralSummary[];
   nextCursor: string | null;
@@ -85,6 +86,14 @@ export function referralTime(value: string): string {
         timeZone: "Africa/Nairobi",
       }).format(new Date(value))
     : "Date unavailable";
+}
+// Preserve server microseconds when comparing edits saved within one millisecond.
+function instant(value: string): bigint {
+  const fraction = /\.(\d+)/.exec(value)?.[1] ?? "";
+  return (
+    BigInt(Date.parse(value)) * 1000000n +
+    BigInt(fraction.padEnd(9, "0").slice(3, 9))
+  );
 }
 export function parseSelection(value: unknown, pathwayId?: string): Selection {
   const item = object(value),
@@ -158,11 +167,16 @@ export function parseReferral(
     item.scope !== "school-demonstration" ||
     item.status !== "saved" ||
     item.deliveryStatus !== "not-sent" ||
-    item.revision !== 1 ||
+    !Number.isSafeInteger(item.revision) ||
+    (item.revision as number) < 1 ||
     item.acknowledgementVersion !== "project-request-v1" ||
     !validDate(item.savedAt) ||
-    item.savedAt !== item.updatedAt ||
-    item.savedAt !== item.acknowledgedAt ||
+    !validDate(item.updatedAt) ||
+    !validDate(item.acknowledgedAt) ||
+    instant(item.updatedAt) !== instant(item.acknowledgedAt) ||
+    (item.revision === 1
+      ? instant(item.savedAt) !== instant(item.updatedAt)
+      : instant(item.updatedAt) <= instant(item.savedAt)) ||
     typeof item.fullName !== "string" ||
     typeof item.email !== "string" ||
     (item.phone !== null && typeof item.phone !== "string") ||
@@ -191,7 +205,7 @@ export function parseReferral(
     scope: item.scope,
     status: item.status,
     deliveryStatus: item.deliveryStatus,
-    revision: 1,
+    revision: item.revision as number,
     acknowledgementVersion: "project-request-v1",
     savedAt: item.savedAt,
     updatedAt: item.updatedAt,
@@ -213,7 +227,7 @@ export function createReferralTransport(
     scope === "demo" ? "/api/v1/demo-referrals" : "/api/v1/referrals";
   async function read(
     path: string,
-    method: "GET" | "PUT",
+    method: "GET" | "PUT" | "DELETE",
     body: unknown,
     signal: AbortSignal,
   ) {
@@ -227,9 +241,9 @@ export function createReferralTransport(
       method,
       headers: {
         Authorization: `Bearer ${token}`,
-        ...(method === "PUT" ? { "Content-Type": "application/json" } : {}),
+        ...(method !== "GET" ? { "Content-Type": "application/json" } : {}),
       },
-      ...(method === "PUT" ? { body: JSON.stringify(body) } : {}),
+      ...(method !== "GET" ? { body: JSON.stringify(body) } : {}),
       signal,
       credentials: "omit",
       redirect: "error",
@@ -252,6 +266,72 @@ export function createReferralApi(options: ReferralTransportOptions) {
     if (!validId(id)) throw new ReferralError(422);
   }
   return {
+    async managed(id: string, signal: AbortSignal): Promise<ManagedReferral> {
+      checkId(id);
+      const result = object(await read(`/${id}`, "GET", undefined, signal));
+      if (typeof result.canModify !== "boolean") throw new ReferralError(502);
+      return {
+        record: parseReferral(result.referral, uid, id),
+        canModify: result.canModify,
+      };
+    },
+    async update(previous: Referral, contact: Contact, signal: AbortSignal) {
+      const original = parseReferral(previous, uid, previous.id);
+      if (original.revision >= Number.MAX_SAFE_INTEGER)
+        throw new ReferralError(422);
+      const clean: Contact = {
+        fullName: contact.fullName.trim(),
+        email: contact.email.trim(),
+        phone: contact.phone?.trim() || null,
+        contactMethod: contact.contactMethod,
+        description: contact.description.trim(),
+        acknowledged: contact.acknowledged,
+      };
+      if (validateContact(clean)) throw new ReferralError(422);
+      const result = parseReferral(
+        object(
+          await read(
+            `/${original.id}`,
+            "PUT",
+            { ...clean, expectedRevision: original.revision },
+            signal,
+          ),
+        ).referral,
+        uid,
+        original.id,
+      );
+      if (
+        result.revision !== original.revision + 1 ||
+        result.savedAt !== original.savedAt ||
+        instant(result.updatedAt) <= instant(original.updatedAt) ||
+        JSON.stringify(result.selection) !==
+          JSON.stringify(original.selection) ||
+        result.fullName !== clean.fullName ||
+        result.email !== clean.email ||
+        result.phone !== clean.phone ||
+        result.contactMethod !== clean.contactMethod ||
+        result.description !== clean.description
+      )
+        throw new ReferralError(502);
+      return result;
+    },
+    async remove(previous: Referral, signal: AbortSignal) {
+      const original = parseReferral(previous, uid, previous.id);
+      const receipt = object(
+        await read(
+          `/${original.id}`,
+          "DELETE",
+          { expectedRevision: original.revision },
+          signal,
+        ),
+      );
+      if (
+        receipt.uid !== uid ||
+        receipt.deletedId !== original.id ||
+        receipt.revision !== original.revision
+      )
+        throw new ReferralError(502);
+    },
     async selection(pathwayId: string, signal: AbortSignal) {
       if (!validServiceId(pathwayId)) throw new ReferralError(422);
       return parseSelection(
@@ -297,6 +377,7 @@ export function createReferralApi(options: ReferralTransportOptions) {
         id,
       );
       if (
+        record.revision !== 1 ||
         record.selection.selectionVersion !== source.selectionVersion ||
         record.selection.pathway.id !== source.pathway.id ||
         record.selection.service.id !== source.service.id ||

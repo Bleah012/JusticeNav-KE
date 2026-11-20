@@ -1,7 +1,8 @@
 import { Link, useParams, useSearchParams } from "react-router";
 import { useAuth } from "../auth/useAuth";
 import { validId } from "../assessments/assessmentApi";
-import { useReferralList, useReferralRecord } from "../referrals/useReferrals";
+import { useReferralList, useManagedReferral } from "../referrals/useReferrals";
+import { ReferralManagement } from "../components/ReferralManagement";
 import { referralTime } from "../referrals/referralApi";
 import { DemoReferralProgress } from "../components/DemoReferralWorkflow";
 import { ReferralDetails } from "../components/ReferralDetails";
@@ -16,7 +17,7 @@ function Detail({
   id: string;
   seeker: boolean;
 }) {
-  const { state, resource } = useReferralRecord(uid, id);
+  const { state, resource, api } = useManagedReferral(uid, id);
   return state.status === "ready" ? (
     <div className="referral-tracking__grid">
       <section className="seeker-page__panel">
@@ -24,8 +25,8 @@ function Detail({
         <ol className="referral-tracking__timeline">
           <li>
             <strong>Request saved in JusticeNav KE</strong>
-            <time dateTime={state.value.savedAt}>
-              {referralTime(state.value.savedAt)}
+            <time dateTime={state.value.record.savedAt}>
+              {referralTime(state.value.record.savedAt)}
             </time>
             <p>The original request is saved privately in your account.</p>
           </li>
@@ -33,9 +34,21 @@ function Detail({
       </section>
       <section className="seeker-page__panel">
         <h2>Referral details</h2>
-        <ReferralDetails record={state.value} privateDetails />
+        <ReferralDetails record={state.value.record} privateDetails />
+        <ReferralManagement
+          key={state.value.record.revision}
+          state={state}
+          resource={resource}
+          api={api}
+        />
       </section>
-      {seeker && <DemoReferralProgress uid={uid} referralId={id} />}
+      {seeker && (
+        <DemoReferralProgress
+          uid={uid}
+          referralId={id}
+          onChange={() => void resource.reload()}
+        />
+      )}
     </div>
   ) : (
     <ReferralFeedback state={state} reload={() => void resource.reload()} />
