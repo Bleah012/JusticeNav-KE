@@ -422,3 +422,40 @@ Live acceptance using non-sensitive development data:
 5. Withdraw sharing; confirm edit/delete stay unavailable. Another account must
    not open or mutate either private request. Two-tab stale edits must require
    reload rather than overwrite a newer save.
+
+## Administrator Users page
+
+`/admin/users` lists up to 50 Firebase Authentication accounts per API page, with
+page-local name/email/reference search, role filtering, cursor paging and a View
+account dialog. New account opens a short form for name, email, role and initial
+password. A provider must choose a published service; an administrator must
+explicitly confirm the broader access shown in the form. Published services have
+their own reload control if that catalogue read fails.
+
+The form requires a 12–128 character initial password and clears it as soon as a
+creation request starts. It never stores it in local/session storage, URLs or the
+account result. Creating an account does not sign out or replace the current
+administrator session. No welcome email, account-role editing, disabling, deletion
+or export is included in this school MVP batch. Public sign-up stays seeker-only.
+
+Exact name/email/role/service/active-status confirmation is required before success
+is shown. Repeated submit is blocked. A conflict or uncertain outcome requires
+Reload accounts, which inspects the exact creation reference before refreshing the
+list. A disabled recovered account is shown as disabled, not as successfully
+provisioned. A confirmed creation with a failed list refresh is reported separately.
+Account changes and page departure discard late responses and clear loaded data.
+
+Live acceptance with development accounts you control:
+1. As admin, open Users → New account. Enter a name, an unused test email you
+   control, a unique initial password and Service provider. Choose the same
+   service as a test referral, confirm its access, and create. Refresh and check
+   the account is active with that role/service. The current admin stays signed in.
+2. In a separate browser session, sign in using the new provider account. Assign
+   a shared test referral for its service through the admin provider dropdown,
+   then start/complete review as that provider.
+3. Create an Administrator with another unused test email, confirming the admin
+   access. Sign in separately and verify the admin workspace opens.
+4. Retry an existing email: expect a conflict and no change to that account.
+   Reload accounts to inspect it. Cancel a filled form and verify no creation.
+5. Sign in as a seeker/provider and verify the Users route/API are denied. New
+   normal registrations must still receive the seeker role.

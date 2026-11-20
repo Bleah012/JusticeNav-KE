@@ -193,6 +193,18 @@ export function PrivacyNoticePage() {
               identification numbers, PINs, financial details or confidential
               dispute information.
             </p>
+            <p>
+              Administrators can view Firebase sign-in account names, email
+              addresses, roles, enabled status, creation and last sign-in times,
+              and a provider&apos;s assigned service. They can create separate
+              provider and administrator accounts with an initial password.
+              This information is sent to the authenticated API in the request
+              body and stored by Firebase Authentication. The initial password
+              is cleared from the form after submission and is not returned by
+              the API or stored in Firestore. These operations do not expose
+              private assessment descriptions or referral contact fields, and
+              do not send a welcome email.
+            </p>
           </section>
 
           <section id="privacy-urls" aria-labelledby="privacy-urls-title">

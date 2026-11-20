@@ -10,6 +10,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from .admin_catalog import router as admin_catalog_router
+from .admin_users import FirebaseAccounts
+from .admin_users import router as admin_users_router
 from .assessments import AssessmentStore, FirestoreAssessmentStore
 from .assessments import router as assessment_router
 from .audit_logs import FirestoreAuditRepository
@@ -65,6 +67,7 @@ def create_app(
     pathway_repository=None,
     resource_repository=None,
     audit_repository=None,
+    account_directory=None,
 ) -> FastAPI:
     """Build an app with explicit settings and replaceable dependencies for tests."""
     settings = settings if settings is not None else Settings()
@@ -159,6 +162,12 @@ def create_app(
     )
     app.include_router(notification_router)
     app.include_router(admin_catalog_router)
+    app.state.account_directory = (
+        account_directory
+        if account_directory is not None
+        else FirebaseAccounts(settings)
+    )
+    app.include_router(admin_users_router)
     app.include_router(service_management_router)
     app.include_router(pathway_management_router)
     app.include_router(resource_management_router)
@@ -186,6 +195,13 @@ def create_app(
         request: Request, error: RequestValidationError
     ):
         """Do not echo rejected profile values or extra credential fields into API errors."""
+        if request.url.path.startswith("/api/v1/admin/users"):
+            return JSONResponse(
+                status_code=422,
+                content={
+                    "detail": "Invalid account input. Check the name, email, password, role, provider service and confirmation."
+                },
+            )
         if request.url.path.startswith("/api/v1/admin/audit-logs"):
             return JSONResponse(
                 status_code=422,

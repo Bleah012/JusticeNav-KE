@@ -1,90 +1,147 @@
-import { useState } from "react";
-import { Info, Search, Users } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { Link, useSearchParams } from "react-router";
+import { useAuth } from "../auth/useAuth";
+import { backendUrl, firebaseAuth } from "../auth/firebaseClient";
+import { createAdminUsersApi, validateAccount } from "../admin/adminUsersApi";
+import type { Account, AccountInput } from "../admin/adminUsersApi";
+import { AdminUsersResource } from "../admin/AdminUsersResource";
+import { useAdminCatalog } from "../admin/useAdminCatalog";
 import { AdminOperationsTable } from "../components/AdminOperationsTable";
 import type { AdminColumn } from "../components/AdminOperationsTable";
 import { AdminRecordDialog } from "../components/AdminRecordDialog";
-import { Button } from "../components/ui/Button";
-import type { AdminData } from "../types/adminData";
-import {
-  userRoleLabels,
-  userStatusLabels,
-  validAdminUsers,
-} from "../types/workspaceData";
-import type { AdminUserSummary } from "../types/workspaceData";
-import { referralDate } from "../types/referralData";
-import "./WorkspacePages.css";
+import { referralTime } from "../referrals/referralApi";
+import "./AdminUsersPage.css";
 
-// Show limited account metadata without granting access to private assessments.
-export function AdminUsersPage({
-  data = { status: "unavailable" },
-}: {
-  data?: AdminData<readonly AdminUserSummary[]>;
-}) {
-  const [query, setQuery] = useState("");
-  const [role, setRole] = useState("all");
-  const [status, setStatus] = useState("all");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const records =
-    data.status === "ready" && validAdminUsers(data.value) ? data.value : null;
+const roles = {
+  seeker: "Seeker",
+  provider: "Service provider",
+  admin: "Administrator",
+  unsupported: "Unsupported role",
+};
+const blank = (): AccountInput => ({
+  name: "",
+  email: "",
+  password: "",
+  role: "provider",
+  serviceId: null,
+  confirmed: false,
+});
+function AccountDetails({ account }: { account: Account }) {
+  return (
+    <dl className="seeker-page__details">
+      <div>
+        <dt>Name</dt>
+        <dd>{account.name ?? "Not set"}</dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd>{account.email ?? "Not set"}</dd>
+      </div>
+      <div>
+        <dt>Role</dt>
+        <dd>{roles[account.role]}</dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>{account.disabled ? "Disabled" : "Active"}</dd>
+      </div>
+      {account.role === "provider" && (
+        <div>
+          <dt>Provider service</dt>
+          <dd>{account.serviceId ?? "Not configured"}</dd>
+        </div>
+      )}
+      <div>
+        <dt>User reference</dt>
+        <dd>{account.id}</dd>
+      </div>
+      <div>
+        <dt>Created</dt>
+        <dd>{referralTime(account.createdAt)}</dd>
+      </div>
+      <div>
+        <dt>Last sign-in</dt>
+        <dd>
+          {account.lastSignInAt
+            ? referralTime(account.lastSignInAt)
+            : "Not yet recorded"}
+        </dd>
+      </div>
+    </dl>
+  );
+}
+function Users({ uid, after }: { uid: string; after?: string }) {
+  const [api] = useState(() =>
+    createAdminUsersApi({
+      baseUrl: backendUrl,
+      uid,
+      currentUser: () => firebaseAuth().currentUser,
+    }),
+  );
+  const [resource] = useState(() => new AdminUsersResource(api, after));
+  const state = useSyncExternalStore(
+    resource.subscribe,
+    resource.snapshot,
+    resource.snapshot,
+  );
+  useEffect(() => resource.start(), [resource]);
+  const services = useAdminCatalog(uid, "services");
+  const choices =
+    services.state.status === "ready" &&
+    services.state.value.kind === "services"
+      ? services.state.value.services
+      : null;
+  const [open, setOpen] = useState(false),
+    [draft, setDraft] = useState(blank),
+    [validation, setValidation] = useState("");
+  const [query, setQuery] = useState(""),
+    [role, setRole] = useState("all"),
+    [selected, setSelected] = useState<Account | null>(null);
+  const busy = state.busy || state.needsReload || state.status !== "ready";
   const needle = query.trim().toLocaleLowerCase();
-  const filtered = records
-    ? records
-        .filter(
-          (item) =>
-            (!needle || item.id.toLocaleLowerCase().includes(needle)) &&
-            (role === "all" || item.role === role) &&
-            (status === "all" || item.status === status),
-        )
-        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
-    : null;
-  const selected = records?.find((item) => item.id === selectedId) ?? null;
-  const columns: AdminColumn<AdminUserSummary>[] = [
-    { key: "id", label: "User reference", render: (item) => item.id },
-    { key: "role", label: "Role", render: (item) => userRoleLabels[item.role] },
+  const rows =
+    state.page?.users.filter(
+      (row) =>
+        (!needle ||
+          [row.name, row.email, row.id].some((value) =>
+            value?.toLocaleLowerCase().includes(needle),
+          )) &&
+        (role === "all" || row.role === role),
+    ) ?? null;
+  const columns: AdminColumn<Account>[] = [
+    {
+      key: "name",
+      label: "Account",
+      render: (row) => (
+        <>
+          <strong>{row.name ?? "Name not set"}</strong>
+          <p>{row.email ?? "Email not set"}</p>
+        </>
+      ),
+    },
+    { key: "role", label: "Role", render: (row) => roles[row.role] },
+    {
+      key: "service",
+      label: "Provider service",
+      render: (row) =>
+        row.role === "provider"
+          ? (choices?.find((item) => item.id === row.serviceId)?.name ??
+            row.serviceId ??
+            "Not configured")
+          : "Not applicable",
+    },
     {
       key: "status",
       label: "Status",
-      render: (item) => (
-        <span className="seeker-page__badge">
-          {userStatusLabels[item.status]}
-        </span>
-      ),
+      render: (row) => (row.disabled ? "Disabled" : "Active"),
     },
     {
-      key: "created",
-      label: "Created",
-      render: (item) => (
-        <time dateTime={item.createdAt}>{referralDate(item.createdAt)}</time>
-      ),
-    },
-    {
-      key: "signed-in",
-      label: "Last sign-in",
-      render: (item) =>
-        item.lastSignInAt ? (
-          <time dateTime={item.lastSignInAt}>
-            {referralDate(item.lastSignInAt)}
-          </time>
-        ) : (
-          "Not available"
-        ),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (item) => (
-        <div className="admin-pages__row-actions">
-          <Button variant="ghost" onClick={() => setSelectedId(item.id)}>
-            View
-          </Button>
-          <Button
-            variant="ghost"
-            disabled
-            title="Account changes are currently unavailable."
-          >
-            Change role
-          </Button>
-        </div>
+      key: "view",
+      label: "Details",
+      render: (row) => (
+        <button className="btn btn-secondary" onClick={() => setSelected(row)}>
+          View account
+        </button>
       ),
     },
   ];
@@ -94,144 +151,324 @@ export function AdminUsersPage({
         <div>
           <span className="seeker-page__eyebrow">Administration</span>
           <h1>User management</h1>
-          <p>Review account roles and status.</p>
+          <p>Create school-project provider and administrator accounts.</p>
         </div>
-        <Button disabled title="User export is currently unavailable.">
-          Export users
-        </Button>
+        <button
+          className="btn btn-secondary"
+          disabled={state.busy || state.status === "loading"}
+          onClick={() => {
+            setSelected(null);
+            void resource.reload();
+          }}
+        >
+          Reload accounts
+        </button>
       </header>
       <div className="seeker-page__notice">
-        <Info size={20} aria-hidden="true" />
         <p>
-          Account changes and exports are currently unavailable. This view
-          contains account metadata only; it does not provide access to private
-          assessment descriptions or contact details.
+          Public registration creates seeker accounts. Administrators can create
+          separate provider and admin accounts here. This page shows sign-in
+          account metadata; private assessments and referral contact details are
+          not included.
         </p>
       </div>
-      <section className="seeker-dashboard__stats" aria-label="Account summary">
-        {[
-          { label: "Users", value: records?.length },
-          ...Object.entries(userStatusLabels).map(([value, label]) => ({
-            label,
-            value: records?.filter((item) => item.status === value).length,
-          })),
-        ].map((item) => (
-          <article key={item.label}>
-            <Users size={22} aria-hidden="true" />
-            <div>
-              <h2>{item.label}</h2>
-              <strong>{item.value ?? "Unavailable"}</strong>
-            </div>
-          </article>
-        ))}
-      </section>
-      <form
-        className="admin-pages__toolbar"
-        role="search"
-        onSubmit={(event) => event.preventDefault()}
+      {state.message && (
+        <p role={state.needsReload ? "alert" : "status"}>{state.message}</p>
+      )}
+      {state.created && (
+        <section
+          className="seeker-page__panel"
+          aria-label="Last account result"
+        >
+          <h2>Last account result</h2>
+          <AccountDetails account={state.created} />
+        </section>
+      )}
+      {state.status !== "forbidden" && (
+        <section className="seeker-page__panel admin-users__create">
+          <h2>Create an account</h2>
+          {!open ? (
+            <button
+              className="btn btn-primary"
+              disabled={busy}
+              onClick={() => {
+                setDraft(blank());
+                setValidation("");
+                setOpen(true);
+              }}
+            >
+              New account
+            </button>
+          ) : (
+            <form
+              onSubmit={async (event) => {
+                event.preventDefault();
+                const payload = {
+                  ...draft,
+                  name: draft.name.trim(),
+                  email: draft.email.trim(),
+                };
+                const error = validateAccount(payload);
+                setValidation(error);
+                if (error) return;
+                if (
+                  payload.role === "provider" &&
+                  !choices?.some((item) => item.id === payload.serviceId)
+                ) {
+                  setValidation("Choose a currently published service.");
+                  return;
+                }
+                setDraft((current) => ({
+                  ...current,
+                  password: "",
+                  confirmed: false,
+                }));
+                const confirmed = await resource.create(
+                  crypto.randomUUID().replaceAll("-", ""),
+                  payload,
+                );
+                if (confirmed) {
+                  setDraft(blank());
+                  setOpen(false);
+                }
+              }}
+            >
+              <fieldset disabled={busy} className="admin-users__fields">
+                <legend>New account details</legend>
+                <label>
+                  Full name
+                  <input
+                    required
+                    maxLength={120}
+                    value={draft.name}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setDraft({ ...draft, name: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  Email
+                  <input
+                    required
+                    type="email"
+                    maxLength={254}
+                    value={draft.email}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setDraft({ ...draft, email: event.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  Role
+                  <select
+                    value={draft.role}
+                    onChange={(event) =>
+                      setDraft({
+                        ...draft,
+                        role: event.target.value as AccountInput["role"],
+                        serviceId: null,
+                        confirmed: false,
+                      })
+                    }
+                  >
+                    <option value="provider">Service provider</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </label>
+                {draft.role === "provider" && (
+                  <label>
+                    Provider service
+                    <select
+                      required
+                      value={draft.serviceId ?? ""}
+                      disabled={!choices}
+                      onChange={(event) =>
+                        setDraft({
+                          ...draft,
+                          serviceId: event.target.value || null,
+                          confirmed: false,
+                        })
+                      }
+                    >
+                      <option value="">Choose a published service</option>
+                      {choices?.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <label>
+                  Initial password
+                  <input
+                    required
+                    type="password"
+                    minLength={12}
+                    maxLength={128}
+                    autoComplete="new-password"
+                    value={draft.password}
+                    onChange={(event) =>
+                      setDraft({ ...draft, password: event.target.value })
+                    }
+                  />
+                </label>
+                <p>
+                  Use 12–128 characters and follow your Firebase project
+                  password policy. The password is cleared after submission and
+                  is not displayed again. No welcome email is sent; the new user
+                  signs in separately with these details.
+                </p>
+                <label className="admin-users__confirmation">
+                  <input
+                    type="checkbox"
+                    checked={draft.confirmed}
+                    onChange={(event) =>
+                      setDraft({ ...draft, confirmed: event.target.checked })
+                    }
+                  />
+                  <span>
+                    {draft.role === "admin"
+                      ? "I confirm this new administrator should manage accounts, catalogue content and demonstration assignments."
+                      : "I confirm this provider should review demonstrations assigned to the selected service."}
+                  </span>
+                </label>
+              </fieldset>
+              {draft.role === "provider" && (!choices || !choices.length) && (
+                <p role="status">
+                  {services.state.status === "loading"
+                    ? "Loading published services…"
+                    : choices
+                      ? "No published services are available."
+                      : "Published services could not be loaded."}{" "}
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={state.busy}
+                    onClick={services.refresh}
+                  >
+                    Reload services
+                  </button>
+                </p>
+              )}
+              {validation && <p role="alert">{validation}</p>}
+              <div className="admin-users__actions">
+                <button
+                  className="btn btn-primary"
+                  type="submit"
+                  disabled={
+                    busy || (draft.role === "provider" && !choices?.length)
+                  }
+                >
+                  {state.busy ? "Creating…" : "Create account"}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  type="button"
+                  disabled={state.busy}
+                  onClick={() => {
+                    setDraft(blank());
+                    setOpen(false);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
+      )}
+      <section
+        className="admin-users__filters"
+        aria-label="Filter accounts on this page"
       >
-        <label className="admin-pages__search" htmlFor="admin-users-search">
-          <Search size={18} aria-hidden="true" />
-          <span className="admin-pages__sr-only">Search user references</span>
+        <label>
+          Search this page
           <input
-            id="admin-users-search"
             type="search"
-            autoComplete="off"
             maxLength={200}
-            placeholder="Search user references…"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
+            placeholder="Name, email or user reference"
           />
         </label>
         <label>
-          <span>Role</span>
+          Filter role
           <select
             value={role}
             onChange={(event) => setRole(event.target.value)}
           >
             <option value="all">All roles</option>
-            {Object.entries(userRoleLabels).map(([value, label]) => (
+            {Object.entries(roles).map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
             ))}
           </select>
         </label>
-        <label>
-          <span>Status</span>
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            <option value="all">All statuses</option>
-            {Object.entries(userStatusLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </form>
+      </section>
+      <p>
+        {state.page
+          ? `${state.page.users.length} accounts loaded on this page. Filters apply to this page only.`
+          : state.status === "loading"
+            ? "Loading account information…"
+            : "Account information is unavailable."}
+      </p>
       <AdminOperationsTable
-        key={JSON.stringify([query, role, status])}
-        title="User management"
+        key={`${query}:${role}`}
+        title="Accounts"
         subject="Account information"
-        records={filtered}
-        status={data.status}
-        retry={data.status === "error" ? data.retry : undefined}
+        records={rows}
+        status={state.status === "forbidden" ? "error" : state.status}
+        retry={() => void resource.reload()}
         columns={columns}
-        rowKey={(item) => item.id}
+        rowKey={(row) => row.id}
         emptyTitle={
-          records?.length
-            ? "No users match these filters."
-            : "No users to display."
+          state.page?.users.length
+            ? "No accounts match these filters."
+            : "No accounts to display."
         }
+        paginate={false}
       />
-      {selected && (
+      <nav className="admin-users__actions" aria-label="Account pages">
+        {after && (
+          <Link className="btn btn-secondary" to="/admin/users">
+            First page
+          </Link>
+        )}
+        {state.page?.nextCursor && !state.busy && (
+          <Link
+            className="btn btn-secondary"
+            to={`/admin/users?${new URLSearchParams({ after: state.page.nextCursor })}`}
+          >
+            Next page
+          </Link>
+        )}
+      </nav>
+      {selected && state.status === "ready" && !state.needsReload && (
         <AdminRecordDialog
           title="Account details"
-          onClose={() => setSelectedId(null)}
+          onClose={() => setSelected(null)}
         >
-          <dl className="seeker-page__details">
-            <div>
-              <dt>User reference</dt>
-              <dd>{selected.id}</dd>
-            </div>
-            <div>
-              <dt>Role</dt>
-              <dd>{userRoleLabels[selected.role]}</dd>
-            </div>
-            <div>
-              <dt>Status</dt>
-              <dd>{userStatusLabels[selected.status]}</dd>
-            </div>
-            <div>
-              <dt>Created</dt>
-              <dd>
-                <time dateTime={selected.createdAt}>
-                  {referralDate(selected.createdAt)}
-                </time>
-              </dd>
-            </div>
-            <div>
-              <dt>Last sign-in</dt>
-              <dd>
-                {selected.lastSignInAt
-                  ? referralDate(selected.lastSignInAt)
-                  : "Not available"}
-              </dd>
-            </div>
-          </dl>
-          <div className="workspace-pages__actions">
-            <Button variant="secondary" disabled>
-              Change role
-            </Button>
-            <Button variant="danger" disabled>
-              Disable account
-            </Button>
-          </div>
+          <AccountDetails account={selected} />
         </AdminRecordDialog>
       )}
     </>
+  );
+}
+export function AdminUsersPage() {
+  const { session } = useAuth();
+  const [params] = useSearchParams();
+  const after = params.get("after") ?? undefined;
+  if (session.status !== "ready" || session.identity.role !== "admin")
+    return <p role="alert">Administrator access is required.</p>;
+  return (
+    <Users
+      key={`${session.identity.uid}:${after ?? "first"}`}
+      uid={session.identity.uid}
+      after={after}
+    />
   );
 }
