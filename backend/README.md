@@ -462,3 +462,20 @@ filters. Reads never append events; failures return redacted 503 rather than
 partial history. Default timestamp indexes are sufficient. No new credential,
 seed or Firestore rule is needed. See [audit-logs.md](../docs/audit-logs.md).
 Run `backend/tests/test_audit_logs.py` with the existing backend checks.
+
+### MVP provider selection
+
+For a shared demonstration, `GET /api/v1/demo-referrals/admin/{key}/providers`
+returns only active provider accounts whose verified custom claims match that
+referral’s service. The administrator sees a name/account-label dropdown; the UID
+is passed internally in the existing assignment body. Assignment rechecks current
+membership and revision. Review and completion remain unchanged.
+
+The list is loaded only after **Choose provider**, using the existing backend
+Firebase Admin credentials. No new role setup, Firestore collection or index is
+needed. This school MVP supports one bounded read of up to 1,000 Firebase accounts
+and at most 50 matching providers; exceeding either bound shows an unavailable
+state rather than an incomplete list. Account labels use Firebase display name
+and email (with a generic fallback). Only administrators receive these choices.
+An empty list means no active provider is registered for the service. A failed
+lookup shows a retry state. This does not represent institutional referral delivery.

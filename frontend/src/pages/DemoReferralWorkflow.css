@@ -22,11 +22,15 @@
   width: min(100%, 28rem);
 }
 
-.demo-referral__assignment input {
+.demo-referral__assignment select {
   padding: 0.65rem;
   border: 1px solid currentColor;
   font: inherit;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  background: white;
+  color: inherit;
 }
 
 .demo-referral__queue li > div {

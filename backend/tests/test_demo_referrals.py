@@ -476,3 +476,112 @@ def test_firebase_membership_requires_current_active_user_role_and_service(
         directory.service_for("provider-one")
     get.return_value = SimpleNamespace(**user)
     assert directory.service_for("provider-one") == SERVICE
+
+
+@pytest.mark.parametrize("headers,status", [({}, 401), (SEEKER, 403), (PROVIDER, 403)])
+def test_provider_choices_are_admin_only_before_directory_access(
+    setup, headers, status
+):
+    api, store, _, membership = setup
+    response = api.get(BASE + f"/admin/{KEY}/providers", headers=headers)
+    assert response.status_code == status and store.writes == 0
+    membership.for_service.assert_not_called()
+
+
+def test_provider_choices_match_shared_referral_and_assignment_still_rechecks(setup):
+    api, store, _, membership = setup
+    path = BASE + f"/admin/{KEY}/providers"
+    assert api.get(path, headers=ADMIN).status_code == 404
+    share(api)
+    membership.for_service.return_value = [
+        demo.ProviderChoice(uid="provider-one", label="Development Provider")
+    ]
+    before = store.writes
+    choices = api.get(path, headers=ADMIN)
+    assert choices.status_code == 200
+    assert choices.json() == {
+        "uid": "admin-one",
+        "referralId": KEY,
+        "serviceId": SERVICE,
+        "providers": [{"uid": "provider-one", "label": "Development Provider"}],
+    }
+    membership.for_service.assert_called_once_with(SERVICE)
+    assert store.writes == before
+    membership.service_for.side_effect = demo.MembershipDenied
+    assert assign(api).status_code == 403 and store.writes == before
+    membership.service_for.side_effect = lambda _: SERVICE
+    assert assign(api).status_code == 200
+    assert api.get(path, headers=ADMIN).status_code == 409
+    assert progress(api, "under-review", 2).status_code == 200
+    assert progress(api, "completed", 3).status_code == 200
+
+
+def test_empty_choices_differ_from_directory_error(setup):
+    api, store, _, membership = setup
+    share(api)
+    membership.for_service.return_value = []
+    assert (
+        api.get(BASE + f"/admin/{KEY}/providers", headers=ADMIN).json()["providers"]
+        == []
+    )
+    membership.for_service.side_effect = demo.Unavailable("PRIVATE")
+    response = api.get(BASE + f"/admin/{KEY}/providers", headers=ADMIN)
+    assert response.status_code == 503 and "PRIVATE" not in response.text
+    assert store.writes == 1
+
+
+def test_directory_only_returns_active_matching_provider_accounts(monkeypatch):
+    def user(uid, **changes):
+        return SimpleNamespace(
+            **{
+                "uid": uid,
+                "disabled": False,
+                "custom_claims": {"role": "provider", "demoServiceId": SERVICE},
+                "display_name": "Development Provider",
+                "email": "provider@example.test",
+                **changes,
+            }
+        )
+
+    users = [
+        user("provider-one"),
+        user("disabled", disabled=True),
+        user("seeker", custom_claims={"role": "seeker", "demoServiceId": SERVICE}),
+        user(
+            "other",
+            custom_claims={"role": "provider", "demoServiceId": "nlas-legal-aid"},
+        ),
+        user("unset", custom_claims=None),
+    ]
+    monkeypatch.setattr(demo, "get_firebase_app", lambda _: "test-app")
+    listing = Mock(return_value=SimpleNamespace(users=users, next_page_token=None))
+    monkeypatch.setattr(demo.auth, "list_users", listing)
+    directory = demo.FirebaseProviderDirectory(Settings(_env_file=None))
+    choices = directory.for_service(SERVICE)
+    assert [choice.uid for choice in choices] == ["provider-one"]
+    assert choices[0].label == "Development Provider (provider@example.test)"
+    listing.assert_called_once_with(max_results=1000, app="test-app")
+    listing.return_value.users = [user("unnamed", display_name=None, email=None)]
+    assert directory.for_service(SERVICE)[0].label == "Development provider 1"
+    listing.return_value.next_page_token = "more"
+    with pytest.raises(demo.Unavailable):
+        directory.for_service(SERVICE)
+    listing.return_value.next_page_token = None
+    listing.return_value.users = [user(f"provider-{number}") for number in range(51)]
+    with pytest.raises(demo.Unavailable):
+        directory.for_service(SERVICE)
+
+
+def test_provider_listing_remains_disabled_in_production():
+    directory = Mock()
+    with TestClient(
+        create_app(
+            Settings(_env_file=None, app_env="production"),
+            verifier=Verifier(),
+            demo_provider_directory=directory,
+        )
+    ) as api:
+        assert (
+            api.get(BASE + f"/admin/{KEY}/providers", headers=ADMIN).status_code == 404
+        )
+    directory.for_service.assert_not_called()

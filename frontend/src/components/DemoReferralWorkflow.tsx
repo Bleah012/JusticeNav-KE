@@ -6,9 +6,12 @@ import {
   createDemoReferralApi,
   demoStatusLabels,
   validDemoId,
-  validProviderUid,
 } from "../referrals/demoReferralApi";
-import type { DemoRecord, DemoRole } from "../referrals/demoReferralApi";
+import type {
+  DemoRecord,
+  DemoRole,
+  ProviderChoice,
+} from "../referrals/demoReferralApi";
 import { referralTime } from "../referrals/referralApi";
 import { ReferralResource } from "../referrals/ReferralResource";
 import { ReferralFeedback } from "./ReferralFeedback";
@@ -151,37 +154,90 @@ export function DemoReferralProgress({
   );
 }
 
-function AssignmentForm({
+export function AssignmentForm({
   record,
   disabled,
   assign,
+  loadProviders,
 }: {
   record: DemoRecord;
   disabled: boolean;
   assign: (uid: string) => void;
+  loadProviders: (signal: AbortSignal) => Promise<ProviderChoice[]>;
 }) {
   const [uid, setUid] = useState("");
-  const valid = validProviderUid(uid.trim());
+  const [opened, setOpened] = useState(false);
+  const [resource] = useState(() => new ReferralResource(loadProviders));
+  const state = useSyncExternalStore(
+    resource.subscribe,
+    resource.snapshot,
+    resource.snapshot,
+  );
+  useEffect(() => {
+    if (opened) return resource.start();
+  }, [opened, resource]);
+  const providers = state.status === "ready" ? state.value : [];
+  const valid = providers.some((provider) => provider.uid === uid);
+  if (!opened)
+    return (
+      <Button
+        variant="secondary"
+        disabled={disabled}
+        onClick={() => setOpened(true)}
+      >
+        Choose provider
+      </Button>
+    );
   return (
     <form
       className="demo-referral__assignment"
       onSubmit={(event) => {
         event.preventDefault();
-        if (valid) assign(uid.trim());
+        if (valid && !disabled) assign(uid);
       }}
     >
       <label>
-        <span>Development provider UID</span>
-        <input
-          type="text"
-          value={uid}
-          autoComplete="off"
-          spellCheck={false}
-          maxLength={128}
-          disabled={disabled}
+        <span>Select provider</span>
+        <select
+          aria-label="Select provider"
+          value={valid ? uid : ""}
+          disabled={
+            disabled || state.status !== "ready" || providers.length === 0
+          }
           onChange={(event) => setUid(event.target.value)}
-        />
+        >
+          <option value="">Select a provider…</option>
+          {providers.map((provider) => (
+            <option key={provider.uid} value={provider.uid}>
+              {provider.label}
+            </option>
+          ))}
+        </select>
       </label>
+      {state.status === "loading" && (
+        <p role="status">Loading eligible providers…</p>
+      )}
+      {state.status === "error" && (
+        <p role="alert">
+          Providers could not be loaded. Reload providers to try again.
+        </p>
+      )}
+      {state.status === "ready" && providers.length === 0 && (
+        <p role="status">
+          No active provider is available for this service. Use a development
+          provider registered for this service.
+        </p>
+      )}
+      <Button
+        variant="secondary"
+        disabled={disabled || state.status === "loading"}
+        onClick={() => {
+          setUid("");
+          void resource.reload();
+        }}
+      >
+        Reload providers
+      </Button>
       <Button
         type="submit"
         disabled={disabled || !valid}
@@ -206,17 +262,20 @@ function ProviderStatusSummary({ referrals }: { referrals: DemoRecord[] }) {
         points={[
           {
             label: "Assigned",
-            value: referrals.filter(({ status }) => status === "assigned").length,
+            value: referrals.filter(({ status }) => status === "assigned")
+              .length,
             color: dashboardPalette.blue,
           },
           {
             label: "Under review",
-            value: referrals.filter(({ status }) => status === "under-review").length,
+            value: referrals.filter(({ status }) => status === "under-review")
+              .length,
             color: dashboardPalette.amber,
           },
           {
             label: "Completed",
-            value: referrals.filter(({ status }) => status === "completed").length,
+            value: referrals.filter(({ status }) => status === "completed")
+              .length,
             color: dashboardPalette.green,
           },
         ]}
@@ -319,6 +378,7 @@ function Queue({
                       record={record}
                       disabled={busy}
                       assign={(providerUid) => assign(record, providerUid)}
+                      loadProviders={(signal) => api.providers(record, signal)}
                     />
                   ) : record.status === "assigned" ? (
                     <Button

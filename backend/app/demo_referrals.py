@@ -138,6 +138,18 @@ class Assignment(RevisionUpdate):
     provider_uid: Uid
 
 
+class ProviderChoice(CatalogModel):
+    uid: Uid
+    label: Annotated[StrictStr, Field(min_length=1, max_length=256)]
+
+
+class ProviderChoices(CatalogModel):
+    uid: Uid
+    referral_id: Key
+    service_id: PublicId
+    providers: list[ProviderChoice] = Field(max_length=50)
+
+
 class Progress(RevisionUpdate):
     status: Literal["under-review", "completed"]
 
@@ -187,6 +199,37 @@ class FirebaseProviderDirectory:
 
     def __init__(self, settings):
         self.settings = settings
+
+    def for_service(self, service_id):
+        """One bounded account read is sufficient for the small school MVP."""
+        try:
+            page = auth.list_users(
+                max_results=1000, app=get_firebase_app(self.settings)
+            )
+            if page.next_page_token:
+                raise Unavailable
+            users = sorted(page.users, key=lambda user: user.uid)
+            providers = []
+            for user in users:
+                claims = user.custom_claims or {}
+                if (
+                    user.disabled
+                    or not isinstance(claims, dict)
+                    or claims.get("role") != "provider"
+                    or claims.get("demoServiceId") != service_id
+                ):
+                    continue
+                name = " ".join((user.display_name or "").split())
+                email = " ".join((user.email or "").split())
+                label = f"{name} ({email})" if name and email else name or email
+                label = label or f"Development provider {len(providers) + 1}"
+                label = "".join(char for char in label if ord(char) >= 32)[:256]
+                providers.append(ProviderChoice(uid=user.uid, label=label))
+            if len(providers) > 50:
+                raise Unavailable
+            return providers
+        except (*STORAGE_ERRORS, exceptions.FirebaseError) as error:
+            raise Unavailable from error
 
     def service_for(self, uid):
         try:
@@ -430,6 +473,29 @@ def assign(key: Key, update: Assignment, request: Request, user: Admin):
         return response(user, request.app.state.demo_referral_store.change(key, change))
 
     return execute(save)
+
+
+@router.get("/admin/{key}/providers", response_model=ProviderChoices)
+def provider_choices(key: Key, request: Request, user: Admin):
+    def read():
+        record = request.app.state.demo_referral_store.get(key)
+        if record is None:
+            raise Missing
+        if record.status != "shared":
+            raise Conflict
+        providers = request.app.state.demo_provider_directory.for_service(
+            record.service_id
+        )
+        if len({provider.uid for provider in providers}) != len(providers):
+            raise Unavailable
+        return ProviderChoices(
+            uid=user.uid,
+            referralId=record.id,
+            serviceId=record.service_id,
+            providers=providers,
+        )
+
+    return execute(read)
 
 
 @router.get("/provider", response_model=HandoffList)

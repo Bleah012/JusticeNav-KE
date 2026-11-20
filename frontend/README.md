@@ -333,7 +333,7 @@ The page checks the verified role before mounting its request controller. Every 
 
 ## Demonstration referral views
 
-In My Referrals, open a saved request and opt in to sharing the demonstration metadata. Use `/admin/referrals` to assign shared requests by a development provider UID. Use `/provider` as the assigned provider to start and complete a demo review. Return to My Referrals to read the event history or withdraw sharing. These views use the existing authenticated referral transport and refresh controls. A confirmed update changes the visible status. A conflict or uncertain save requires a refresh before retrying.
+In My Referrals, open a saved request and opt in to sharing the demonstration metadata. Use `/admin/referrals`, click **Choose provider**, select a matching development provider by name/account label, then click **Assign provider**. Use `/provider` as the assigned provider to start and complete a demo review. Return to My Referrals to read the event history or withdraw sharing. These views use the existing authenticated referral transport and refresh controls. A confirmed update changes the visible status. A conflict or uncertain save requires a refresh before retrying.
 
 Search and browsing remain in the account and catalogue routes. The demonstration queues page through twenty results at a time. Run `node --test tests/demo-referrals.test.cjs` from frontend to verify transport, metadata parsing and saved outcomes.
 
@@ -347,3 +347,10 @@ revisions come from the API; descriptions and contacts are excluded. There are n
 edit, delete or export controls. Account changes and failures clear stale rows.
 Run `node --test tests/audit-logs.test.cjs` and follow the
 [live audit-log check](../docs/audit-logs.md).
+
+MVP check: share a fresh test referral as seeker. In Administrator → Referrals,
+click **Choose provider**, select the matching provider by label, then **Assign
+provider**. No UID entry is needed. Sign in as that provider, start and complete
+review, then confirm the seeker’s status history and notifications. A provider
+registered for another service must not appear. The existing development role
+setup still applies once when preparing provider accounts.

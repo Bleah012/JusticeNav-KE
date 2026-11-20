@@ -26,6 +26,40 @@ export type DemoRecord = {
   history: { status: Status; at: string }[];
 };
 export type DemoPage = { referrals: DemoRecord[]; nextCursor: string | null };
+export type ProviderChoice = { uid: string; label: string };
+
+export function parseProviderChoices(
+  value: unknown,
+  uid: string,
+  row: DemoRecord,
+): ProviderChoice[] {
+  const data = envelope(value, uid);
+  if (
+    data.referralId !== row.id ||
+    data.serviceId !== row.serviceId ||
+    !Array.isArray(data.providers) ||
+    data.providers.length > 50
+  )
+    throw new ReferralError(502);
+  const providers = data.providers.map((value) => {
+    const item = object(value);
+    if (
+      typeof item.uid !== "string" ||
+      !validProviderUid(item.uid) ||
+      typeof item.label !== "string" ||
+      !item.label.trim() ||
+      item.label.length > 256 ||
+      [...item.label].some((char) => char.charCodeAt(0) < 32)
+    )
+      throw new ReferralError(502);
+    return { uid: item.uid, label: item.label };
+  });
+  if (
+    new Set(providers.map((provider) => provider.uid)).size !== providers.length
+  )
+    throw new ReferralError(502);
+  return providers;
+}
 
 const transitions: Record<Status, readonly Status[]> = {
   shared: ["assigned", "withdrawn"],
@@ -174,6 +208,19 @@ export function createDemoReferralApi(
     async mine(id: string, signal: AbortSignal) {
       const data = await owner(id, "", "GET", undefined, signal);
       return data.referral === null ? null : parseDemoRecord(data.referral);
+    },
+    async providers(row: DemoRecord, signal: AbortSignal) {
+      if (
+        !validDemoId(row.id) ||
+        !validServiceId(row.serviceId) ||
+        row.status !== "shared"
+      )
+        throw new ReferralError(422);
+      return parseProviderChoices(
+        await read(`/admin/${row.id}/providers`, "GET", undefined, signal),
+        uid,
+        row,
+      );
     },
     async share(id: string, signal: AbortSignal) {
       const data = await owner(
