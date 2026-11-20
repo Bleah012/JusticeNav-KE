@@ -31,8 +31,9 @@ export function useAssessmentRecord(uid: string, id: string, isNew: boolean) {
   return { state, resource, api };
 }
 export function useAssessmentList(uid: string, status?: AssessmentStatus, after?: string) {
-  const [resource] = useState(() => new AssessmentResource((signal) => apiFor(uid).list({ status, after }, signal)));
+  const [api] = useState(() => apiFor(uid));
+  const [resource] = useState(() => new AssessmentResource((signal) => api.list({ status, after }, signal)));
   const state = useSyncExternalStore(resource.subscribe, resource.snapshot, resource.snapshot);
   useEffect(() => resource.start(), [resource]);
-  return { state, resource };
+  return { state, resource, api };
 }

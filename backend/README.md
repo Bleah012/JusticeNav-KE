@@ -196,6 +196,7 @@ is required. All endpoints require the existing verified Firebase bearer identit
 | GET    | `/api/v1/assessments`              | Own metadata only, default 20 and maximum 50 records; optional `status` and `after` cursor. |
 | GET    | `/api/v1/assessments/{identifier}` | Own description, answers and saved progress; missing/foreign record is 404.                 |
 | PUT    | `/api/v1/assessments/{identifier}` | Explicitly create or update an own assessment using a revision check.                       |
+| DELETE | `/api/v1/assessments/{identifier}` | Delete an own saved assessment with JSON expectedRevision matching its current revision. |
 
 Identifiers are 32 lowercase hexadecimal characters, generated once by the browser
 for each new form. Repeating a create for the same identifier cannot create another
@@ -220,6 +221,16 @@ the verified backend UID selects the parent. The parent need not contain a profi
 document. This hash prevents interpreting UID path characters; it is not encryption.
 The Admin SDK uses IAM and bypasses client rules, so API ownership checks are required.
 No provider/admin cross-account assessment endpoints are introduced.
+
+Deletion confirms uid, deletedId and the saved revision. One transaction checks
+owner/revision, removes the assessment and reserves its ID in
+`assessmentOwners/{sha256(uid)}/deletedAssessments/{id}`. This minimal marker stores
+only owner/reference, revision and deletion time; old editors and late first saves
+cannot restore that ID. Stale deletion returns 409 and missing data returns 404.
+Refreshed dashboard assessment counts and recent activity exclude the removed
+record. Existing checklist/referral snapshots and earlier notifications are kept;
+an old assessment, suggestion or pathway-result link returns not found. No new
+notification, cascade deletion, credentials, index or migration is introduced.
 
 Listing queries only that owner's subcollection, orders by document reference and
 uses a saved document snapshot as its pagination cursor. Status equality uses the

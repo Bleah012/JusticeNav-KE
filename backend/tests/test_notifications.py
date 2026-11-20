@@ -392,6 +392,11 @@ def test_all_save_adapters_queue_a_notification_using_the_same_transaction(
     template = make_template(source)
     if kind == "assessment":
         module, store = assessments, FirestoreAssessmentStore(Settings(_env_file=None))
+        monkeypatch.setattr(
+            store,
+            "_deletion",
+            Mock(return_value=Mock(get=Mock(return_value=Mock(exists=False)))),
+        )
 
         def operation():
             return store.save(

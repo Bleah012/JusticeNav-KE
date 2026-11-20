@@ -372,3 +372,22 @@ or direct URL. In two tabs, save an edit in one and delete the stale revision in
 the other; reload must be required. The existing create/view/update flow must
 continue working. Automated checks remain in tests/checklists.test.cjs and
 backend/tests/test_checklists.py.
+
+## Delete a saved assessment
+
+My Assessments offers **Delete assessment** with browser confirmation for Draft,
+Needs clarification and Awaiting pathways records. Cancel sends no request. Only
+the current account's record and saved revision can be deleted. An exact receipt
+is required before refreshing the list; repeated clicks are blocked. Conflicts or
+uncertain outcomes require **Reload assessments**. A confirmed deletion followed
+by failed refresh is reported separately. Saved checklists/referrals and earlier
+notifications remain. An old assessment or result link shows not found; new
+assessments receive fresh IDs. Refreshed dashboard counts exclude deleted records.
+
+Live check: save a disposable assessment and, if desired, a checklist/referral
+from its results. Cancel deletion once, then delete and refresh. Check the
+assessment remains absent, dashboard counts update, and saved checklist/referral
+copies still open. Test a different account and an old editor. In two tabs, save
+an edit in one, then attempt stale deletion in the other; reload must be required.
+Existing description, clarification and optional suggestion flows must still work.
+Tests remain in tests/assessments.test.cjs and backend/tests/test_assessments.py.
