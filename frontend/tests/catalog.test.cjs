@@ -88,14 +88,24 @@ function envelope(change = {}) {
 }
 
 test("published records have real official links and correctly parsed public fields", () => {
-  assert.equal(published.services.length, 3);
-  assert.equal(published.resources.length, 6);
+  assert.equal(published.services.length, 4);
+  assert.equal(published.resources.length, 7);
   for (const service of published.services) {
     assert.equal(parseService(service, service.id).id, service.id);
     assert.equal(parseDirectoryService(service).contact, undefined);
   }
   for (const item of published.resources)
     assert.equal(parseResource(item).source.url, item.source.url);
+});
+
+test("employment resources parse while unknown, duplicate and oversized category lists are rejected", () => {
+  const employment = published.resources.find((item) => item.id === "elrc-employment-information");
+  assert(employment);
+  assert(parseResource(employment).categories.includes("employment"));
+  assert.equal(new URL(parseResource(employment).source.url).hostname, "judiciary.go.ke");
+  for (const categories of [[], ["Employment"], ["unknown"], ["employment", "employment"], ["preparation", "self-representation", "consumer", "civil", "employment"]])
+    assert.throws(() => parseResource({ ...employment, categories }));
+  assert.equal(parseResource({ ...employment, categories: ["preparation", "self-representation", "civil", "employment"] }).categories.length, 4);
 });
 
 test("source URLs reject unsafe schemes, misleading hosts, credentials, queries and fragments", () => {
@@ -255,7 +265,7 @@ test("public resources publish loading and confirmed data without submitting any
   task.resolve(published.services);
   await tick();
   assert.equal(controller.snapshot().status, "ready");
-  assert.equal(controller.snapshot().value.length, 3);
+  assert.equal(controller.snapshot().value.length, 4);
 });
 
 test("404 is a profile not-found state but an unavailable-list error", async (t) => {

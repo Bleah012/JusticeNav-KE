@@ -14,6 +14,7 @@ from pydantic import AwareDatetime, Field, StrictBool, model_validator
 
 from .auth import CurrentUser, VerificationUnavailable, get_firebase_app, require_roles
 from .catalog import CatalogModel, CatalogUnavailable, Identifier, review_today
+from .catalog_release import include_release_records
 from .pathways import CATEGORY_PATHWAYS, Pathway, PathwayStore, PathwayUnavailable
 
 Publication = Literal["draft", "published", "archived"]
@@ -229,12 +230,28 @@ class FirestorePathwayRepository:
                 )
         return self._client
 
-    def decode(self, snapshot):
-        return (
-            PathwayState.model_validate(snapshot.to_dict())
-            if snapshot.exists
-            else initial_state(self.seed)
+    def decode(self, snapshot, published_service_ids=None):
+        state = (
+            PathwayState.model_validate(snapshot.to_dict()) if snapshot.exists else None
         )
+        seed = initial_state(self.seed)
+        release_ids = {"employment-dispute-information"}
+        if published_service_ids is not None:
+            for row in seed.records:
+                if (
+                    row.pathway.id in release_ids
+                    and row.pathway.service_id not in published_service_ids
+                ):
+                    row.publication = "draft"
+                    row.ever_published = False
+        result = (
+            seed
+            if state is None
+            else include_release_records(state, seed, "pathway", release_ids)
+        )
+        if len(result.model_dump_json().encode("utf-8")) > 750_000:
+            raise ValueError("Pathway catalogue exceeds the document-size limit")
+        return result
 
     def read(self):
         try:
@@ -244,21 +261,37 @@ class FirestorePathwayRepository:
                 .document("pathways-v1")
                 .get(retry=None, timeout=10)
             )
-            return self.decode(snapshot)
+            services = self.service_repository.read()
+            return self.decode(
+                snapshot,
+                {
+                    row.service.id
+                    for row in services.records
+                    if row.publication == "published"
+                },
+            )
         except (
             GoogleAPICallError,
             RetryError,
             GoogleAuthError,
             VerificationUnavailable,
+            CatalogUnavailable,
+            TypeError,
             ValueError,
             OSError,
         ) as error:
             raise PathwayUnavailable from error
 
     def read_in_transaction(self, client, transaction):
+        services = self.service_repository.read_in_transaction(client, transaction)
         reference = client.collection("publicCatalogue").document("pathways-v1")
         return self.decode(
-            reference.get(transaction=transaction, retry=None, timeout=10)
+            reference.get(transaction=transaction, retry=None, timeout=10),
+            {
+                row.service.id
+                for row in services.records
+                if row.publication == "published"
+            },
         )
 
     def change(self, identifier, change, uid, published_service_ids):
@@ -269,9 +302,6 @@ class FirestorePathwayRepository:
 
             @firestore.transactional
             def write(transaction):
-                previous = self.decode(
-                    reference.get(transaction=transaction, retry=None, timeout=10)
-                )
                 # Reading both documents makes publication and service archiving conflict safely.
                 services = self.service_repository.read_in_transaction(
                     client, transaction
@@ -281,6 +311,10 @@ class FirestorePathwayRepository:
                     for row in services.records
                     if row.publication == "published"
                 }
+                previous = self.decode(
+                    reference.get(transaction=transaction, retry=None, timeout=10),
+                    active_ids,
+                )
                 state, record, audit = transition(
                     previous, identifier, change, uid, active_ids
                 )

@@ -31,6 +31,7 @@ the publisher's update date or continuous source availability.
 | --------------- | ------------------------------------------------------------------------ |
 | Consumer        | CAK complaint information; Small Claims Court information                |
 | Money / Debt    | Small Claims Court information                                           |
+| Employment | Judiciary employment-dispute information |
 | Something else  | No automatic links; general guides and service browsing remain available |
 
 These mappings are project navigation choices. The sources do not endorse them or
@@ -66,3 +67,13 @@ unknowns, update actual review dates, explain material changes in the PR and run
 schema/API/transport/page checks. Update the explicit mapping and its client tests
 together if navigation choices change. Source links alone never mark eligibility
 or institutional participation as verified.
+
+## Employment addition — 2026-11-21
+
+`employment-dispute-information` links to the [Judiciary ELRC overview](https://judiciary.go.ke/employment-and-labour-relations-court/).
+Only broad employment/labour scope is used. The new checklist explicitly marks
+timeline/record prompts as optional editorial aids. Current procedure, appropriate
+forum, required documents and time limits must be confirmed through an official
+channel or qualified adviser. No deadlines or eligibility rules are encoded.
+The saved Employment selection alone chooses this link; an optional classifier
+suggestion must first be accepted/saved by the seeker.

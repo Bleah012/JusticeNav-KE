@@ -10,7 +10,7 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parent
 DEFAULT_DATASET = DATA_DIR / "raw" / "kenyan-english-evaluation.csv"
 FIELDS = ("case_id", "description", "expected_category")
-CATEGORIES = ("consumer", "money-debt", "other")
+CATEGORIES = ("consumer", "money-debt", "employment", "other")
 OUTCOMES = (*CATEGORIES, "unsure")
 
 
@@ -80,7 +80,7 @@ def main() -> None:
     for description, expected in cases:
         matrix[expected][suggest_issue(description) or "unsure"] += 1
 
-    print("Expected\tConsumer\tMoney / Debt\tSomething else\tUnsure")
+    print("Expected\tConsumer\tMoney / Debt\tEmployment\tSomething else\tUnsure")
     for label, counts in matrix.items():
         print(label, *(counts[outcome] for outcome in OUTCOMES), sep="\t")
 

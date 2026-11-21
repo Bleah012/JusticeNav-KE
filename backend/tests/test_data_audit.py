@@ -34,7 +34,8 @@ def test_audit_distinguishes_missing_and_blank_independent_data(audit):
     assert result["training"]["counts"] == {
         "consumer": 40,
         "money-debt": 40,
-        "other": 48,
+        "employment": 38,
+        "other": 38,
     }
     assert result["independentCsv"]["status"] == "missing"
     assert result["learnedHands"]["status"] == "missing"
@@ -63,6 +64,16 @@ def test_data_report_never_labels_populated_csv_as_independent_by_itself(audit):
     data = module.report()["independentCsv"]
     assert data["status"] == "populated-unverified" and data["completeCases"] == 1
     assert "I need help" not in str(data)
+
+
+def test_employment_validation_retains_clear_case_coverage_and_reports_mixed_limit(
+    audit,
+):
+    module, _ = audit
+    result = module.report()["evaluations"]["employment_validation"]
+    assert result["labeled"] == 20 and result["correct"] >= 19
+    assert result["wrong"] == 0
+    assert result["ambiguous"] == 8 and result["ambiguousAbstained"] >= 7
 
 
 def test_employment_candidates_preserve_unknown_labels_and_mixed_issues(audit):

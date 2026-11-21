@@ -103,3 +103,11 @@ Automated checks: backend `test_service_management.py`, frontend
 `service-management.test.cjs`, the existing regression suites, lint, formatting
 and production build. Browser fixture checks exercise forms without live writes;
 the acceptance sequence above verifies your actual Firestore connection.
+
+## Employment release additions
+
+The explicitly added employment seed record is included in older catalogue states
+when its ID is absent from both records and deleted IDs. Existing edits, archives,
+drafts and tombstones take precedence. Reads remain read-only; the next normal
+transaction persists the overlay. A new employment pathway stays draft when its
+service is not published. Source review dates for older records are unchanged.

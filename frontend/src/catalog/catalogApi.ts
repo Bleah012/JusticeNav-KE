@@ -152,7 +152,7 @@ export function parseResource(value: unknown): ResourceItem {
     new Set(categories).size !== categories.length ||
     categories.some(
       (category) =>
-        !["preparation", "self-representation", "consumer", "civil"].includes(
+        !["preparation", "self-representation", "consumer", "civil", "employment"].includes(
           category,
         ),
     )

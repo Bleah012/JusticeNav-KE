@@ -21,6 +21,7 @@ from .catalog import (
     ResourceItem,
     review_today,
 )
+from .catalog_release import include_release_records
 
 Publication = Literal["draft", "published", "archived"]
 Revision = Annotated[int, Field(strict=True, ge=0)]
@@ -218,10 +219,14 @@ class FirestoreResourceRepository:
         return self._client
 
     def decode(self, snapshot):
-        return (
-            ResourceState.model_validate(snapshot.to_dict())
-            if snapshot.exists
-            else initial_state(self.seed)
+        seed = initial_state(self.seed)
+        if not snapshot.exists:
+            return seed
+        return include_release_records(
+            ResourceState.model_validate(snapshot.to_dict()),
+            seed,
+            "resource",
+            {"elrc-employment-information"},
         )
 
     def read(self):

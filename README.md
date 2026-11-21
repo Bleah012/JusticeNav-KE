@@ -160,9 +160,18 @@ current assignment, not just the current page. Seeker counts still cover all
 saved records in that account.
 
 The data folder has a reproducible completeness/evaluation audit and a clearly
-labeled synthetic development CSV. Runtime training remains at 128 examples
-after larger candidates regressed on ambiguous inputs. See [employment scope](docs/employment-scope.md)
+labeled synthetic development CSV. The subsequent employment release uses 156
+synthetic examples across four categories. See [employment scope](docs/employment-scope.md)
 for source and training research, and [MVP review](docs/mvp-review.md) for proposal
 alignment and remaining report, logbook and independent evaluation work.
 The three-role workflow remains a school demonstration. Hosting is a separate,
 final task.
+
+## Employment information
+
+Employment is a fourth optional suggestion and manual assessment category.
+It opens the Judiciary employment-dispute information guide, a preparation
+checklist and the existing private referral/school-demonstration flow.
+Existing Other answers stay unchanged until the owner explicitly edits them.
+The model uses 156 synthetic examples; raw external or seeker descriptions
+are not training inputs. See [employment scope](docs/employment-scope.md).

@@ -85,11 +85,12 @@ function deferred() {
 }
 
 test("reviewed pathways and preparation items parse with genuine source URLs", () => {
-  assert.equal(published.pathways.length, 3);
+  assert.equal(published.pathways.length, 4);
   for (const pathway of published.pathways) {
     const parsed = parsePathway(pathway, pathway.id);
-    assert.equal(parsed.sourceReview.checkedOn, "2026-11-03");
-    assert.equal(parsed.preparation.length, 3);
+    const employment = pathway.id === "employment-dispute-information";
+    assert.equal(parsed.sourceReview.checkedOn, employment ? "2026-11-21" : "2026-11-03");
+    assert.equal(parsed.preparation.length, employment ? 4 : 3);
   }
   assert(published.pathways[2].whoMayUse.includes("debt recovery"));
 });
@@ -146,7 +147,7 @@ test("public detail and checklist transport sends no token, cookie, body or quer
 test("public lists validate dates, duplicate guides and empty published data", async () => {
   const api = (value) =>
     createPathwayApi("http://localhost:8000", async () => response(value));
-  assert.equal((await api(published).list(signal())).length, 3);
+  assert.equal((await api(published).list(signal())).length, 4);
   assert.equal(
     (await api({ ...published, pathways: [] }).list(signal())).length,
     0,
@@ -197,6 +198,24 @@ test("results verify owner, reference, revision, method, category and exact mapp
   const other = { ...navigation(), selectedIssue: "other", pathways: [] };
   assert.equal(parseNavigation(other, user.uid, ID).pathways.length, 0);
 });
+test("employment navigation accepts only the employment guide and preserves the empty Other mapping", () => {
+  const pathway = published.pathways.find((item) => item.id === "employment-dispute-information");
+  assert(pathway);
+  assert.equal(pathway.serviceId, "employment-labour-relations-court");
+  const employment = { ...navigation(), selectedIssue: "employment", pathways: [{ pathway, reason: "You selected Employment." }] };
+  const parsed = parseNavigation(employment, user.uid, ID);
+  assert.equal(parsed.selectedIssue, "employment");
+  assert.equal(parsed.pathways[0].pathway.id, pathway.id);
+  for (const pathways of [[], navigation().pathways, [...employment.pathways, ...employment.pathways]])
+    assert.throws(() => parseNavigation({ ...employment, pathways }, user.uid, ID));
+  assert.throws(() => parseNavigation({ ...employment, selectedIssue: "other" }, user.uid, ID));
+  const other = parseNavigation({ ...navigation(), selectedIssue: "other", pathways: [] }, user.uid, ID);
+  assert.equal(other.selectedIssue, "other");
+  assert.equal(other.pathways.length, 0);
+  const debt = parseNavigation({ ...navigation(), selectedIssue: "money-debt", pathways: [navigation().pathways[1]] }, user.uid, ID);
+  assert.equal(debt.pathways[0].pathway.id, "small-claims-information");
+});
+
 test("private result request has only opaque path and bearer; no description or answers", async () => {
   let captured;
   const get = createNavigationRequest({

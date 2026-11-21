@@ -1,0 +1,40 @@
+{
+  "employment": [
+    "The supermarket where I work has not paid my salary for July or August despite my attendance records.",
+    "I lost my job at a hotel after asking for maternity leave and want information about the dismissal.",
+    "My boss has deducted money from my wages for equipment I did not damage.",
+    "The company did not include weekend overtime in my pay and human resources will not correct it.",
+    "I was dismissed after making a workplace harassment complaint against my supervisor.",
+    "My employer changed the hours in my contract and says I must accept them to keep my job.",
+    "The employer ended my contract but has not paid the wages for my final fortnight.",
+    "The manager refuses to approve the annual leave I earned while employed at the clinic."
+  ],
+  "consumer": [
+    "I purchased a desk from a shop but received one with broken legs and the seller refuses to replace it.",
+    "The broadband company charged for a service package I did not order and refused to reverse the bill.",
+    "I paid a gardener for a service at my house and they took the payment without doing the work.",
+    "My booking was cancelled by the tour operator but they have not returned my deposit."
+  ],
+  "money-debt": [
+    "A friend borrowed my savings and has not made any of the repayments we agreed.",
+    "A loan app says I still owe interest after I paid the settlement amount in full.",
+    "The SACCO is demanding a debt as guarantor after the borrower stopped making instalments.",
+    "The collector is pursuing a personal loan that was opened by someone else using my identity."
+  ],
+  "other": [
+    "My landlord has locked the gate to the home I rent and tells me to move out.",
+    "The county office rejected the permit for my new shop building.",
+    "My cousins disagree over who should administer the estate left by our grandmother.",
+    "My child cannot enrol because the birth certificate spells our family name incorrectly."
+  ],
+  "uncertain": [
+    "My employer sold me a broken television and also has not paid my wages. Both are the problem.",
+    "I bought tools from my boss using a loan and now there is an argument about work and the loan.",
+    "I need information about something that happened.",
+    "There are payments involved but I cannot explain who owes whom.",
+    "Employment.",
+    "My job.",
+    "Wages.",
+    "They say the contract is over. What now?"
+  ]
+}

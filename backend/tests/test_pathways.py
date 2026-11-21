@@ -107,6 +107,7 @@ def test_public_guides_do_not_verify_identity_or_access_private_storage(path):
     [
         ("consumer", ["cak-consumer-complaint", "small-claims-information"]),
         ("money-debt", ["small-claims-information"]),
+        ("employment", ["employment-dispute-information"]),
         ("other", []),
     ],
 )
@@ -300,8 +301,7 @@ def test_empty_catalogue_is_valid_and_nlas_is_browse_only():
     )
     assert "debt recovery" in nlas.who_may_use
     assert all(
-        item.source_review.checked_on.isoformat() == "2026-11-03"
-        for item in data.pathways
+        item.source_review.checked_on <= data.checked_on for item in data.pathways
     )
     data.pathways = []
     pathways = Mock()

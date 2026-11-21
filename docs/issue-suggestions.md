@@ -8,9 +8,9 @@ answer.
 
 ## Data and model
 
-The runtime corpus in `backend/app/issue_training.json` contains 128 original
-synthetic English descriptions. There are 40 for Consumer, 40 for Money / Debt
-and 48 for Something else. The model uses those examples alone. The API reads a saved
+The runtime corpus in `backend/app/issue_training.json` contains 156
+synthetic English descriptions. There are 40 for Consumer, 40 for Money / Debt,
+38 for Employment and 38 for Something else. The model uses those examples alone. The API reads a saved
 description for inference only when requested and discards the prediction
 after returning it.
 
@@ -18,13 +18,13 @@ The model uses word unigrams and bigrams, smoothed inverse document frequency,
 sublinear term frequency, and L2 normalization. Multinomial logistic regression
 uses an L2 penalty and a deterministic batch optimizer. The backend fits and
 caches the model in process using Python's standard library. It abstains when
-fewer than three vocabulary words match, the top probability is below 0.56,
+fewer than three vocabulary words match, the top probability is below 0.48,
 or the margin over the next category is below 0.18. These are heuristic
 thresholds. [TF-IDF reference](https://scikit-learn.org/stable/modules/feature_extraction.html#tfidf-term-weighting)
 
 ## Held-out evaluation
 
-`backend/tests/fixtures/issue_evaluation.json` contains 24 separate synthetic
+The original `backend/tests/fixtures/issue_evaluation.json` contained 24 synthetic
 scenarios, including Kenyan settings, short inputs and out-of-vocabulary text.
 These examples are excluded from model fitting.
 
@@ -40,9 +40,9 @@ directory to repeat the regression check. These hand-authored examples measure
 behavior on a small synthetic set. Real-user accuracy, multilingual coverage
 and calibrated probability estimates remain unevaluated.
 
-## Training coverage update
+## Historical three-category training coverage update
 
-This update adds 44 synthetic descriptions and keeps the model and abstention
+That update added 44 synthetic descriptions and kept the model and abstention
 thresholds fixed. It gives more coverage to tenancy, employment, education and
 other issues outside the Consumer and Money / Debt pathways.
 
@@ -72,7 +72,7 @@ Accuracy on new Kenyan user submissions remains unevaluated.
 
 ## Dashboard and data review
 
-The 128-example runtime corpus and thresholds remain unchanged. Two larger
+At the dashboard review, the 128-example corpus and thresholds remained unchanged. Two larger
 synthetic candidates improved clear-case coverage but each lost an expected
 ambiguous-input abstention and was rejected. The additional assistant-authored
 development CSV is evaluation-only. Reproduce aggregate results and raw-file
@@ -80,7 +80,21 @@ completeness with data/evaluate_classifier.py. No saved seeker descriptions,
 external narratives or new development cases were added to runtime training.
 Independent Kenyan English validation remains open.
 
-Employment currently belongs to Something else under the three-category contract.
-Adding Employment requires an explicit four-label revision and reviewed relabeling
-of existing employment examples, rather than leaving the same concepts in Other.
+Employment belonged to Something else under the previous three-category contract.
+The four-label revision below moves existing employment examples to Employment.
 See [employment scope](employment-scope.md).
+
+## Four-category release
+
+`synthetic-four-category-v2` moves ten workplace training descriptions from Other
+to Employment and adds 28 synthetic examples. Existing saved Other answers never
+change automatically. The score threshold was selected on synthetic development
+validation/regressions and is heuristic, not calibrated confidence. Vocabulary
+and logistic-regression fitting still use training descriptions alone.
+
+See [data results](../data/README.md#four-category-revision-2026-11-21) and
+[label-review provenance](../data/samples/employment-label-review.json).
+Evaluation labels for workplace examples changed with the new taxonomy; old
+three-class results are historical. All bundled evaluation sets are development
+evidence. No completed independent local test or user study is claimed. A mixed
+work/loan example still receives Money/Debt; manual correction remains necessary.

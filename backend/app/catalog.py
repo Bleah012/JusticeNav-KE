@@ -32,7 +32,9 @@ Identifier = Annotated[
     StrictStr, Field(pattern=r"^[a-z0-9]+(?:-[a-z0-9]+)*$", min_length=3, max_length=64)
 ]
 Text = Annotated[StrictStr, Field(min_length=1, max_length=2000)]
-Category = Literal["preparation", "self-representation", "consumer", "civil"]
+Category = Literal[
+    "preparation", "self-representation", "consumer", "civil", "employment"
+]
 
 
 def review_today() -> date:
