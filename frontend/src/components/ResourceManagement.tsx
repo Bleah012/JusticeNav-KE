@@ -26,6 +26,7 @@ const categories: Record<ResourceCategory, string> = {
   "self-representation": "Self-representation",
   consumer: "Consumer disputes",
   civil: "Civil disputes",
+  employment: "Employment",
 };
 type ResourceController = CatalogManagementResource<
   ResourceList,

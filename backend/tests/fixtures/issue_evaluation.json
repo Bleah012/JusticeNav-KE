@@ -20,7 +20,6 @@
     "My brother is contesting my mother's will and disputes who should administer her estate.",
     "I am trying to correct my date of birth on a government birth certificate before applying for an ID.",
     "My former partner will not agree on custody and visitation arrangements for our child.",
-    "My employer dismissed me while I was on maternity leave and gave no reason for the termination.",
     "A neighbour put up a fence inside our plot and is blocking the shared path in Nyeri."
   ],
   "uncertain": [
@@ -30,5 +29,9 @@
     "XYZ quux frobnicate.",
     "Loan.",
     "Refund."
+  ],
+  "employment": [
+    "My employer dismissed me while I was on maternity leave and gave no reason for the termination.",
+    "My employer has withheld my last salary after dismissing me from my job at a warehouse."
   ]
 }

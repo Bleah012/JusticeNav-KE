@@ -1,0 +1,28 @@
+{
+  "version": "four-category-review-v2",
+  "reviewType": "Assistant-assisted development review; not independent human annotation",
+  "training": {
+    "provenance": "Synthetic English descriptions only; no source narratives or seeker records",
+    "originalExamplesRetained": 128,
+    "originalOtherMovedToEmployment": 10,
+    "newSyntheticEmploymentExamples": 28,
+    "classCounts": {"consumer": 40, "money-debt": 40, "employment": 38, "other": 38}
+  },
+  "labelGuide": {
+    "consumer": "A customer dispute about bought goods or paid services, including faulty goods, non-delivery and undisclosed charges.",
+    "money-debt": "Borrowing, repayment, credit, guarantees and debt collection. A colleague as private borrower does not by itself make this Employment.",
+    "employment": "Employer-employee workplace matters such as wages, dismissal, leave, working hours and workplace treatment. Wage arrears are Employment, rather than a private loan.",
+    "other": "Issues outside the three supported specific categories, such as tenancy, family, succession, education and official records.",
+    "unsure": "Evaluation-only abstention target for sparse, genuinely unclear or mixed narratives. It is never a training class; users choose a saved category themselves."
+  },
+  "externalReview": {
+    "source": "Learned Hands 2022-05-21 confidence-binary release, 2811 rows",
+    "use": "Development evaluation only; all 363 employment candidates remain pending training review",
+    "originalLabels": "learned-hands-reviewed-labels.csv",
+    "revisedLabels": "learned-hands-reviewed-labels-v2.csv",
+    "employmentKeys": ["057c0724c4b45ce9", "07a4ef1c00e862de", "0845d65a1749657b"],
+    "relabelReason": "Workplace complaint, workplace accommodation, and employment-related travel pay move from the old broad Other group into Employment. No Kenyan legal-procedure claims are learned from these narratives."
+  },
+  "syntheticDevelopmentRelabels": ["DEV022", "DEV029"],
+  "evaluationBoundary": "All bundled evaluation cases are development evidence. Threshold selection used synthetic validation/regression outcomes; there is no completed independent Kenyan participant test."
+}

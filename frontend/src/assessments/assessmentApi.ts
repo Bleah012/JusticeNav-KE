@@ -1,8 +1,11 @@
 import { apiOrigin } from "../auth/session";
 export const statusLabels = { draft: "Draft", "needs-clarification": "Needs clarification", "awaiting-pathways": "Awaiting pathways" } as const;
 export type AssessmentStatus = keyof typeof statusLabels;
+export const issueLabels = { consumer: "Consumer", "money-debt": "Money / Debt", employment: "Employment", other: "Something else" } as const;
+export type Issue = keyof typeof issueLabels;
+export function validIssue(value: unknown): value is Issue { return typeof value === "string" && Object.hasOwn(issueLabels, value); }
 export type Answers = {
-  issue: "consumer" | "money-debt" | "other" | null;
+  issue: Issue | null;
   timeframe: "recent" | "months" | "older" | "unsure" | null;
   contact: "yes" | "no" | "unsure" | null;
 };
@@ -100,7 +103,7 @@ function summary(value: unknown): AssessmentSummary {
 export function parseAssessment(value: unknown, uid: string, id: string): Assessment {
   const item = object(value), basic = summary(item), answers = object(item.answers);
   if (item.uid !== uid || basic.id !== id || typeof item.description !== "string" || !item.description.trim() || item.description.length > 1500 ||
-    ![null, "consumer", "money-debt", "other"].includes(answers.issue as null) || ![null, "recent", "months", "older", "unsure"].includes(answers.timeframe as null) || ![null, "yes", "no", "unsure"].includes(answers.contact as null))
+    (answers.issue !== null && !validIssue(answers.issue)) || ![null, "recent", "months", "older", "unsure"].includes(answers.timeframe as null) || ![null, "yes", "no", "unsure"].includes(answers.contact as null))
     throw new Error("Invalid assessment response");
   if (Boolean(answers.issue && answers.timeframe && answers.contact) !== (basic.status === "awaiting-pathways"))
     throw new Error("Invalid saved progress");
@@ -121,7 +124,7 @@ export function createAssessmentApi(uid: string, request: Request) {
       const result = object(await request(uid, id, "GET", undefined, signal, { suggestionRevision: revision }));
       const issue = result.issue;
       if (result.assessmentId !== id || result.revision !== revision ||
-        (issue !== null && issue !== "consumer" && issue !== "money-debt" && issue !== "other"))
+        (issue !== null && !validIssue(issue)))
         throw new AssessmentError(502);
       return issue;
     },

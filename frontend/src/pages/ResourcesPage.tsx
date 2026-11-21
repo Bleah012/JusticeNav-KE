@@ -17,6 +17,7 @@ const categories = [
   ["self-representation", "Self-representation"],
   ["consumer", "Consumer disputes"],
   ["civil", "Civil disputes"],
+  ["employment", "Employment"],
 ] as const;
 
 type CategoryKey = (typeof categories)[number][0];

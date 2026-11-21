@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedOn": "2026-11-03",
+  "checkedOn": "2026-11-21",
   "pathways": [
     {
       "id": "cak-consumer-complaint",
@@ -9,7 +9,10 @@
       "serviceId": "cak-consumer-protection",
       "overview": "CAK publishes a process for consumer complaints.",
       "whoMayUse": "CAK considers complaints within its consumer-protection mandate.",
-      "matters": ["Misleading representations", "Unsafe or defective goods"],
+      "matters": [
+        "Misleading representations",
+        "Unsafe or defective goods"
+      ],
       "requirements": [
         "Review the complaint form and supply relevant complaint information."
       ],
@@ -116,7 +119,9 @@
       "serviceId": "nlas-legal-aid",
       "overview": "NLAS publishes application and eligibility guidance.",
       "whoMayUse": "NLAS assesses eligibility. Its listed exclusions include debt recovery.",
-      "matters": ["Legal aid application information"],
+      "matters": [
+        "Legal aid application information"
+      ],
       "requirements": [
         "Check NLAS eligibility and income-evidence requirements."
       ],
@@ -155,6 +160,63 @@
           "id": "review-application",
           "label": "Review official application instructions",
           "note": "Opening this checklist does not apply for aid."
+        }
+      ]
+    },
+    {
+      "id": "employment-dispute-information",
+      "title": "Employment dispute information",
+      "category": "Employment",
+      "serviceId": "employment-labour-relations-court",
+      "overview": "Explore official employment and labour information, then confirm the appropriate route for your situation.",
+      "whoMayUse": "For people seeking employment-dispute information. Confirm the appropriate forum and current requirements with the registry or a qualified adviser.",
+      "matters": [
+        "Disputes between employers and employees",
+        "Employment and labour relations"
+      ],
+      "requirements": [
+        "Confirm current jurisdiction and procedure using official information."
+      ],
+      "startingSteps": [
+        {
+          "title": "Read the Judiciary overview",
+          "description": "Review the published employment and labour scope."
+        },
+        {
+          "title": "Confirm the appropriate route",
+          "description": "Ask the relevant registry or a qualified adviser about current requirements and any applicable time limits."
+        }
+      ],
+      "nextStages": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-21",
+        "sources": [
+          {
+            "name": "Judiciary — Employment and Labour Relations Court",
+            "url": "https://judiciary.go.ke/employment-and-labour-relations-court/"
+          }
+        ]
+      },
+      "preparation": [
+        {
+          "id": "read-employment-scope",
+          "label": "Review official employment-dispute information",
+          "note": "A category suggestion does not establish jurisdiction or entitlement."
+        },
+        {
+          "id": "prepare-timeline",
+          "label": "Prepare a private factual timeline",
+          "note": "Optional preparation: note key events and dates for your own reference. This is an app preparation aid, not an official filing requirement."
+        },
+        {
+          "id": "identify-records",
+          "label": "Identify relevant records you already hold",
+          "note": "Optional preparation: note any contract, payslips and correspondence privately. Confirm with the registry or adviser what is required; do not upload records here."
+        },
+        {
+          "id": "confirm-next-step",
+          "label": "Confirm current instructions and time limits",
+          "note": "Use a current official channel. Saving this checklist does not file a case or preserve a deadline."
         }
       ]
     }

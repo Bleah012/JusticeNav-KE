@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "checkedOn": "2026-11-02",
+  "checkedOn": "2026-11-21",
   "services": [
     {
       "id": "small-claims-courts",
@@ -9,7 +9,9 @@
       "location": "Kenya — court stations vary",
       "description": "Judiciary information on Small Claims Courts and the civil claims they can consider.",
       "eligibility": "Confirm jurisdiction with the court",
-      "accessMethods": ["Official website"],
+      "accessMethods": [
+        "Official website"
+      ],
       "deliveryModes": [],
       "sourceReview": {
         "checkedOn": "2026-11-02",
@@ -57,8 +59,16 @@
       "location": "Nairobi",
       "description": "CAK receives complaints about matters such as misleading representations and unsafe or defective goods.",
       "eligibility": "Consumer complaints within CAK’s mandate",
-      "accessMethods": ["Email", "Telephone", "Post", "Office visit"],
-      "deliveryModes": ["Remote", "In-person"],
+      "accessMethods": [
+        "Email",
+        "Telephone",
+        "Post",
+        "Office visit"
+      ],
+      "deliveryModes": [
+        "Remote",
+        "In-person"
+      ],
       "sourceReview": {
         "checkedOn": "2026-11-02",
         "sources": [
@@ -105,7 +115,10 @@
       "location": "Kenya — confirm the relevant NLAS office",
       "description": "Official NLAS information on eligibility and legal aid applications.",
       "eligibility": "Assessment by NLAS",
-      "accessMethods": ["Application form", "Official website"],
+      "accessMethods": [
+        "Application form",
+        "Official website"
+      ],
       "deliveryModes": [],
       "sourceReview": {
         "checkedOn": "2026-11-02",
@@ -121,7 +134,9 @@
         ]
       },
       "about": "Legal aid is subject to NLAS assessment.",
-      "offeredServices": ["Legal aid application information"],
+      "offeredServices": [
+        "Legal aid application information"
+      ],
       "whoMayQualify": "NLAS assesses eligibility. Its guidance excludes certain civil matters, including debt recovery.",
       "accessSteps": [
         {
@@ -142,6 +157,47 @@
         "phone": null,
         "email": "info@nlas.go.ke"
       }
+    },
+    {
+      "id": "employment-labour-relations-court",
+      "name": "Employment and Labour Relations Court — Judiciary of Kenya",
+      "serviceType": "Employment and labour court information",
+      "location": "Kenya — confirm the relevant registry",
+      "description": "Official Judiciary information about employment and labour disputes.",
+      "eligibility": "Confirm jurisdiction and current procedure with the relevant registry or a qualified adviser.",
+      "accessMethods": [
+        "Official website"
+      ],
+      "deliveryModes": [],
+      "sourceReview": {
+        "checkedOn": "2026-11-21",
+        "sources": [
+          {
+            "name": "Judiciary — Employment and Labour Relations Court",
+            "url": "https://judiciary.go.ke/employment-and-labour-relations-court/"
+          }
+        ]
+      },
+      "about": "The Judiciary describes the court’s employment and labour jurisdiction. This directory entry does not determine the appropriate forum for a particular case.",
+      "offeredServices": [
+        "Employment and labour dispute information"
+      ],
+      "whoMayQualify": "A category selection is not a decision about jurisdiction or entitlement.",
+      "accessSteps": [
+        {
+          "title": "Review the official overview",
+          "description": "Check the published scope and confirm current instructions with the relevant registry."
+        }
+      ],
+      "officialWebsite": "https://judiciary.go.ke/employment-and-labour-relations-court/",
+      "contact": {
+        "access": "Use the official Judiciary page to confirm a current contact channel.",
+        "coverage": null,
+        "hours": null,
+        "address": null,
+        "phone": null,
+        "email": null
+      }
     }
   ],
   "resources": [
@@ -149,7 +205,9 @@
       "id": "judiciary-small-claims-overview",
       "title": "Small Claims Court overview",
       "description": "Official court overview and scope information. Confirm current jurisdiction and requirements with the relevant court.",
-      "categories": ["civil"],
+      "categories": [
+        "civil"
+      ],
       "source": {
         "name": "Judiciary of Kenya",
         "url": "https://judiciary.go.ke/small-claims-court/",
@@ -160,7 +218,11 @@
       "id": "judiciary-small-claims-guide",
       "title": "Small Claims Court step-by-step guide",
       "description": "The Judiciary’s published procedural guide. Confirm current filing requirements with the relevant registry.",
-      "categories": ["self-representation", "preparation", "civil"],
+      "categories": [
+        "self-representation",
+        "preparation",
+        "civil"
+      ],
       "source": {
         "name": "Judiciary of Kenya",
         "url": "https://judiciary.go.ke/mall-claims-courts-step-by-step-guide/",
@@ -171,7 +233,11 @@
       "id": "judiciary-small-claims-forms",
       "title": "Small Claims Court forms",
       "description": "Official court forms page. Check which current form applies before preparing a filing.",
-      "categories": ["preparation", "self-representation", "civil"],
+      "categories": [
+        "preparation",
+        "self-representation",
+        "civil"
+      ],
       "source": {
         "name": "Judiciary of Kenya",
         "url": "https://judiciary.go.ke/small-claims-court-forms/",
@@ -182,7 +248,9 @@
       "id": "cak-consumer-complaint-information",
       "title": "Consumer complaint information",
       "description": "CAK’s explanation of complaint channels and its consumer complaint review process.",
-      "categories": ["consumer"],
+      "categories": [
+        "consumer"
+      ],
       "source": {
         "name": "Competition Authority of Kenya",
         "url": "https://www.cak.go.ke/consumer-protection",
@@ -193,7 +261,10 @@
       "id": "cak-consumer-forms-guidelines",
       "title": "Consumer complaint forms and guidelines",
       "description": "Published complaint form and guidance links. Check the current instructions on CAK’s website.",
-      "categories": ["consumer", "preparation"],
+      "categories": [
+        "consumer",
+        "preparation"
+      ],
       "source": {
         "name": "Competition Authority of Kenya",
         "url": "https://www.cak.go.ke/mandate/Consumer-Protection/Forms-Guidelines",
@@ -204,11 +275,27 @@
       "id": "nlas-legal-aid-guidance",
       "title": "Legal aid eligibility and applications",
       "description": "NLAS information on applying, eligibility and excluded matters, including debt recovery. NLAS determines whether assistance can be provided.",
-      "categories": ["preparation"],
+      "categories": [
+        "preparation"
+      ],
       "source": {
         "name": "National Legal Aid Service",
         "url": "https://www.nlas.go.ke/legal-aid",
         "checkedOn": "2026-11-02"
+      }
+    },
+    {
+      "id": "elrc-employment-information",
+      "title": "Employment and Labour Relations Court overview",
+      "description": "Official employment and labour court information; confirm current procedure with the registry.",
+      "categories": [
+        "employment",
+        "self-representation"
+      ],
+      "source": {
+        "checkedOn": "2026-11-21",
+        "name": "Judiciary — Employment and Labour Relations Court",
+        "url": "https://judiciary.go.ke/employment-and-labour-relations-court/"
       }
     }
   ]

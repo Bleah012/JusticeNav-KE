@@ -11,9 +11,15 @@ from pathlib import Path
 DATA = Path(__file__).resolve().parent
 ROOT = DATA.parent
 sys.path.insert(0, str(ROOT / "backend"))
-from app.issue_classifier import TRAINING_PATH, suggest_issue
+from app.issue_classifier import MODEL_VERSION, TRAINING_PATH, suggest_issue
 from evaluate_kenyan_english import normalize, read_cases
-from evaluate_learned_hands import SOURCE_SHA256, case_key, read_csv
+from evaluate_learned_hands import (
+    EXPECTED_COUNTS,
+    LABEL_VERSION,
+    SOURCE_SHA256,
+    case_key,
+    read_csv,
+)
 
 
 def evaluate(cases):
@@ -21,7 +27,8 @@ def evaluate(cases):
         labeled=0, correct=0, wrong=0, unsure=0, ambiguous=0, ambiguousAbstained=0
     )
     matrix = {
-        label: Counter() for label in ("consumer", "money-debt", "other", "unsure")
+        label: Counter()
+        for label in ("consumer", "money-debt", "employment", "other", "unsure")
     }
     for description, expected in cases:
         expected = "unsure" if expected == "uncertain" else expected
@@ -45,13 +52,18 @@ def report():
         raise ValueError("Training descriptions must be unique after normalization.")
     result = {
         "training": {
+            "modelVersion": MODEL_VERSION,
             "counts": {label: len(rows) for label, rows in training.items()},
             "sha256": hashlib.sha256(TRAINING_PATH.read_bytes()).hexdigest(),
             "provenance": "Synthetic English examples; user submissions are not used for training.",
         },
         "evaluations": {},
     }
-    for name in ("issue_evaluation", "issue_coverage_evaluation"):
+    for name in (
+        "issue_evaluation",
+        "issue_coverage_evaluation",
+        "employment_validation",
+    ):
         groups = json.loads(
             (ROOT / "backend/tests/fixtures" / (name + ".json")).read_text(
                 encoding="utf-8"
@@ -98,12 +110,11 @@ def report():
             )
         rows = read_csv(learned)
         texts = {case_key(row["_id"]): row["full_text"].strip() for row in rows}
-        reviewed = read_csv(DATA / "samples/learned-hands-reviewed-labels.csv")
+        reviewed = read_csv(DATA / "samples/learned-hands-reviewed-labels-v2.csv")
         if (
             len(texts) != len(rows)
             or len({row["case_key"] for row in reviewed}) != len(reviewed)
-            or Counter(row["expected"] for row in reviewed)
-            != dict.fromkeys(("consumer", "money-debt", "other"), 10)
+            or Counter(row["expected"] for row in reviewed) != EXPECTED_COUNTS
         ):
             raise ValueError("Invalid reviewed Learned Hands sample.")
         cases = [(texts[row["case_key"]], row["expected"]) for row in reviewed]
@@ -116,6 +127,7 @@ def report():
             "status": "present",
             "sourceRows": len(rows),
             "reviewedRows": len(reviewed),
+            "labelVersion": LABEL_VERSION,
             "use": "Evaluation only; this reviewed sample already informed development.",
         }
     else:

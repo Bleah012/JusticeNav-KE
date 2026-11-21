@@ -49,7 +49,7 @@ and split assignments. Recreate only to a new filename with
 data/prepare_employment_review.py --output data/raw/a-new-employment-review.csv.
 The inspector performs no training and prints no narrative text.
 
-## Proposed four-category model revision
+## Four-category model revision checklist
 
 1. Freeze a reviewed label guide: Consumer, Money / Debt, Employment and Other.
    Define paid customer services separately from wages, dismissal and workplace
@@ -73,13 +73,39 @@ The inspector performs no training and prints no narrative text.
    together. Existing saved Other answers must stay readable and must not be
    silently reclassified.
 
-This is a proposed next implementation batch. No fourth runtime label or
-employment pathway was added during the dashboard review.
+The dashboard review recorded this as a proposal. The subsequent employment
+release implements the fourth category, official guide and preparation prompts.
 
 ## Current training decision
 
-The active model still fits 128 original synthetic examples. Two trial corpus
+The previous model fitted 128 original synthetic examples. Two trial corpus
 expansions improved some clear-case results but lost one ambiguous abstention in
 the existing coverage fixture. Both were rejected. This is evidence that more
 examples alone are insufficient; reviewed employment labeling and independent
 local evaluation should precede the four-class change.
+
+## Implemented school-MVP release
+
+The new service is `employment-labour-relations-court`, the pathway is
+`employment-dispute-information`, and the resource is `elrc-employment-information`.
+Only the accessible Judiciary overview is used as the published source. The
+guide introduces the information route; it does not reproduce the page's older
+procedural references, salary limits, station lists or deadlines. Kenya Law
+currently requires a browser verification challenge, so no detailed rule-based
+filing instructions are copied. The Labour Department page remained unavailable.
+Optional timeline and record-gathering prompts are clearly marked editorial
+preparation aids, not official mandatory requirements.
+
+The classifier uses 156 synthetic examples, with explicit employment relabeling.
+External candidates remain pending and evaluation-only. The versioned external
+review moves three workplace cases into Employment; original labels are kept.
+All recorded metrics are development evidence. Independent Kenyan evaluation,
+independent annotation and a final untouched participant test are still pending.
+See [data results](../data/README.md#four-category-revision-2026-11-21).
+
+Private referrals and the existing consent-based school demonstration work for
+the new service. An administrator must create/select a development provider for
+that service; official organisations are not enrolled automatically. Older
+Other answers, checklist snapshots and referral snapshots remain unchanged.
+Deploy frontend and backend together: older three-category clients cannot read
+new Employment answers. Do not roll back just one side after saving new answers.

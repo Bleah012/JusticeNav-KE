@@ -125,7 +125,7 @@ def test_create_edit_publish_archive_republish_and_persistence_between_apps():
     path = BASE + "/development-pathway"
     with api(repository, service_repository) as client:
         listing = client.get(BASE, headers=ADMIN).json()
-        assert len(listing["records"]) == 3 and len(listing["publishedServices"]) == 3
+        assert len(listing["records"]) == 4 and len(listing["publishedServices"]) == 4
         assert set(listing["protectedPathwayIds"]) == pathways.PROTECTED_PATHWAYS
         created = client.put(path, headers=ADMIN, json=body())
         assert (
@@ -171,7 +171,7 @@ def test_create_edit_publish_archive_republish_and_persistence_between_apps():
             == 4
         )
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["pathways"] == 4
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["pathways"] == 5
         )
         assert (
             client.put(
@@ -183,7 +183,7 @@ def test_create_edit_publish_archive_republish_and_persistence_between_apps():
         )
         assert client.get("/api/v1/pathways/development-pathway").status_code == 404
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["pathways"] == 3
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["pathways"] == 4
         )
         assert (
             client.request(

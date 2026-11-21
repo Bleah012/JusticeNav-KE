@@ -98,3 +98,11 @@ genuine source links into a clearly labelled demonstration resource.
 Automated checks: backend `test_resource_management.py`, frontend
 `resource-management.test.cjs`, the existing suites, lint and production build.
 Browser fixture checks use isolated storage; this sequence verifies live Firestore.
+
+## Employment release additions
+
+The explicitly added employment seed record is included in older catalogue states
+when its ID is absent from both records and deleted IDs. Existing edits, archives,
+drafts and tombstones take precedence. Reads remain read-only; the next normal
+transaction persists the overlay. A new employment pathway stays draft when its
+service is not published. Source review dates for older records are unchanged.

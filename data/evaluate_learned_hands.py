@@ -8,10 +8,12 @@ from collections import Counter
 from pathlib import Path
 
 SOURCE_SHA256 = "0696db2a9965dc898d63366c56f60a13df9594c4ab700137c4330fdb70a45b3f"
-LABELS = ("consumer", "money-debt", "other")
+LABELS = ("consumer", "money-debt", "employment", "other")
+EXPECTED_COUNTS = {"consumer": 10, "money-debt": 10, "employment": 3, "other": 7}
+LABEL_VERSION = "four-category-review-v2"
 OUTCOMES = (*LABELS, "abstain")
 DATA_DIR = Path(__file__).resolve().parent
-REVIEW_PATH = DATA_DIR / "samples" / "learned-hands-reviewed-labels.csv"
+REVIEW_PATH = DATA_DIR / "samples" / "learned-hands-reviewed-labels-v2.csv"
 DEFAULT_DATASET = DATA_DIR / "raw" / "learned-hands-2022-05-21.csv"
 
 
@@ -50,8 +52,8 @@ def main() -> None:
         parser.error("The review contains duplicate case keys.")
     if reviewed_keys - texts.keys():
         parser.error("The source CSV is missing one or more reviewed cases.")
-    if Counter(row["expected"] for row in reviewed) != dict.fromkeys(LABELS, 10):
-        parser.error("The review must have ten cases for each expected category.")
+    if Counter(row["expected"] for row in reviewed) != EXPECTED_COUNTS:
+        parser.error("The review must match the versioned four-category counts.")
 
     matrix = {label: Counter() for label in LABELS}
     for row in reviewed:
@@ -59,7 +61,10 @@ def main() -> None:
         prediction = suggest_issue(text) or "abstain"
         matrix[row["expected"]][prediction] += 1
 
-    print("Expected\tConsumer\tMoney / Debt\tSomething else\tUnsure")
+    print(
+        f"Labels: {LABEL_VERSION}; development evaluation, not an independent final test"
+    )
+    print("Expected\tConsumer\tMoney / Debt\tEmployment\tSomething else\tUnsure")
     for label, counts in matrix.items():
         print(label, *(counts[outcome] for outcome in OUTCOMES), sep="\t")
 

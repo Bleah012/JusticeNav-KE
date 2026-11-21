@@ -31,19 +31,20 @@ def client(store=None, verifier=None):
 
 def test_checked_records_are_real_official_sources_with_consistent_dates():
     data = CatalogStore(DATA).load()
-    assert len(data.services) == 3 and len(data.resources) == 6
+    assert len(data.services) == 4 and len(data.resources) == 7
     assert {service.id for service in data.services} == {
         "small-claims-courts",
         "cak-consumer-protection",
         "nlas-legal-aid",
+        "employment-labour-relations-court",
     }
-    assert data.checked_on.isoformat() == "2026-11-02"
+    assert data.checked_on.isoformat() == "2026-11-21"
     for service in data.services:
-        assert service.source_review.checked_on == data.checked_on
+        assert service.source_review.checked_on <= data.checked_on
         for link in service.source_review.sources:
             assert official_url(link.url) == link.url
     for resource in data.resources:
-        assert resource.source.checked_on == data.checked_on
+        assert resource.source.checked_on <= data.checked_on
         assert official_url(resource.source.url) == resource.source.url
 
 
@@ -71,8 +72,8 @@ def test_public_reads_need_no_token_and_do_not_call_authentication(path, authori
 def test_directory_summaries_exclude_profile_contact_details_and_unknown_fields():
     with client() as api:
         response = api.get("/api/v1/services").json()
-    assert len(response["services"]) == 3
-    assert response["checkedOn"] == "2026-11-02"
+    assert len(response["services"]) == 4
+    assert response["checkedOn"] == "2026-11-21"
     for service in response["services"]:
         assert set(service) == {
             "id",
@@ -105,10 +106,10 @@ def test_service_profiles_select_exact_identifier_and_retain_unknowns_as_null():
 def test_resource_categories_and_source_links_are_available_without_fake_downloads():
     with client() as api:
         resources = api.get("/api/v1/resources").json()["resources"]
-    assert len(resources) == 6
+    assert len(resources) == 7
     assert set(
         category for resource in resources for category in resource["categories"]
-    ) == {"civil", "consumer", "preparation", "self-representation"}
+    ) == {"civil", "consumer", "preparation", "self-representation", "employment"}
     for resource in resources:
         assert set(resource["source"]) == {"name", "url", "checkedOn"}
         assert "downloadUrl" not in resource

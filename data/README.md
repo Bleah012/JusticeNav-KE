@@ -2,14 +2,14 @@
 
 | Data | Location | Purpose |
 | --- | --- | --- |
-| Synthetic training corpus | [`backend/app/issue_training.json`](../backend/app/issue_training.json) | Fits the app's classifier using 128 synthetic examples. |
+| Synthetic training corpus | [`backend/app/issue_training.json`](../backend/app/issue_training.json) | Fits the app's classifier using 156 synthetic examples across four categories. |
 | Synthetic evaluation fixtures | [`backend/tests/fixtures/`](../backend/tests/fixtures/) | Checks category suggestions and abstention in the automated backend tests. |
 | Learned Hands reviewed sample | [`samples/learned-hands-reviewed-labels.csv`](samples/learned-hands-reviewed-labels.csv) | Provides the expected JusticeNav KE categories for 30 cases, ten per category. |
 | Learned Hands source CSV | `data/raw/learned-hands-2022-05-21.csv` | Supplies the original descriptions for local offline evaluation. Git ignores this file. |
 
 ## Learned Hands evaluation
 
-The source is the **2022-05-21 95% confidence binary release** from Learned Hands, a project of the Suffolk LIT Lab and Stanford Legal Design Lab. JusticeNav KE selected and relabeled a subset for its three categories. The sample file stores hashed source row keys, expected labels and short review reasons. The original descriptions stay in the downloaded CSV. Use the source data and the reviewed sample under CC BY-NC-SA 4.0. [Source and release notes](https://spot.suffolklitlab.org/data/) · [License](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+The source is the **2022-05-21 95% confidence binary release** from Learned Hands, a project of the Suffolk LIT Lab and Stanford Legal Design Lab. JusticeNav KE selected and relabeled a subset; the original three-category review is retained and the current version has four categories. The sample files store hashed source row keys, expected labels and short review reasons. The original descriptions stay in the downloaded CSV. Use the source data and reviewed samples under CC BY-NC-SA 4.0. [Source and release notes](https://spot.suffolklitlab.org/data/) · [License](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
 Run these commands from the repository root with the backend Python environment installed. If you already have the release CSV, copy it to the path shown in the table and run the last two lines.
 
@@ -23,7 +23,7 @@ if (-not (Test-Path -LiteralPath $dataset)) {
 if ($LASTEXITCODE -ne 0) { throw "Learned Hands evaluation failed." }
 ```
 
-The evaluator checks the source file's SHA-256, joins the 30 reviewed rows by key, and prints aggregate counts for the current classifier. For the 128-example model, the expected result is 15 correct suggestions, zero incorrect suggestions, and 15 Unsure responses.
+The evaluator checks the source file's SHA-256, joins the 30 reviewed rows by key, and prints aggregate counts for the current classifier. For the historical three-category 128-example model, the result was 15 correct suggestions, zero incorrect suggestions, and 15 Unsure responses.
 
 The sample favors clear cases and has one reviewer. It informed the training expansion, so it serves as a repeatable development comparison. Independent accuracy on Kenyan user submissions remains unevaluated. [Classifier evaluation notes](../docs/issue-suggestions.md)
 
@@ -35,14 +35,16 @@ what happened as they would in the app, using one to three sentences. Use
 fictional people and omit names, phone numbers, account details and real case
 details. Record the expected categories before running the evaluator.
 
-Aim for ten clear examples per category and six vague or mixed cases. A
+For the 36-row template, aim for eight clear examples per category and four
+vague or mixed cases. Add more rows for a larger study. A
 reviewer can use these labels in the `expected_category` column.
 
 | CSV label | Use for |
 | --- | --- |
 | `consumer` | A purchase or paid service dispute, such as delivery, a defective product or an unexpected charge. |
 | `money-debt` | A borrowing, repayment, debt collection or loan balance dispute. |
-| `other` | A clearly described situation outside those two categories, such as tenancy, employment or schooling. |
+| `employment` | An employer-employee workplace dispute, including wages, dismissal, leave or workplace treatment. |
+| `other` | A clearly described situation outside the three specific categories, such as tenancy, family or schooling. |
 | `unsure` | A vague or mixed description where a single category cannot be chosen confidently from the facts given. |
 
 Run these commands from the repository root to make a working copy of the
@@ -88,16 +90,15 @@ practice file must not be described as independent participant data.
 
 samples/kenyan-english-development.csv contains 36 additional assistant-authored
 fictional scenarios: ten per category and six vague inputs. It is a development
-regression set, not training data or a Kenyan participant study. The unchanged
-128-example model gives 27 correct suggestions, no wrong suggestions, three
+regression set, not training data or a Kenyan participant study. The previous
+128-example model gave 27 correct suggestions, no wrong suggestions, three
 Unsure outcomes on the 30 labeled cases, and Unsure for all six vague cases.
 This does not establish real-user accuracy.
 
 A 192-example synthetic candidate improved the coverage fixture from 20 to 25
 correct suggestions and Learned Hands from 15 to 19, but abstained on only five
 of six ambiguous coverage cases. A balanced 176-example candidate also lost one
-ambiguous abstention. Neither was adopted. Runtime training stays at 128 examples
-and the existing thresholds stay fixed. More data must improve coverage while
+ambiguous abstention. Neither was adopted at that review. The later four-category revision is documented below. More data must improve coverage while
 retaining appropriate abstention.
 
 ## Employment candidate review
@@ -116,6 +117,41 @@ locally during this batch; it stays under the existing Git ignore rule.
 Source narratives and the worksheet retain the release's attribution and
 noncommercial share-alike conditions.
 
-See [employment scope and training plan](../docs/employment-scope.md). Current
-runtime categories remain Consumer, Money / Debt and Something else. Employment
-navigation and a fourth classifier label are a proposed next implementation step.
+See [employment scope and training plan](../docs/employment-scope.md). The current revision adds Employment to Consumer, Money / Debt and Something else.
+
+## Four-category revision (2026-11-21)
+
+Runtime training contains 156 synthetic descriptions: 40 Consumer, 40 Money/Debt,
+38 Employment and 38 Other. Ten workplace examples moved from Other; 28 new
+employment examples were authored. None of the 363 external candidates, raw
+narratives or user records were added to training. Review provenance and label
+definitions are in samples/employment-label-review.json. Assistant assistance
+does not establish independent annotation.
+
+The original learned-hands-reviewed-labels.csv is retained unchanged. Current
+evaluators use learned-hands-reviewed-labels-v2.csv: ten Consumer, ten Money/Debt,
+three Employment and seven Other. The three workplace narratives were reviewed
+and relabeled; the source checksum and case keys stay unchanged. DEV022/DEV029
+and existing JSON workplace development cases also move to Employment. This
+label revision means historical three-class metrics are not directly comparable.
+
+Word features are fitted on training only. The new 28-case synthetic validation
+fixture and existing development regressions were used when selecting the score
+threshold (0.48, margin 0.18). They are not independent final tests. No evaluation
+text enters vocabulary fitting. A completed independent Kenyan test is still
+pending; the local working CSV remains blank at this review.
+
+Reproduce with `python -B data/evaluate_classifier.py` or the individual
+evaluators. Current four-class development results:
+
+| Set | Correct | Wrong | Unsure | Ambiguous → Unsure |
+| --- | ---: | ---: | ---: | ---: |
+| Existing basic fixture | 19/19 | 0 | 0 | 6/6 |
+| Existing coverage fixture | 20/30 | 0 | 10 | 6/6 |
+| Kenyan English synthetic CSV | 28/30 | 0 | 2 | 6/6 |
+| Employment validation | 19/20 | 0 | 1 | 7/8 |
+| Revised external development sample | 16/30 | 0 | 14 | Not supplied |
+
+One deliberately mixed work/loan validation example receives Money/Debt instead
+of abstaining. The model is not a reliable mixed-issue detector. Users retain
+manual selection and can describe separate issues in separate assessments.

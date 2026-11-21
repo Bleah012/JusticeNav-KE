@@ -102,9 +102,9 @@ def test_full_lifecycle_persists_between_app_instances_and_updates_public_librar
     repository = MemoryResources()
     path = BASE + "/development-resource"
     with api(repository) as client:
-        assert len(client.get(BASE, headers=ADMIN).json()["records"]) == 6
+        assert len(client.get(BASE, headers=ADMIN).json()["records"]) == 7
         public = client.get("/api/v1/resources").json()
-        assert len(public["resources"]) == 6
+        assert len(public["resources"]) == 7
         created = client.put(path, headers=ADMIN, json=body())
         assert (
             created.status_code == 200
@@ -132,7 +132,7 @@ def test_full_lifecycle_persists_between_app_instances_and_updates_public_librar
             == 200
         )
         response = client.get("/api/v1/resources")
-        assert response.status_code == 200 and len(response.json()["resources"]) == 7
+        assert response.status_code == 200 and len(response.json()["resources"]) == 8
         assert (
             "reviewNote" not in response.text
             and "test-administrator" not in response.text
@@ -145,7 +145,7 @@ def test_full_lifecycle_persists_between_app_instances_and_updates_public_librar
         )
         assert row["categories"] == ["preparation", "consumer"]
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["resources"] == 7
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["resources"] == 8
         )
         assert (
             client.request(
@@ -161,9 +161,9 @@ def test_full_lifecycle_persists_between_app_instances_and_updates_public_librar
             ).status_code
             == 200
         )
-        assert len(client.get("/api/v1/resources").json()["resources"]) == 6
+        assert len(client.get("/api/v1/resources").json()["resources"]) == 7
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["resources"] == 6
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["resources"] == 7
         )
         assert (
             client.request(
@@ -396,7 +396,7 @@ def test_firestore_state_and_audit_share_transaction_and_use_encodable_dates(
     assert isinstance(state["records"][0]["resource"]["source"]["checkedOn"], str)
     assert transaction.create.call_args.args[1]["action"] == "resource.create"
     reference.get.return_value = SimpleNamespace(exists=True, to_dict=lambda: state)
-    assert len(repository.read().records) == 7
+    assert len(repository.read().records) == 8
 
 
 def test_firestore_denial_and_corrupt_state_fail_closed():

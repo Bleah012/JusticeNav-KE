@@ -11,7 +11,7 @@ from app.issue_classifier import TRAINING_PATH, suggest_issue
 @pytest.mark.parametrize(
     "fixture_name", ["issue_evaluation.json", "issue_coverage_evaluation.json"]
 )
-def test_held_out_scenarios_cover_all_three_categories_and_abstention(fixture_name):
+def test_development_scenarios_cover_four_categories_and_abstention(fixture_name):
     training = json.loads(TRAINING_PATH.read_text(encoding="utf-8"))
     evaluation = json.loads(
         (Path(__file__).with_name("fixtures") / fixture_name).read_text(

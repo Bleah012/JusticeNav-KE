@@ -25,6 +25,7 @@ from .catalog import (
     SourceReview,
     Text,
 )
+from .issue_classifier import Issue
 
 
 class PreparationItem(CatalogModel):
@@ -125,7 +126,7 @@ class NavigationResponse(CatalogModel):
     uid: StrictStr
     revision: int = Field(strict=True, ge=1)
     method: Literal["selected-category-v1"] = "selected-category-v1"
-    selected_issue: Literal["consumer", "money-debt", "other"]
+    selected_issue: Issue
     checked_on: str
     pathways: list[NavigationItem]
 
@@ -134,6 +135,7 @@ class NavigationResponse(CatalogModel):
 CATEGORY_PATHWAYS = {
     "consumer": ("cak-consumer-complaint", "small-claims-information"),
     "money-debt": ("small-claims-information",),
+    "employment": ("employment-dispute-information",),
     "other": (),
 }
 router = APIRouter(prefix="/api/v1", tags=["Pathway guidance"])
@@ -209,6 +211,7 @@ def assessment_pathways(
     label = {
         "consumer": "Consumer",
         "money-debt": "Money / Debt",
+        "employment": "Employment",
         "other": "Something else",
     }[record.answers.issue]
     return NavigationResponse(

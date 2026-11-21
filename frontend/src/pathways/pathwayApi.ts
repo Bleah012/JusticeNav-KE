@@ -5,7 +5,8 @@ import {
   officialSource,
   validServiceId,
 } from "../catalog/catalogApi";
-import { validId } from "../assessments/assessmentApi";
+import { validId, validIssue } from "../assessments/assessmentApi";
+import type { Issue } from "../assessments/assessmentApi";
 
 export type SourceReview = {
   checkedOn: string;
@@ -37,7 +38,7 @@ export type Navigation = {
   uid: string;
   revision: number;
   method: "selected-category-v1";
-  selectedIssue: "consumer" | "money-debt" | "other";
+  selectedIssue: Issue;
   checkedOn: string;
   pathways: { pathway: Pathway; reason: string }[];
 };
@@ -128,13 +129,14 @@ export function parseNavigation(
     Number(result.revision) < 1 ||
     result.method !== "selected-category-v1" ||
     !checkedDate(result.checkedOn) ||
-    !["consumer", "money-debt", "other"].includes(String(result.selectedIssue))
+    !validIssue(result.selectedIssue)
   )
     throw new CatalogError(502);
   const selectedIssue = result.selectedIssue as Navigation["selectedIssue"];
   const expected = {
     consumer: ["cak-consumer-complaint", "small-claims-information"],
     "money-debt": ["small-claims-information"],
+    employment: ["employment-dispute-information"],
     other: [],
   }[selectedIssue];
   const pathways = array(result.pathways, 3).map((value) => {

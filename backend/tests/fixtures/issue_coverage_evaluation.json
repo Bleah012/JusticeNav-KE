@@ -25,12 +25,10 @@
   ],
   "other": [
     "The landlord told us to move by Friday because he plans to convert the block to offices. Our rental agreement runs to December.",
-    "My supervisor moved me to night shifts after I requested time off to attend clinic appointments.",
     "The head teacher refuses to release my son's school records so he can transfer to another school.",
     "The people in the plot behind ours fenced off the footpath we use to reach the road.",
     "I applied for a replacement national identity card but the office says the names on my records do not match.",
     "The flat has had sewage coming up through the bathroom drain for two weeks. The owner will not send anyone to repair it.",
-    "I was laid off from the workshop and my employer says I cannot take my tools home.",
     "My aunt wants to administer my grandfather's property, but another relative has filed paperwork without telling the family.",
     "My ex and I disagree on who can pick our daughter up from school during the week.",
     "The school says it can send my child home for refusing to cut his hair. I want to challenge that decision."
@@ -42,5 +40,9 @@
     "Who can I speak to in town?",
     "Sijui nianzie wapi.",
     "Charges?"
+  ],
+  "employment": [
+    "My supervisor moved me to night shifts after I requested time off to attend clinic appointments.",
+    "I was laid off from the workshop and my employer says I cannot take my tools home."
   ]
 }

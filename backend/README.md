@@ -210,7 +210,7 @@ characters, boolean `proceed` and integer `expectedRevision`. Save & exit stores
 Draft; Continue stores Needs clarification. Changing the saved description clears
 earlier answers. An unchanged description retains them. Clarification writes accept
 `step: "clarify"`, `answers`, `proceed` and the revision. Answers use the fixed codes
-`consumer`/`money-debt`/`other`, `recent`/`months`/`older`/`unsure`, and
+`consumer`/`money-debt`/`employment`/`other`, `recent`/`months`/`older`/`unsure`, and
 `yes`/`no`/`unsure`; unanswered values are null. Save & exit permits partial answers;
 Continue requires all three. Complete answers produce Awaiting pathways, never
 Results ready or a classification. Clients cannot submit UID, roles, status,
@@ -311,6 +311,7 @@ Method `selected-category-v1` is an explicit editorial mapping:
 
 - Consumer: CAK complaint information, then Small Claims Court information.
 - Money / Debt: Small Claims Court information.
+- Employment: Judiciary employment-dispute information.
 - Something else: no automatic links; general browsing remains available.
 
 Pathway lookup uses the confirmed category. NLAS is browse-only and retains
@@ -592,3 +593,24 @@ as the existing queue; no new collection, composite index or seed is needed.
 Both summaries include server refresh times. Reads across services are not atomic.
 The development-only guard still applies to provider/demo endpoints; admin demo
 counts are null in production, not invented zeros. Refresh after changes.
+
+## Employment release
+
+The selected `employment` answer maps to `employment-dispute-information`,
+linked to `employment-labour-relations-court`. The public catalogue has four
+baseline services, four guides and seven resources. Old review dates are
+preserved; the employment records were reviewed on 2026-11-21. Resource
+categories also accept `employment`.
+
+Only the three explicit new employment IDs are overlaid into older managed
+catalogues. Reads make no writes; administrator edits, drafts, archives and
+deletion tombstones take precedence. The next ordinary catalogue mutation
+persists additions in its existing transaction. A new employment pathway
+stays draft if its service is not published. Catalogue bounds still apply.
+No live account, membership or role is created by this release.
+
+The optional classifier is `synthetic-four-category-v2`: 40 Consumer,
+40 Money/Debt, 38 Employment and 38 Other synthetic descriptions. Ten existing
+employment examples were relabeled from Other and 28 new examples were added.
+The heuristic score threshold is 0.48, margin 0.18; these are development-tuned
+scores, not calibrated probabilities. See docs/issue-suggestions.md.

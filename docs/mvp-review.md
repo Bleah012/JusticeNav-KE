@@ -4,7 +4,8 @@ Review date: 21 November 2026. Baseline: merged main 4fbe1b9, including PR 50.
 This review compares the supplied project proposal, report template, local
 logbook reference and current code. The user confirmed that the three-role school
 demonstration remains the intended referral scope. Dashboard changes in this
-working batch still require the user's live Firebase acceptance check.
+dashboard batch passed the user's live check and was merged as PR 51. The
+subsequent employment release below still needs live Firebase acceptance.
 
 ## Proposal alignment
 
@@ -12,9 +13,9 @@ working batch still require the user's live Firebase acceptance check.
 | --- | --- | --- |
 | Ordinary-language problem entry and access to service information | Saved assessment descriptions, clarification forms, public service/resource catalogue and source links. | Implemented within the school MVP; own-account reads and writes are authenticated. |
 | AI-assisted classification and pathway matching | Optional TF-IDF/logistic-regression category suggestion, manual choice, three fixed clarification questions and category-based pathway links. | Limited implementation. Pathways use the saved category, not a learned ranking or an automated eligibility decision. The model can abstain. |
-| Published provider, eligibility, procedure and preparation information | Reviewed service/pathway/resource CRUD, source dates, published guides and saved checklist snapshots. | Implemented for the current Consumer and Money/Debt scope. Published conditions are information to check with the source, not a finding about an individual case. |
+| Published provider, eligibility, procedure and preparation information | Reviewed service/pathway/resource CRUD, source dates, published guides and saved checklist snapshots. | Implemented for Consumer, Money/Debt and Employment information. Published conditions are information to check with the source, not a finding about an individual case. |
 | Referral requests, tracking and updates | Private request CRUD before sharing, consent-based metadata sharing, admin assignment, provider review/completion, withdrawal, history and persistent in-app read status. | Implemented as the user-confirmed school demonstration. Organisations do not receive the private request through this app. |
-| Employment among the proposed example topics | Employment language currently maps to Other; no dedicated Employment answer or guide. | Open extension. Source research and candidate data are recorded in employment-scope.md. |
+| Employment among the proposed example topics | Explicit Employment choice/suggestion, Judiciary information guide, preparation and school referral flow. | Implemented within information-only scope. External training-candidate review and independent evaluation remain open. |
 | Authorised administration and provider workspaces | Published catalogue CRUD/audit history, account creation, provider membership and role-protected assignment/review. | Implemented within documented operations. Existing-account role changes, disable/delete and export remain unavailable in the UI. |
 
 ## Dashboard findings and changes
@@ -43,9 +44,9 @@ counts. Separate source reads are not a single transactional snapshot.
 
 | Item | Finding |
 | --- | --- |
-| Runtime training | 128 synthetic English descriptions: 40 Consumer, 40 Money/Debt, 48 Other. |
+| Runtime training at dashboard review | 128 synthetic examples; superseded by the four-category employment release described below. |
 | Learned Hands raw source | Present locally, checksum verified; 2,811 rows. It is evaluation-only in the current app. |
-| Reviewed external sample | 30 development cases; 15 correct, zero wrong and 15 Unsure with the current model. This sample already informed development and is not an independent final test. |
+| Reviewed external sample | 30 development cases; 15 correct, zero wrong and 15 Unsure with the three-category model at that review. This sample already informed development and is not an independent final test. |
 | Existing synthetic coverage fixture | 30 labeled cases: 20 correct, zero wrong, ten Unsure; six additional ambiguous cases abstain. |
 | Additional synthetic development CSV | 30 labeled cases: 27 correct, zero wrong, three Unsure; six additional vague cases abstain. It is assistant-authored, not a participant study. |
 | Independent Kenyan English working CSV | Still a blank template with zero completed cases at review time. |
@@ -116,3 +117,12 @@ Before the final report is closed:
 - Supplied SWE 3090 LogBook (1).pdf, including the daily handwriting instructions.
 - Local JusticeNav-KE-SWE-3090-Logbook.pdf in the 2026-11-13 output directory.
 - Repository code, dataset files, regression fixtures and local candidate comparisons.
+
+## Subsequent employment release
+
+Employment now has an explicit manual/suggested category, official Judiciary
+information route, optional preparation checklist and the same school referral
+workflow. Original saved Other answers remain unchanged. The classifier now
+uses 156 synthetic examples; metrics and limitations are in data/README.md.
+External training review and independent Kenyan evaluation remain incomplete.
+This update does not constitute completion of the report or handwritten logbook.

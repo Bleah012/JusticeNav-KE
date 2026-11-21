@@ -11,6 +11,7 @@ import type {
   PathwayRecord,
 } from "../admin/pathwayManagementApi";
 import type { Pathway } from "../pathways/pathwayApi";
+import { issueLabels } from "../assessments/assessmentApi";
 import { AdminDataState } from "./AdminDataState";
 import { Button } from "./ui/Button";
 import { Field, ReviewFields } from "./ServiceManagement";
@@ -147,13 +148,22 @@ function PathwayForm({
               value={pathway?.title}
               required
             />
-            <Field
-              name="category"
-              label="Category"
-              value={pathway?.category}
-              required
-              help="A descriptive catalogue category; this does not change the assessment mapping."
-            />
+            <label className="admin-pages__field" htmlFor="pathway-category">
+              <span>Category *</span>
+              <input
+                id="pathway-category"
+                name="category"
+                defaultValue={pathway?.category ?? ""}
+                list="pathway-category-choices"
+                required
+                maxLength={2000}
+                aria-describedby="pathway-category-help"
+              />
+              <datalist id="pathway-category-choices">
+                {Object.values(issueLabels).map((label) => <option key={label} value={label} />)}
+              </datalist>
+              <small id="pathway-category-help">Choose an issue label or enter a descriptive catalogue category; this does not change the assessment mapping.</small>
+            </label>
             <label className="admin-pages__field" htmlFor="pathway-serviceId">
               <span>Related published service *</span>
               <select

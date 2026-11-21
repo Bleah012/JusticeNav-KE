@@ -28,6 +28,37 @@ test("records reject foreign identity, invalid references, bad answers and fabri
   assert.equal(saved.role, undefined);
 });
 
+test("employment answers parse at partial and complete stages without changing saved Other records", () => {
+  for (const issue of ["consumer", "money-debt", "employment", "other"]) {
+    const partial = record({ status: "needs-clarification", answers: { issue, timeframe: null, contact: null } });
+    const complete = record({ status: "awaiting-pathways", answers: { issue, timeframe: "recent", contact: "no" } });
+    for (const saved of [partial, complete]) {
+      const before = JSON.stringify(saved);
+      assert.equal(parseAssessment(saved, "user-a", id).answers.issue, issue);
+      assert.equal(JSON.stringify(saved), before);
+    }
+  }
+  for (const issue of [undefined, "Employment", "toString", {}, []])
+    assert.throws(() => parseAssessment(record({ answers: { issue, timeframe: null, contact: null } }), "user-a", id));
+});
+
+test("employment suggestions and clarification saves retain the selected category and revision", async () => {
+  let captured;
+  const answers = { issue: "employment", timeframe: "months", contact: "yes" };
+  const api = createAssessmentApi("user-a", async (...args) => {
+    captured = args;
+    return args[2] === "GET"
+      ? { assessmentId: id, revision: 2, issue: "employment" }
+      : { assessment: record({ answers, status: "awaiting-pathways", revision: 3 }) };
+  });
+  assert.equal(await api.suggestIssue(id, 2, signal()), "employment");
+  assert.equal(captured[5].suggestionRevision, 2);
+  const saved = await api.save(id, { step: "clarify", answers, proceed: true }, 2, signal());
+  assert.equal(saved.answers.issue, "employment");
+  assert.equal(saved.revision, 3);
+  assert.deepEqual(JSON.parse(JSON.stringify(captured[3])), { step: "clarify", answers, proceed: true, expectedRevision: 2 });
+});
+
 test("transport keeps private descriptions and identity out of URLs and disables caching/cookies/redirects", async () => {
   const user = { uid: "user-a", getIdToken: async () => "unit-token" }; let captured;
   const request = createAssessmentRequest({ baseUrl: "http://localhost:8000", currentUser: () => user, request: async (url, options) => { captured = { url, options }; return { ok: true, json: async () => ({ assessment: record() }) }; } });

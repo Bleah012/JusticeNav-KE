@@ -8,9 +8,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, get_args
 
-Issue = Literal["consumer", "money-debt", "other"]
+Issue = Literal["consumer", "money-debt", "employment", "other"]
+MODEL_VERSION = "synthetic-four-category-v2"
 TRAINING_PATH = Path(__file__).with_name("issue_training.json")
-MIN_SCORE = 0.56
+MIN_SCORE = 0.48
 MIN_MARGIN = 0.18
 STOP_WORDS = frozenset(
     "about after all am an and are as at be been before but by can could did do does "
@@ -113,7 +114,7 @@ def suggest_issue(description: str) -> Issue | None:
         if sum(" " not in term for term in features) < 3:
             return None
         probabilities = _probabilities(features, weights, biases)
-        best, runner_up, _ = sorted(
+        best, runner_up, *_ = sorted(
             range(len(labels)), key=probabilities.__getitem__, reverse=True
         )
         if (

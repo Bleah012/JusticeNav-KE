@@ -21,6 +21,7 @@ from .catalog import (
     ServiceProfile,
     review_today,
 )
+from .catalog_release import include_release_records
 from .pathways import PathwayUnavailable
 
 Publication = Literal["draft", "published", "archived"]
@@ -226,10 +227,14 @@ class FirestoreServiceRepository:
         return self._client
 
     def decode(self, snapshot):
-        return (
-            ServiceState.model_validate(snapshot.to_dict())
-            if snapshot.exists
-            else initial_state(self.seed)
+        seed = initial_state(self.seed)
+        if not snapshot.exists:
+            return seed
+        return include_release_records(
+            ServiceState.model_validate(snapshot.to_dict()),
+            seed,
+            "service",
+            {"employment-labour-relations-court"},
         )
 
     def read(self):

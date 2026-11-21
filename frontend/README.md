@@ -218,15 +218,16 @@ Profiles expose the exact source links used for their records. Missing contact d
 prompts confirmation with the official source. The map remains unavailable because
 no geocoding/map service is connected. Referral entry links open private project request forms; they do not contact institutions.
 
-The initial service catalogue includes Judiciary Small Claims Court information,
-CAK Consumer Protection and NLAS Legal Aid, with six official resource links. The NLAS
+The service catalogue includes Judiciary Small Claims Court and Employment and
+Labour Relations Court information, CAK Consumer Protection and NLAS Legal Aid,
+with seven official resource links. The NLAS
 profile retains its published scope limitation. No assessment description or answer
 is used to rank these public records, and no legal eligibility decision is made.
 See [source notes](../docs/public-catalog-sources.md).
 
 Manual checks with both servers running:
 
-1. Open `/services` while signed out; expect three services and GET 200.
+1. Open `/services` while signed out; expect four services and GET 200.
 2. Search `CAK`, filter/sort and clear filters. Refresh to confirm URL state remains.
 3. View a service, check its source links/check date and inspect known versus missing
    contact fields. An unknown `/services/not-a-listed-service` should show not found.
@@ -248,7 +249,7 @@ account responses cannot restore old information. Read timeouts, explicit retry,
 missing assessments and incomplete clarification have distinct states.
 
 The generic `/app/assessments/results` route offers general browsing and a link to
-My Assessments. Its three guides are explicitly not personalised results.
+My Assessments. Its four guides are explicitly not personalised results.
 `/pathways/:pathwayId` is public and includes the related real service profile,
 official sources, review date and a working Create my checklist link.
 `/app/checklists/new?pathwayId=...` requires sign-in and loads a versioned checklist
@@ -480,3 +481,23 @@ Share, assign, start and complete a school demonstration, then refresh both role
 dashboards. Provider totals must remain stable while paging beyond 20 records.
 Withdrawal removes the record from provider totals. Check mobile readability
 and a failed API read before restoring the connection.
+
+## Employment browser check
+
+1. Save a new fictional assessment: “My employer has not paid my salary for
+   two months despite my scheduled work.” On Clarify request a suggestion;
+   expect Employment, then select Use this category. Choose the timeframe and
+   prior-contact answers truthfully for this fictional case, and Continue.
+2. Expect Employment dispute information, linked to the official Judiciary
+   source. Open preparation, tick two items, save and refresh. They stay ticked.
+3. Save a test private referral. Confirm it targets the employment information
+   service; editing/deletion and demo sharing follow the existing rules.
+4. To test all roles, create a separate development Provider for this service
+   from Administrator → Users. Share the request as seeker, choose that provider
+   as administrator, then start and complete review as provider. Confirm the
+   seeker's history and notifications. This does not enrol the Judiciary.
+5. Reopen an older Other assessment whose narrative mentions employment.
+   Reading/requesting a suggestion must not change its saved category or
+   revision. Only explicitly selecting Employment and saving changes results.
+6. Try “I need some help please.” Expect Unsure and usable manual choices.
+   Resource browsing and administrator resource editing include Employment.

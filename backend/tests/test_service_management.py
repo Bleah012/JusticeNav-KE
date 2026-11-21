@@ -108,7 +108,7 @@ def test_full_workflow_persists_between_app_instances_and_filters_public_output(
     repository = MemoryRepository()
     with api(repository) as client:
         initial = client.get(BASE, headers=ADMIN).json()
-        assert len(initial["records"]) == 3
+        assert len(initial["records"]) == 4
         assert "small-claims-courts" in initial["protectedServiceIds"]
         created = client.put(
             BASE + "/development-service", headers=ADMIN, json=save_body()
@@ -147,7 +147,7 @@ def test_full_workflow_persists_between_app_instances_and_filters_public_output(
             "reviewNote" not in public.text and "test-administrator" not in public.text
         )
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["services"] == 4
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["services"] == 5
         )
         # Published entries cannot be deleted, even when the client forges a revision.
         assert (
@@ -167,7 +167,7 @@ def test_full_workflow_persists_between_app_instances_and_filters_public_output(
         assert archived.status_code == 200
         assert client.get("/api/v1/services/development-service").status_code == 404
         assert (
-            client.get("/api/v1/admin/overview", headers=ADMIN).json()["services"] == 3
+            client.get("/api/v1/admin/overview", headers=ADMIN).json()["services"] == 4
         )
         assert (
             client.put(
@@ -205,7 +205,7 @@ def test_delete_removes_only_unused_draft_and_prevents_identifier_reuse():
         assert (
             client.get(BASE + "/development-service", headers=ADMIN).status_code == 404
         )
-        assert len(client.get(BASE, headers=ADMIN).json()["records"]) == 3
+        assert len(client.get(BASE, headers=ADMIN).json()["records"]) == 4
         assert (
             client.put(
                 BASE + "/development-service", headers=ADMIN, json=save_body()
@@ -371,7 +371,7 @@ def test_firestore_writes_state_and_audit_in_same_transaction(monkeypatch):
     repository._client.collection.return_value.document.return_value.get.return_value = SimpleNamespace(
         exists=True, to_dict=lambda: persisted
     )
-    assert len(repository.read().records) == 4
+    assert len(repository.read().records) == 5
     assert transaction.create.call_args.args[1]["action"] == "service.create"
 
 

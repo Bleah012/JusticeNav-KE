@@ -409,6 +409,14 @@ test("permission denial clears previously loaded resource data", async () => {
   stop();
 });
 
+test("Employment resource commands preserve the category for admin saves and reads", () => {
+  const employment = { ...resource, categories: ["employment"] };
+  const prepared = prepareResourceCommand({ ...command, resource: employment });
+  assert.equal(prepared.body.resource.categories[0], "employment");
+  const parsed = parseResourceList({ ...listing, records: [{ ...row, resource: employment }] }, UID);
+  assert.equal(parsed.records[0].resource.categories[0], "employment");
+});
+
 test("categories reject empty, duplicate and unsupported values before sending HTTP", async () => {
   let calls = 0;
   const state = setup(async () => {

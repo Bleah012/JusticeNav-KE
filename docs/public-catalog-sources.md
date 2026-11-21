@@ -67,3 +67,10 @@ that an organisation reviewed or endorsed this project.
 
 Edits are version-controlled source changes. Administrator preview forms remain
 unconnected to publication; this batch introduces no public write endpoint.
+
+## Employment addition — 2026-11-21
+
+The ELRC service and employment resource link to the [Judiciary overview](https://judiciary.go.ke/employment-and-labour-relations-court/).
+The published content uses broad scope only. Old procedural references, station
+counts, contacts and eligibility thresholds are not copied. No institutional
+participation in the school demonstration is implied.
