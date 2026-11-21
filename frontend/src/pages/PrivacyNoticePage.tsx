@@ -86,17 +86,17 @@ export function PrivacyNoticePage() {
             <p>
               Pathway navigation reads the signed-in account's saved issue
               category to select general information links. Public guide
-              requests carry no bearer token.
-              Checklist templates, records and progress use the authenticated
-              API. Save checklist or Save &amp; exit stores a source-item
-              snapshot, selected item IDs, owner reference, revision, status and
-              timestamps in Firestore. Unsaved edits remain in page memory and
-              are discarded on refresh or departure.
+              requests carry no bearer token. Checklist templates, records and
+              progress use the authenticated API. Save checklist or Save &amp;
+              exit stores a source-item snapshot, selected item IDs, owner
+              reference, revision, status and timestamps in Firestore. Unsaved
+              edits remain in page memory and are discarded on refresh or
+              departure.
             </p>
             <p>
-              Delete checklist in My Checklists removes that saved checklist
-              and its preparation progress. Minimal deletion metadata is retained
-              to prevent old tabs from restoring it. Earlier saved-record
+              Delete checklist in My Checklists removes that saved checklist and
+              its preparation progress. Minimal deletion metadata is retained to
+              prevent old tabs from restoring it. Earlier saved-record
               notifications remain; their checklist link may no longer open a
               record. Assessments and referrals are kept separately.
             </p>
@@ -147,13 +147,13 @@ export function PrivacyNoticePage() {
               schedule applies.
             </p>
             <p>
-              Selecting Suggest a category asks the authenticated JusticeNav
-              API to load your saved assessment by reference and revision.
-              The model processes the description in server memory and
-              returns a category suggestion or an unsure response. The API
-              does not send your description to an external AI provider or
-              save the prediction. Your category choice is stored when you
-              save the clarification answers.
+              Selecting Suggest a category asks the authenticated JusticeNav API
+              to load your saved assessment by reference and revision. The model
+              processes the description in server memory and returns a category
+              suggestion or an unsure response. The API does not send your
+              description to an external AI provider or save the prediction.
+              Your category choice is stored when you save the clarification
+              answers.
             </p>
             <p>
               If you opt in to a school demonstration, we store your account and
@@ -166,25 +166,26 @@ export function PrivacyNoticePage() {
               the history in My Referrals.
             </p>
             <p>
-              The dashboard reads totals and recent saved-record summaries from
-              your own account; its response excludes assessment and referral
-              descriptions, contact details and clarification answers. Recent
-              activity shows the latest save per record, not a complete history.
-              Opening or refreshing the dashboard does not save records or
-              create activity events. Successful assessment, checklist and
-              project-request saves also store an account-only notification in
-              Firestore in the same transaction. Demonstration assignment,
-              review started and review completed create notifications for the
-              seeker in the same transaction as the progress change. Each update
-              contains your verified UID, a reference to the saved record and
-              revision, its kind, event timestamp and assessment step where
-              relevant, plus unread/read status and the server time when marked
-              read. Notification records do not copy your description,
-              clarification answers or contact details. Opening Notifications
-              only reads this metadata; Mark as read and Mark displayed as read
-              explicitly save read status for the selected updates. No email,
-              SMS or institutional delivery is triggered, and no automatic
-              deletion or notification preferences are connected.
+              The seeker dashboard reads totals and recent saved-record
+              summaries from your own account; its response excludes assessment
+              and referral descriptions, contact details and clarification
+              answers. Recent activity shows the latest save per record, not a
+              complete history. Opening or refreshing the dashboard does not
+              save records or create activity events. Successful assessment,
+              checklist and project-request saves also store an account-only
+              notification in Firestore in the same transaction. Demonstration
+              assignment, review started and review completed create
+              notifications for the seeker in the same transaction as the
+              progress change. Each update contains your verified UID, a
+              reference to the saved record and revision, its kind, event
+              timestamp and assessment step where relevant, plus unread/read
+              status and the server time when marked read. Notification records
+              do not copy your description, clarification answers or contact
+              details. Opening Notifications only reads this metadata; Mark as
+              read and Mark displayed as read explicitly save read status for
+              the selected updates. No email, SMS or institutional delivery is
+              triggered, and no automatic deletion or notification preferences
+              are connected.
             </p>
             <p>
               Your browser or password manager may retain information through
@@ -197,13 +198,20 @@ export function PrivacyNoticePage() {
               Administrators can view Firebase sign-in account names, email
               addresses, roles, enabled status, creation and last sign-in times,
               and a provider&apos;s assigned service. They can create separate
-              provider and administrator accounts with an initial password.
-              This information is sent to the authenticated API in the request
-              body and stored by Firebase Authentication. The initial password
-              is cleared from the form after submission and is not returned by
-              the API or stored in Firestore. These operations do not expose
-              private assessment descriptions or referral contact fields, and
-              do not send a welcome email.
+              provider and administrator accounts with an initial password. This
+              information is sent to the authenticated API in the request body
+              and stored by Firebase Authentication. The initial password is
+              cleared from the form after submission and is not returned by the
+              API or stored in Firestore. These operations do not expose private
+              assessment descriptions or referral contact fields, and do not
+              send a welcome email.
+            </p>
+            <p>
+              The administrator overview counts sign-in accounts and school
+              demonstration statuses. Provider summaries count only
+              demonstrations currently assigned to that provider&apos;s service
+              membership. These summaries do not include private assessment
+              descriptions or referral contact fields.
             </p>
           </section>
 
@@ -291,9 +299,9 @@ export function PrivacyNoticePage() {
               shared in the school-project referral demonstration.
             </p>
             <p>
-              The issue suggestion model uses synthetic training examples.
-              Saved assessments are used for suggestions only when requested.
-              Any proposed reuse of user information for training or research
+              The issue suggestion model uses synthetic training examples. Saved
+              assessments are used for suggestions only when requested. Any
+              proposed reuse of user information for training or research
               requires separate disclosure and review.
             </p>
           </section>

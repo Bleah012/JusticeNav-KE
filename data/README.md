@@ -69,4 +69,53 @@ The evaluator rejects repeated descriptions and exact matches with the
 training corpus after normalizing case and whitespace. It prints aggregate
 counts for each category and reports expected Unsure cases separately. Record
 the model commit, number of completed cases and aggregate results. Describe
-this evaluation as independently authored fictional scenarios in the report.
+authorship accurately. Only call scenarios independent when their authors did
+not see the training examples or help tune the model. Assistant-authored
+practice cases are synthetic development checks.
+
+## Current data completeness and model gate
+
+Run data/evaluate_classifier.py using the backend Python environment. It checks
+training/evaluation overlap and prints aggregate results, a training fingerprint,
+raw-file availability and completed local evaluation cases. It never prints case
+descriptions. Use --output followed by a path to save aggregate JSON locally.
+The app does not require either raw CSV to navigate a seeker.
+
+The local review found 2,811 rows in the Learned Hands release, with 30 reviewed
+development comparisons. The independent Kenyan English working CSV was still
+the blank template, with zero completed cases. The earlier assistant-authored
+practice file must not be described as independent participant data.
+
+samples/kenyan-english-development.csv contains 36 additional assistant-authored
+fictional scenarios: ten per category and six vague inputs. It is a development
+regression set, not training data or a Kenyan participant study. The unchanged
+128-example model gives 27 correct suggestions, no wrong suggestions, three
+Unsure outcomes on the 30 labeled cases, and Unsure for all six vague cases.
+This does not establish real-user accuracy.
+
+A 192-example synthetic candidate improved the coverage fixture from 20 to 25
+correct suggestions and Learned Hands from 15 to 19, but abstained on only five
+of six ambiguous coverage cases. A balanced 176-example candidate also lost one
+ambiguous abstention. Neither was adopted. Runtime training stays at 128 examples
+and the existing thresholds stay fixed. More data must improve coverage while
+retaining appropriate abstention.
+
+## Employment candidate review
+
+The existing release includes LIST label WO-00-00-00-00, Work and Employment Law:
+363 positive, 1,510 negative and 938 unknown entries. Blank labels are unknown,
+not negative. Of the positive narratives, 265 fit the app's 1,500 UTF-16-unit
+input limit and 18 also have Consumer or Money/Debt root labels. They require
+review before mapping to mutually exclusive application categories.
+
+Run data/prepare_employment_review.py to inspect counts. Add --output followed by
+data/raw/employment-review.csv to create a new local review worksheet. Existing
+files are not overwritten. Every row starts pending, with blank reviewed-category
+and split fields. The tool performs no training. A review copy was prepared
+locally during this batch; it stays under the existing Git ignore rule.
+Source narratives and the worksheet retain the release's attribution and
+noncommercial share-alike conditions.
+
+See [employment scope and training plan](../docs/employment-scope.md). Current
+runtime categories remain Consumer, Money / Debt and Something else. Employment
+navigation and a fourth classifier label are a proposed next implementation step.

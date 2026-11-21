@@ -40,22 +40,32 @@ export function renderDashboardChart(
           data: {
             labels,
             datasets: [
-              { data, backgroundColor, borderRadius: 5, maxBarThickness: 54 },
+              { data, backgroundColor, borderRadius: 5, maxBarThickness: 38 },
             ],
           },
           options: {
             ...options,
+            indexAxis: "y",
             scales: {
               x: {
-                border: { display: false },
-                grid: { display: false },
-                ticks: { color: "#374842", maxRotation: 0, autoSkip: false },
-              },
-              y: {
                 beginAtZero: true,
                 border: { display: false },
                 grid: { color: "#e3ebe6" },
-                ticks: { color: "#50615a", precision: 0, maxTicksLimit: 5 },
+                ticks: {
+                  color: "#50615a",
+                  precision: 0,
+                  maxTicksLimit: 5,
+                  font: { size: 14 },
+                },
+              },
+              y: {
+                border: { display: false },
+                grid: { display: false },
+                ticks: {
+                  color: "#374842",
+                  autoSkip: false,
+                  font: { size: 14 },
+                },
               },
             },
           },

@@ -151,3 +151,18 @@ service and become available in matching demonstration assignments. Public
 registration continues to create seekers. Existing accounts cannot be re-roled,
 disabled or deleted from this page. See the backend and frontend guides for setup
 and acceptance checks.
+
+## Dashboard and data review
+
+Dashboard charts and counts are larger. Administrator totals include Firebase
+accounts and school demonstration statuses. Provider status charts cover every
+current assignment, not just the current page. Seeker counts still cover all
+saved records in that account.
+
+The data folder has a reproducible completeness/evaluation audit and a clearly
+labeled synthetic development CSV. Runtime training remains at 128 examples
+after larger candidates regressed on ambiguous inputs. See [employment scope](docs/employment-scope.md)
+for source and training research, and [MVP review](docs/mvp-review.md) for proposal
+alignment and remaining report, logbook and independent evaluation work.
+The three-role workflow remains a school demonstration. Hosting is a separate,
+final task.

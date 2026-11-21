@@ -100,9 +100,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <p>
               Your administrator role is checked by the API. Justice Services,
               Pathways and Resources support draft editing and reviewed
-              publication. Overview shows published catalogue totals. Referrals
-              lets you assign school demonstrations shared by seekers. Users
-              lets you create provider and administrator accounts.
+              publication. Overview shows account, catalogue and school
+              demonstration totals. Referrals lets you assign school
+              demonstrations shared by seekers. Users lets you create provider
+              and administrator accounts.
             </p>
           </div>
           {children}

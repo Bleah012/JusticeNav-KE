@@ -575,3 +575,20 @@ credential must permit Firebase Authentication listing, creation, custom-claim
 updates and enabling accounts. No Firestore collections, client rules, indexes,
 seeding, migrations or new packages are required. The first admin is still set up
 with the existing local role tool. Tests mock all Firebase operations.
+
+## Complete workspace dashboard totals
+
+GET /api/v1/admin/dashboard requires a verified admin role. It combines published
+catalogue counts, all-account role/status totals and metadata-only demonstration
+statuses. Account pages are scanned to completion, with duplicate/cursor checks
+and a 5,000-account MVP bound. Demonstrations use a 1,001-row guard; over 1,000
+records, corrupt data or failed reads return unavailable, not truncated totals.
+Private assessment and referral contact fields are excluded.
+
+GET /api/v1/demo-referrals/provider/summary validates current active membership
+and counts all current assignments across list pages. Withdrawn records have no
+provider key and are excluded. The single provider-key filter uses the same index
+as the existing queue; no new collection, composite index or seed is needed.
+Both summaries include server refresh times. Reads across services are not atomic.
+The development-only guard still applies to provider/demo endpoints; admin demo
+counts are null in production, not invented zeros. Refresh after changes.

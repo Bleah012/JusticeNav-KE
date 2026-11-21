@@ -1,5 +1,6 @@
 import { validId } from "../assessments/assessmentApi";
 import { validServiceId } from "../catalog/catalogApi";
+import { parseProviderDashboard } from "../dashboard/workspaceDashboardApi";
 import {
   createReferralTransport,
   ReferralError,
@@ -205,6 +206,12 @@ export function createDemoReferralApi(
     return data;
   }
   return {
+    async summary(signal: AbortSignal) {
+      return parseProviderDashboard(
+        await read("/provider/summary", "GET", undefined, signal),
+        uid,
+      );
+    },
     async mine(id: string, signal: AbortSignal) {
       const data = await owner(id, "", "GET", undefined, signal);
       return data.referral === null ? null : parseDemoRecord(data.referral);

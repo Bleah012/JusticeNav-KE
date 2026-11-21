@@ -459,3 +459,24 @@ Live acceptance with development accounts you control:
    Reload accounts to inspect it. Cancel a filled form and verify no creation.
 5. Sign in as a seeker/provider and verify the Users route/API are denied. New
    normal registrations must still receive the seeker role.
+
+## Larger dashboards with complete totals
+
+Charts have larger canvases, readable values and horizontal bars for long labels.
+The theme is unchanged. The seeker dashboard retains full own-account counts,
+latest checklist and recent-save summaries. Referral previews now link to any
+recorded demonstration history rather than claiming that no action is recorded.
+
+The administrator overview reads /api/v1/admin/dashboard for catalogue, all-account
+role/status and demonstration totals. The provider queue loads a separate complete
+membership summary; its chart covers all assigned records, not its 20-row page.
+A confirmed progress write refreshes the summary. Zero values require confirmed
+reads; failed refreshes clear old figures. Text counts remain if chart rendering
+fails. Private descriptions and contact fields are excluded from these summaries.
+
+Live acceptance: save/edit/delete a seeker record and refresh; check counts and
+latest-record links. Create a provider/admin account and refresh admin totals.
+Share, assign, start and complete a school demonstration, then refresh both role
+dashboards. Provider totals must remain stable while paging beyond 20 records.
+Withdrawal removes the record from provider totals. Check mobile readability
+and a failed API read before restoring the connection.

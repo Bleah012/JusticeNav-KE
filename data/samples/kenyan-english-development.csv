@@ -1,0 +1,37 @@
+case_id,description,expected_category
+DEV001,The trader sold me a gas cooker with a cracked burner and will not take it back.,consumer
+DEV002,A cleaning business took payment for a full house clean but left without doing the agreed rooms.,consumer
+DEV003,My grocery order was cancelled by the seller after I paid. I am still waiting for the payment to be returned.,consumer
+DEV004,The dealer supplied a freezer that had been used before although the receipt says it was brand new.,consumer
+DEV005,A garage billed me for replacing the battery but another garage found that the old battery was still there.,consumer
+DEV006,I booked a parcel delivery and paid the fee. The courier lost the parcel and has ignored my complaint.,consumer
+DEV007,The online advert showed a leather handbag. The seller delivered a plastic bag and refuses an exchange.,consumer
+DEV008,The shop scanned the same packet twice and has declined to reverse the extra charge.,consumer
+DEV009,A technician took payment to install a water heater and disappeared before completing the installation.,consumer
+DEV010,The holiday lodge charged for a booking that it had already cancelled and is not answering my refund request.,consumer
+DEV011,I lent a workmate cash for an emergency. The agreed repayment day passed and he now avoids my calls.,money-debt
+DEV012,The loan company has added a missed-payment charge even though I paid the instalment on time.,money-debt
+DEV013,I borrowed from our savings group and want to dispute the remaining balance on that loan.,money-debt
+DEV014,A collector says I must pay a relative's debt because I signed as their guarantor.,money-debt
+DEV015,My mobile lender is collecting a loan that I have already finished repaying.,money-debt
+DEV016,A neighbour acknowledged borrowing from me in a message but now says he will not return the money.,money-debt
+DEV017,I paid the agreed settlement to the creditor and they are demanding the same debt again.,money-debt
+DEV018,The SACCO has not recorded my repayment and is treating my loan as overdue.,money-debt
+DEV019,I have fallen behind on a personal loan and need to discuss a repayment arrangement with the lender.,money-debt
+DEV020,The borrowing agreement says one interest rate but the lender has calculated the debt using a higher one.,money-debt
+DEV021,Our landlord removed the front door of our rented room while we were away.,other
+DEV022,My supervisor dismissed me after I complained about safety equipment at the workshop.,other
+DEV023,My sister and I disagree over who should administer our late father's estate.,other
+DEV024,A neighbour has placed a fence through our shared footpath and refuses to remove it.,other
+DEV025,The school excluded my child after a disciplinary meeting and has not explained its decision.,other
+DEV026,The name on my birth registration is misspelled and I need information about correcting the official record.,other
+DEV027,My former partner will not follow the arrangement for collecting our child after school.,other
+DEV028,The county office refused my building permit application and I want to understand the appeal process.,other
+DEV029,My employer moved me to a night shift after I reported harassment by a colleague.,other
+DEV030,My landlord has threatened to evict us despite the tenancy agreement still being in force.,other
+DEV031,I need some help please.,unsure
+DEV032,Something happened and I do not know what to do.,unsure
+DEV033,There is a problem between us.,unsure
+DEV034,I have a question about an issue.,unsure
+DEV035,Can someone point me in the right direction?,unsure
+DEV036,Things are not okay at the moment.,unsure

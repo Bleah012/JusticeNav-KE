@@ -27,7 +27,7 @@ const titles = {
   pathways: "Pathway management",
 };
 
-function CatalogueOverview({ value }: { value: AdminOverview }) {
+export function CatalogueOverview({ value }: { value: AdminOverview }) {
   return (
     <>
       <div className="dashboard-metrics">
@@ -91,14 +91,6 @@ function CatalogueOverview({ value }: { value: AdminOverview }) {
           </section>
         </div>
       </div>
-      <section className="seeker-page__panel">
-        <h2>Account and referral analytics</h2>
-        <p>
-          Platform-wide user counts, assessment statistics and referral activity
-          are currently unavailable.
-        </p>
-        <Link to="/admin/verification">Content verification</Link>
-      </section>
     </>
   );
 }

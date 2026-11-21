@@ -263,8 +263,9 @@ export function DashboardView({
                 </div>
               </dl>
               <p>
-                Your most recently saved project request. No institutional
-                review or next action is recorded.
+                Your most recently saved or edited project request. Open its
+                details to see any school demonstration history and available
+                actions. Institutional delivery remains separate.
               </p>
               <Link
                 className="btn btn-secondary btn-full"
