@@ -69,3 +69,18 @@ suggestions in that pilot. The external narratives were used for evaluation
 only. The pilot was small, deliberately balanced and labeled by one reviewer.
 Accuracy on new Kenyan user submissions remains unevaluated.
 [Learned Hands dataset](https://spot.suffolklitlab.org/data/)
+
+## Dashboard and data review
+
+The 128-example runtime corpus and thresholds remain unchanged. Two larger
+synthetic candidates improved clear-case coverage but each lost an expected
+ambiguous-input abstention and was rejected. The additional assistant-authored
+development CSV is evaluation-only. Reproduce aggregate results and raw-file
+completeness with data/evaluate_classifier.py. No saved seeker descriptions,
+external narratives or new development cases were added to runtime training.
+Independent Kenyan English validation remains open.
+
+Employment currently belongs to Something else under the three-category contract.
+Adding Employment requires an explicit four-label revision and reviewed relabeling
+of existing employment examples, rather than leaving the same concepts in Other.
+See [employment scope](employment-scope.md).

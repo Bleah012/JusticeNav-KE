@@ -61,6 +61,14 @@ class MemoryStore:
             if (not after or key > after) and getattr(self.rows[key], name) == value
         ][:21]
 
+    def summary(self, provider_key=None, service_id=None):
+        rows = [
+            row
+            for row in self.rows.values()
+            if provider_key is None or row.provider_key == provider_key
+        ]
+        return demo.count_demonstrations(rows, provider_key, service_id)
+
 
 def source(uid="seeker-one", ref=REFERRAL):
     return SimpleNamespace(

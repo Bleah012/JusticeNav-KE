@@ -32,6 +32,8 @@ data/**
 !data/*.md
 !data/evaluate_learned_hands.py
 !data/evaluate_kenyan_english.py
+!data/evaluate_classifier.py
+!data/prepare_employment_review.py
 !data/samples/
 !data/samples/**
 

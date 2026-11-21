@@ -18,6 +18,7 @@ import { ReferralFeedback } from "./ReferralFeedback";
 import { Button } from "./ui/Button";
 import { DashboardChart } from "../dashboard/DashboardChart";
 import { dashboardPalette } from "../dashboard/dashboardChartData";
+import type { ProviderDashboard } from "../dashboard/workspaceDashboardApi";
 import "../pages/SeekerPages.css";
 import "../pages/DemoReferralWorkflow.css";
 
@@ -256,37 +257,38 @@ export function AssignmentForm({
   );
 }
 
-function ProviderStatusSummary({ referrals }: { referrals: DemoRecord[] }) {
+function ProviderStatusSummary({ summary }: { summary: ProviderDashboard }) {
   return (
     <section
       className="dashboard-metrics__card dashboard-metrics__card--provider"
       aria-labelledby="provider-status-title"
     >
       <h2 id="provider-status-title">Referral statuses</h2>
-      <p>Assigned demonstrations on this page.</p>
+      <p>
+        All demonstrations currently assigned to your service membership, across
+        every page. Withdrawn sharing is excluded.
+      </p>
+      <p>Last refreshed (Kenya): {referralTime(summary.refreshedAt)}</p>
       <DashboardChart
         kind="doughnut"
         points={[
           {
             label: "Assigned",
-            value: referrals.filter(({ status }) => status === "assigned")
-              .length,
+            value: summary.counts.assigned,
             color: dashboardPalette.blue,
           },
           {
             label: "Under review",
-            value: referrals.filter(({ status }) => status === "under-review")
-              .length,
+            value: summary.counts.underReview,
             color: dashboardPalette.amber,
           },
           {
             label: "Completed",
-            value: referrals.filter(({ status }) => status === "completed")
-              .length,
+            value: summary.counts.completed,
             color: dashboardPalette.green,
           },
         ]}
-        emptyLabel="No demonstrations on this page."
+        emptyLabel="No demonstrations are currently assigned to you."
       />
     </section>
   );
@@ -303,7 +305,11 @@ function Queue({
 }) {
   const [api] = useState(() => apiFor(uid));
   const [resource] = useState(
-    () => new ReferralResource((signal) => api.list(role, after, signal)),
+    () =>
+      new ReferralResource(async (signal) => ({
+        ...(await api.list(role, after, signal)),
+        summary: role === "provider" ? await api.summary(signal) : null,
+      })),
   );
   const state = useResource(resource);
   const ready = state.status === "ready";
@@ -311,8 +317,7 @@ function Queue({
   const reload = () => void resource.reload();
   const route = role === "admin" ? "/admin/referrals" : "/provider";
   const title = role === "admin" ? "Referral management" : "Provider dashboard";
-  const referrals = ready ? state.value.referrals : [];
-  const showSummary = role === "provider" && referrals.length > 0;
+  const summary = ready ? state.value.summary : null;
 
   function assign(record: DemoRecord, providerUid: string) {
     void resource.mutate(
@@ -335,6 +340,7 @@ function Queue({
         referrals: page.referrals.map((row) =>
           row.id === confirmed.id ? confirmed : row,
         ),
+        summary: await api.summary(signal),
       };
     }, messages);
   }
@@ -360,7 +366,7 @@ function Queue({
           : "Review your assigned demonstrations and record their progress."}
       </p>
       <ReferralFeedback state={state} reload={reload} />
-      {showSummary && <ProviderStatusSummary referrals={referrals} />}
+      {summary && <ProviderStatusSummary summary={summary} />}
       <section
         id="provider-assigned-referrals"
         aria-labelledby="demo-queue-title"

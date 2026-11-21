@@ -43,6 +43,7 @@ from .resource_management import (
 from .resource_management import router as resource_management_router
 from .service_management import FirestoreServiceRepository, ManagedCatalogStore
 from .service_management import router as service_management_router
+from .workspace_dashboard import router as workspace_dashboard_router
 
 
 class HealthResponse(BaseModel):
@@ -189,6 +190,7 @@ def create_app(
         else FirebaseProviderDirectory(settings)
     )
     app.include_router(demo_referral_router)
+    app.include_router(workspace_dashboard_router)
 
     @app.exception_handler(RequestValidationError)
     async def private_profile_validation(

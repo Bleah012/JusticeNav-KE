@@ -116,6 +116,46 @@ class HandoffList(CatalogModel):
     next_cursor: Key | None
 
 
+class DemoCounts(CatalogModel):
+    shared: int = Field(strict=True, ge=0, le=1000)
+    assigned: int = Field(strict=True, ge=0, le=1000)
+    under_review: int = Field(strict=True, ge=0, le=1000)
+    completed: int = Field(strict=True, ge=0, le=1000)
+    withdrawn: int = Field(strict=True, ge=0, le=1000)
+
+    @model_validator(mode="after")
+    def bounded_total(self):
+        if sum(self.model_dump().values()) > 1000:
+            raise ValueError("Summary limit exceeded")
+        return self
+
+
+def count_demonstrations(records, provider_key=None, service_id=None):
+    counts = dict.fromkeys(
+        ("shared", "assigned", "under-review", "completed", "withdrawn"), 0
+    )
+    seen = set()
+    for record in records:
+        if record is None or record.id in seen or len(seen) >= 1000:
+            raise Unavailable
+        seen.add(record.id)
+        if provider_key is not None and (
+            record.provider_key != provider_key
+            or record.service_id != service_id
+            or record.status not in {"assigned", "under-review", "completed"}
+        ):
+            raise Unavailable
+        counts[record.status] += 1
+    return DemoCounts(**{key.replace("-", "_"): value for key, value in counts.items()})
+
+
+class ProviderSummary(CatalogModel):
+    uid: Uid
+    service_id: PublicId
+    counts: DemoCounts
+    refreshed_at: AwareDatetime
+
+
 class Consent(CatalogModel):
     consent_version: Literal["demo-metadata-v1"]
     confirmed: Literal[True]
@@ -327,6 +367,21 @@ class FirestoreDemoReferrals:
         except STORAGE_ERRORS as error:
             raise Unavailable from error
 
+    def summary(self, provider_key=None, service_id=None):
+        try:
+            query = self._collection()
+            if provider_key is not None:
+                query = query.where(
+                    filter=FieldFilter("providerKey", "==", provider_key)
+                )
+            rows = [
+                self._read(row)
+                for row in query.limit(1001).stream(retry=None, timeout=10)
+            ]
+            return count_demonstrations(rows, provider_key, service_id)
+        except STORAGE_ERRORS as error:
+            raise Unavailable from error
+
 
 def execute(operation):
     try:
@@ -361,6 +416,23 @@ Seeker = Annotated[CurrentUser, Depends(require_roles("seeker"))]
 Admin = Annotated[CurrentUser, Depends(require_roles("admin"))]
 Provider = Annotated[CurrentUser, Depends(require_roles("provider"))]
 Cursor = Annotated[Key | None, Query()]
+
+
+@router.get("/provider/summary", response_model=ProviderSummary)
+def provider_summary(user: Provider, request: Request):
+    def read():
+        service = request.app.state.demo_provider_directory.service_for(user.uid)
+        counts = request.app.state.demo_referral_store.summary(
+            scoped_key(user.uid, service), service
+        )
+        return ProviderSummary(
+            uid=user.uid,
+            serviceId=service,
+            counts=counts,
+            refreshedAt=datetime.now(UTC),
+        )
+
+    return execute(read)
 
 
 def response(user, record):
