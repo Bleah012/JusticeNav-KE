@@ -491,7 +491,7 @@
 
   .home-pathways__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
 
@@ -853,6 +853,87 @@
   @media (max-width: 420px) {
     .home-footer__grid {
       grid-template-columns: 1fr;
+    }
+  }
+}
+
+@layer components {
+  /* The supplied portrait supports the About section; the original hero stays intact. */
+  .home-intro {
+    row-gap: 28px;
+  }
+
+  .home-intro__copy {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .home-intro__visual {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+    width: 100%;
+    max-width: 470px;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 80px 8px 8px 8px;
+    background: var(--teal-soft);
+  }
+
+  .home-intro__visual img {
+    display: block;
+    width: 100%;
+    height: 510px;
+    object-fit: cover;
+    object-position: center 46%;
+  }
+
+  .home-intro__visual figcaption {
+    margin: 0;
+    padding: 16px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .home-intro .home-journey {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .home-pathway--employment {
+    background: var(--teal-soft);
+  }
+
+  @media (max-width: 1100px) {
+    .home-intro__visual img {
+      height: 480px;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .home-intro__copy,
+    .home-intro__visual,
+    .home-intro .home-journey {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .home-intro__visual {
+      justify-self: center;
+      max-width: 440px;
+    }
+
+    .home-intro__visual img {
+      height: 420px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .home-intro__visual img {
+      height: 370px;
     }
   }
 }

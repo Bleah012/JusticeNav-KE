@@ -1,5 +1,7 @@
 import { ArrowRight, ClipboardCheck, Compass, ShieldCheck } from "lucide-react";
 import { Link } from "react-router";
+import aboutPhoto from "../assets/homepage-portrait.png";
+import { HomeTypewriter } from "../components/HomeTypewriter";
 import "../components/ui/Button.css";
 import "./AboutPage.css";
 
@@ -29,20 +31,41 @@ export function AboutPage() {
   return (
     <div className="about-page">
       <header className="about-page__hero">
-        <div className="about-page__container">
-          <span className="about-page__eyebrow">About the project</span>
-          <h1>About JusticeNav KE</h1>
-          <p className="about-page__statement">
-            A clearer starting point for your next step.
-          </p>
-          <p className="about-page__lead">
-            JusticeNav KE is a student software engineering project that helps
-            people in Kenya explore potentially relevant justice pathways,
-            understand published requirements and prepare to seek assistance.
-          </p>
-          <Link className="btn btn-primary" to="/services">
-            Explore justice services <ArrowRight size={18} aria-hidden="true" />
-          </Link>
+        <div className="about-page__container about-page__hero-grid">
+          <div className="about-page__hero-copy">
+            <span className="about-page__eyebrow">About the project</span>
+            <h1>
+              <HomeTypewriter text="About JusticeNav KE" startAfter={80} interval={30} />
+            </h1>
+            <p className="about-page__statement">
+              <HomeTypewriter
+                text="A clearer starting point for your next step."
+                startAfter={650}
+                interval={23}
+              />
+            </p>
+            <p className="about-page__lead">
+              <HomeTypewriter
+                text="JusticeNav KE is a student software engineering project that helps people in Kenya explore potentially relevant justice pathways, understand published requirements and prepare to seek assistance."
+                startAfter={1500}
+                interval={11}
+              />
+            </p>
+            <Link className="btn btn-primary" to="/services">
+              Explore justice services <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </div>
+          <figure className="about-page__portrait">
+            <img
+              src={aboutPhoto}
+              alt="A woman seated at a desk using a computer."
+              width={743}
+              height={1600}
+              fetchPriority="high"
+              decoding="async"
+            />
+            <figcaption>A starting point for justice information.</figcaption>
+          </figure>
         </div>
       </header>
 
@@ -59,7 +82,7 @@ export function AboutPage() {
             in one guided journey.
           </p>
           <p>
-            The initial focus is consumer disputes and money or debt issues.
+            The current focus includes consumer disputes, money or debt, and employment issues.
             Category suggestions support your choice; you can always select a
             different category. When the model is unsure, you choose how to
             continue.

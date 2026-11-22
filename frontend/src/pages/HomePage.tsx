@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Banknote,
+  BriefcaseBusiness,
   Building2,
   Check,
   ClipboardCheck,
@@ -13,6 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router";
+import introPhoto from "../assets/homepage-portrait.png";
 import { HomeCubeAnimation } from "../components/HomeCubeAnimation";
 import { HomeTypewriter } from "../components/HomeTypewriter";
 import "../components/ui/Button.css";
@@ -92,14 +94,36 @@ export function HomePage() {
         id="about"
         aria-labelledby="journey-title"
       >
-        <div>
+        <div className="home-intro__copy">
           <span className="home-intro__badge">A guided path forward</span>
-          <h2 id="journey-title">From uncertainty to a clear next step.</h2>
+          <h2 id="journey-title">
+            <HomeTypewriter
+              text="From uncertainty to a clear next step."
+              startAfter={80}
+              interval={30}
+              whenVisible
+            />
+          </h2>
           <p>
-            JusticeNav KE starts with your lived experience, then helps organise
-            the information around verified pathways and services.
+            <HomeTypewriter
+              text="JusticeNav KE starts with your lived experience, then helps organise the information around verified pathways and services."
+              startAfter={900}
+              interval={13}
+              whenVisible
+            />
           </p>
         </div>
+        <figure className="home-intro__visual">
+          <img
+            src={introPhoto}
+            alt="A woman seated at a desk using a computer."
+            width={743}
+            height={1600}
+            loading="lazy"
+            decoding="async"
+          />
+          <figcaption>A starting point for justice information.</figcaption>
+        </figure>
         <aside className="home-journey" aria-label="Your journey">
           <div className="home-journey__head">
             <span>Your journey</span>
@@ -190,10 +214,19 @@ export function HomePage() {
           </article>
           <article className="home-pathway home-pathway--monetary">
             <Banknote size={24} aria-hidden="true" />
-            <h3>Civil &amp; monetary</h3>
-            <p>Money, debts, contracts or other civil matters.</p>
+            <h3>Money &amp; debt</h3>
+            <p>Borrowing, repayments, lenders or debt collection.</p>
             <Link className="home-text-link" to="/services">
               Explore justice services{" "}
+              <ArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </article>
+          <article className="home-pathway home-pathway--employment">
+            <BriefcaseBusiness size={24} aria-hidden="true" />
+            <h3>Employment</h3>
+            <p>Wages, dismissal, leave or workplace concerns.</p>
+            <Link className="home-text-link" to="/pathways/employment-dispute-information">
+              Explore employment information{" "}
               <ArrowRight size={18} aria-hidden="true" />
             </Link>
           </article>
