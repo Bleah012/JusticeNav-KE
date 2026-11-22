@@ -39,6 +39,11 @@
     animation: home-typewriter-caret var(--letter-interval) linear var(--letter-delay);
   }
 
+  .home-typewriter[data-started="false"] .home-typewriter__letter,
+  .home-typewriter[data-started="false"] .home-typewriter__letter::after {
+    animation-play-state: paused;
+  }
+
   @keyframes home-typewriter-reveal {
     from {
       opacity: 0;
