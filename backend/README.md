@@ -609,8 +609,17 @@ persists additions in its existing transaction. A new employment pathway
 stays draft if its service is not published. Catalogue bounds still apply.
 No live account, membership or role is created by this release.
 
-The optional classifier is `synthetic-four-category-v2`: 40 Consumer,
+The optional classifier is `synthetic-four-category-v3-abstention`: 40 Consumer,
 40 Money/Debt, 38 Employment and 38 Other synthetic descriptions. Ten existing
 employment examples were relabeled from Other and 28 new examples were added.
 The heuristic score threshold is 0.48, margin 0.18; these are development-tuned
 scores, not calibrated probabilities. See docs/issue-suggestions.md.
+
+## Suggestion abstention revision
+
+`synthetic-four-category-v3-abstention` retains the 156-example corpus and
+0.48/0.18 score thresholds. Bounded English topic/grievance checks can suppress
+generic or conflicting suggestions without changing the four-category contract.
+The existing endpoint returns `issue: null` for Unsure and makes no writes.
+Only an explicit clarification save changes the owner's selected category.
+See docs/issue-abstention.md for reproducible comparisons and known limitations.

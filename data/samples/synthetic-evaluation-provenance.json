@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "filename": "kenyan-english-synthetic-evaluation.csv",
+  "createdOn": "2026-11-21",
+  "authorship": "Assistant-generated fictional English scenarios; no participants",
+  "independentEvaluation": false,
+  "use": "Frozen development regression sample; it informed the abstention rules",
+  "trainingUse": false,
+  "rows": 60,
+  "expectedCounts": {"consumer": 12, "money-debt": 12, "employment": 12, "other": 12, "unsure": 12},
+  "unsureComposition": {"vague": 6, "mixed": 6},
+  "labelsFrozenBeforeOriginalInference": true,
+  "sha256": "f83d4c45c27e03d7e455ef047b934716c8d4124595b2a42b5d9ef6a3e2e276b8",
+  "baselineVersion": "synthetic-four-category-v2",
+  "baselineResults": {"clearCorrect": 47, "clearWrong": 0, "clearAbstained": 1, "ambiguousAbstained": 5, "ambiguousAssignedCategory": 7},
+  "boundary": "The author saw the project and training examples. Shuffled rows do not constitute random sampling from a population. Future tuning must not be described as untouched independent test performance."
+}

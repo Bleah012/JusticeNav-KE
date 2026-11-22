@@ -63,6 +63,7 @@ def report():
         "issue_evaluation",
         "issue_coverage_evaluation",
         "employment_validation",
+        "abstention_probe",
     ):
         groups = json.loads(
             (ROOT / "backend/tests/fixtures" / (name + ".json")).read_text(
@@ -77,6 +78,25 @@ def report():
     result["evaluations"]["synthetic_kenyan_english_development"] = evaluate(
         development
     )
+    sample = DATA / "samples/kenyan-english-synthetic-evaluation.csv"
+    provenance = json.loads(
+        (DATA / "samples/synthetic-evaluation-provenance.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    if hashlib.sha256(sample.read_bytes()).hexdigest() != provenance["sha256"]:
+        raise ValueError(
+            "Frozen synthetic regression sample differs from its provenance."
+        )
+    abstention = read_cases(sample, trained)
+    result["evaluations"]["synthetic_english_abstention_regression"] = evaluate(
+        abstention
+    )
+    result["syntheticRegression"] = {
+        "sha256": provenance["sha256"],
+        "independentEvaluation": False,
+        "use": "Frozen assistant-generated development regression; informed the abstention rules.",
+    }
     local = DATA / "raw/kenyan-english-evaluation.csv"
     result["independentCsv"] = {
         "status": "missing",

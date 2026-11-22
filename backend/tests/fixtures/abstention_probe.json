@@ -1,0 +1,36 @@
+{
+  "consumer": [
+    "The shop delivered a stained sofa and will not replace the damaged item I paid for.",
+    "A courier lost the parcel I paid them to deliver and has rejected my request for a refund.",
+    "The internet company added a premium subscription without permission and refuses to correct my bill.",
+    "I paid a repair business to fix my freezer but it returned the same faulty appliance without completing the service."
+  ],
+  "money-debt": [
+    "My friend borrowed money for a family emergency and has missed the repayment date in our agreement.",
+    "A debt collector is demanding payment for a loan that I settled last year.",
+    "My SACCO deducted a loan instalment twice and will not correct the remaining debt balance.",
+    "The lender wants me to repay my neighbour's borrowing because I signed as guarantor."
+  ],
+  "employment": [
+    "The company has withheld my final wages after ending my employment at the petrol station.",
+    "My employer dismissed me after I complained to human resources about harassment at work.",
+    "The manager says my earned annual leave has been cancelled and will not explain the employment policy.",
+    "My employer deducted a penalty from my salary and refuses to follow the amount agreed in my contract."
+  ],
+  "other": [
+    "My landlord has disconnected the water in the flat I rent and is demanding that I leave.",
+    "My cousins disagree about the distribution of our late grandmother's estate.",
+    "The county office refused to issue the building permit I applied for.",
+    "My former partner and I disagree over custody of our son after separation."
+  ],
+  "uncertain": [
+    "I need advice about a difficult situation but cannot explain what went wrong.",
+    "Something is happening and I do not know who should help.",
+    "Can you help me understand a problem I have?",
+    "People are telling me different things about the matter.",
+    "The shop refuses to refund my faulty printer. Separately, my employer has withheld my wages.",
+    "My landlord is threatening eviction but my lender is also demanding repayment of a disputed loan. I need both addressed.",
+    "My employer dismissed me from my job and my former partner is also refusing the child custody arrangement.",
+    "A courier lost my paid delivery and my SACCO is also pursuing a debt I already repaid. These are separate problems."
+  ]
+}

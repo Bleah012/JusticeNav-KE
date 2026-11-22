@@ -155,3 +155,27 @@ evaluators. Current four-class development results:
 One deliberately mixed work/loan validation example receives Money/Debt instead
 of abstaining. The model is not a reliable mixed-issue detector. Users retain
 manual selection and can describe separate issues in separate assessments.
+
+## Frozen abstention regression (2026-11-22)
+
+samples/kenyan-english-synthetic-evaluation.csv preserves the 60 assistant-authored
+cases and labels from the previous evaluation: 12 each for Consumer, Money/Debt,
+Employment, Other and Unsure. Six Unsure descriptions are vague and six mix issues.
+The dataset is now development evidence because it informed abstention rules;
+it is not independent participant evaluation or a representative random sample.
+samples/synthetic-evaluation-provenance.json records its original SHA-256 and
+baseline. The audit rejects changed bytes instead of silently reporting new scores.
+Neither it nor the 24-case synthetic probe is used for vocabulary/model fitting.
+
+Current 60-case results: 47/48 correct clear suggestions, one clear Unsure and
+12/12 unclear Unsure, compared with 5/12 unclear Unsure before the fix. Existing
+basic, coverage, Kenyan English and external development results remain unchanged.
+The 24-case probe also informed development: 15/16 clear correct, one clear Unsure,
+8/8 unclear Unsure. No wrong category was assigned to a clear case in these sets.
+Reproducible aggregate comparisons are in samples/abstention-results.json.
+
+Run `python -B data/evaluate_classifier.py` or the existing evaluator with
+`--dataset data/samples/kenyan-english-synthetic-evaluation.csv`. Keep the blank
+working CSV for independent contributors separate. Training is still 156
+synthetic examples and its SHA-256 is unchanged. See
+[the guard's limitations](../docs/issue-abstention.md).

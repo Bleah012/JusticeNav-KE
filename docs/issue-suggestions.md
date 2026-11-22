@@ -98,3 +98,16 @@ Evaluation labels for workplace examples changed with the new taxonomy; old
 three-class results are historical. All bundled evaluation sets are development
 evidence. No completed independent local test or user study is claimed. A mixed
 work/loan example still receives Money/Debt; manual correction remains necessary.
+
+## Abstention revision — 22 November 2026
+
+The current version is `synthetic-four-category-v3-abstention`. Training, fitting
+and score thresholds are unchanged; conservative editorial evidence checks can
+return Unsure for generic requests or distinct topic/grievance clauses. They
+never select a different category or write answers. Routine loan repayment
+alone is not a grievance, and certificate-of-service wording is kept within
+Employment rather than treated as an unrelated official record.
+
+See [the complete comparison and limitations](issue-abstention.md). The 60-case
+sample and the additional probe both informed development; neither supplies
+independent evaluation. Manual choice remains available after Unsure.

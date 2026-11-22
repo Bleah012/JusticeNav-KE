@@ -501,3 +501,11 @@ and a failed API read before restoring the connection.
    revision. Only explicitly selecting Employment and saving changes results.
 6. Try “I need some help please.” Expect Unsure and usable manual choices.
    Resource browsing and administrator resource editing include Employment.
+
+## Abstention browser regression
+
+Restart the backend and follow [the four examples](../docs/issue-abstention.md#limits-and-browser-check).
+Mixed complaints and vague wording should show Unsure with manual choices usable.
+A clear shop complaint with ordinary loan repayment as background should remain
+Consumer. A clear employment complaint should still suggest Employment. Confirm
+that manually choosing a category after Unsure saves and survives refresh.

@@ -175,3 +175,8 @@ checklist and the existing private referral/school-demonstration flow.
 Existing Other answers stay unchanged until the owner explicitly edits them.
 The model uses 156 synthetic examples; raw external or seeker descriptions
 are not training inputs. See [employment scope](docs/employment-scope.md).
+
+Category suggestions now include conservative abstention checks for generic
+requests and separate conflicting complaints. The frozen 60-case synthetic
+sample returns Unsure on 12/12 unclear cases, while retaining 47/48 correct
+clear suggestions. See [abstention behavior and limits](docs/issue-abstention.md).
