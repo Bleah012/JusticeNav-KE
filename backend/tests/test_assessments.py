@@ -198,6 +198,33 @@ def test_suggestion_is_read_only_and_manual_answer_wins(monkeypatch):
         assert response.json()["assessment"]["answers"]["issue"] == "consumer"
 
 
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Something happened a while ago and I need to know what I should do.",
+        "My employer has not paid my wages and a shop refuses to refund a broken phone.",
+    ],
+)
+def test_real_abstention_does_not_save_answers_and_manual_choice_still_wins(text):
+    store = MemoryStore()
+    with client(store) as api:
+        path = f"{URL}/{ID}"
+        saved = api.put(
+            path, headers=headers(), json=description(description=text, proceed=True)
+        )
+        assert saved.status_code == 200
+        before = api.get(path, headers=headers()).json()["assessment"]
+        result = api.get(
+            path + "/issue-suggestion", params={"revision": 1}, headers=headers()
+        )
+        assert result.status_code == 200 and result.json()["issue"] is None
+        assert text not in result.text
+        assert api.get(path, headers=headers()).json()["assessment"] == before
+        selected = api.put(path, headers=headers(), json=clarification())
+        assert selected.status_code == 200
+        assert selected.json()["assessment"]["answers"]["issue"] == "consumer"
+
+
 def test_suggestion_abstains_or_fails_without_exposing_description(monkeypatch):
     classifier = Mock(side_effect=[None, assessments.SuggestionUnavailable("private")])
     monkeypatch.setattr(assessments, "suggest_issue", classifier)

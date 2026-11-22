@@ -1,0 +1,148 @@
+{
+  "evaluatedOn": "2026-11-22",
+  "baselineCommit": "f73aff8",
+  "baselineVersion": "synthetic-four-category-v2",
+  "candidateVersion": "synthetic-four-category-v3-abstention",
+  "independentEvaluation": false,
+  "provenance": "Assistant-authored development cases and a previously reviewed external development sample. The probe informed further guard development.",
+  "trainingSha256": "b494cfb8a81acfd3df30d962d787303af0d108c3012d9b04e0ff211b8c97bcd7",
+  "trainingUnchanged": true,
+  "thresholdsUnchanged": {
+    "score": 0.48,
+    "margin": 0.18
+  },
+  "frozenSyntheticCsvSha256": "f83d4c45c27e03d7e455ef047b934716c8d4124595b2a42b5d9ef6a3e2e276b8",
+  "evaluations": {
+    "issue_evaluation": {
+      "baseline": {
+        "labeled": 19,
+        "correct": 19,
+        "wrong": 0,
+        "unsure": 0,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      },
+      "candidate": {
+        "labeled": 19,
+        "correct": 19,
+        "wrong": 0,
+        "unsure": 0,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      }
+    },
+    "issue_coverage_evaluation": {
+      "baseline": {
+        "labeled": 30,
+        "correct": 20,
+        "wrong": 0,
+        "unsure": 10,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      },
+      "candidate": {
+        "labeled": 30,
+        "correct": 20,
+        "wrong": 0,
+        "unsure": 10,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      }
+    },
+    "employment_validation": {
+      "baseline": {
+        "labeled": 20,
+        "correct": 19,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 8,
+        "ambiguousAbstained": 7
+      },
+      "candidate": {
+        "labeled": 20,
+        "correct": 19,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 8,
+        "ambiguousAbstained": 7
+      }
+    },
+    "abstention_probe": {
+      "baseline": {
+        "labeled": 16,
+        "correct": 15,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 8,
+        "ambiguousAbstained": 3
+      },
+      "candidate": {
+        "labeled": 16,
+        "correct": 15,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 8,
+        "ambiguousAbstained": 8
+      }
+    },
+    "synthetic_kenyan_english_development": {
+      "baseline": {
+        "labeled": 30,
+        "correct": 28,
+        "wrong": 0,
+        "unsure": 2,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      },
+      "candidate": {
+        "labeled": 30,
+        "correct": 28,
+        "wrong": 0,
+        "unsure": 2,
+        "ambiguous": 6,
+        "ambiguousAbstained": 6
+      }
+    },
+    "synthetic_english_abstention_regression": {
+      "baseline": {
+        "labeled": 48,
+        "correct": 47,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 12,
+        "ambiguousAbstained": 5
+      },
+      "candidate": {
+        "labeled": 48,
+        "correct": 47,
+        "wrong": 0,
+        "unsure": 1,
+        "ambiguous": 12,
+        "ambiguousAbstained": 12
+      }
+    },
+    "learned_hands_reviewed_development_sample": {
+      "baseline": {
+        "labeled": 30,
+        "correct": 16,
+        "wrong": 0,
+        "unsure": 14,
+        "ambiguous": 0,
+        "ambiguousAbstained": 0
+      },
+      "candidate": {
+        "labeled": 30,
+        "correct": 16,
+        "wrong": 0,
+        "unsure": 14,
+        "ambiguous": 0,
+        "ambiguousAbstained": 0
+      }
+    }
+  },
+  "limitations": [
+    "No independent participant evaluation is claimed.",
+    "Negation, reported speech, dependent facts and unrecognised topics can still be mishandled.",
+    "One old work/loan validation case still receives a category instead of Unsure."
+  ]
+}

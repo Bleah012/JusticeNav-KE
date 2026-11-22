@@ -1,0 +1,2 @@
+# Preserve the frozen sample's checksum while checking normal whitespace errors.
+data/samples/kenyan-english-synthetic-evaluation.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

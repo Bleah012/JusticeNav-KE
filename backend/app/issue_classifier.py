@@ -8,8 +8,10 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal, get_args
 
+from .issue_evidence import conflicting_claims, has_specific_evidence
+
 Issue = Literal["consumer", "money-debt", "employment", "other"]
-MODEL_VERSION = "synthetic-four-category-v2"
+MODEL_VERSION = "synthetic-four-category-v3-abstention"
 TRAINING_PATH = Path(__file__).with_name("issue_training.json")
 MIN_SCORE = 0.48
 MIN_MARGIN = 0.18
@@ -113,6 +115,8 @@ def suggest_issue(description: str) -> Issue | None:
         features = _tfidf(_terms(description), idf)
         if sum(" " not in term for term in features) < 3:
             return None
+        if conflicting_claims(description):
+            return None
         probabilities = _probabilities(features, weights, biases)
         best, runner_up, *_ = sorted(
             range(len(labels)), key=probabilities.__getitem__, reverse=True
@@ -120,6 +124,7 @@ def suggest_issue(description: str) -> Issue | None:
         if (
             probabilities[best] < MIN_SCORE
             or probabilities[best] - probabilities[runner_up] < MIN_MARGIN
+            or not has_specific_evidence(features, labels[best], description)
         ):
             return None
         return labels[best]

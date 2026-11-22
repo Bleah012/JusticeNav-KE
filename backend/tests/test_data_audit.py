@@ -24,6 +24,14 @@ def audit(tmp_path, monkeypatch):
         data / "samples/kenyan-english-development.csv",
         tmp_path / "samples/kenyan-english-development.csv",
     )
+    shutil.copyfile(
+        data / "samples/kenyan-english-synthetic-evaluation.csv",
+        tmp_path / "samples/kenyan-english-synthetic-evaluation.csv",
+    )
+    shutil.copyfile(
+        data / "samples/synthetic-evaluation-provenance.json",
+        tmp_path / "samples/synthetic-evaluation-provenance.json",
+    )
     monkeypatch.setattr(module, "DATA", tmp_path)
     return module, tmp_path
 
@@ -96,3 +104,26 @@ def test_employment_candidates_preserve_unknown_labels_and_mixed_issues(audit):
         report["positiveAlsoConsumerOrMoney"] == 1 and report["readyForTraining"] == 0
     )
     assert len(candidates) == 2 and "Synthetic workplace" not in str(report)
+
+
+def test_frozen_synthetic_sample_retains_clear_coverage_and_abstains_on_ambiguity(
+    audit,
+):
+    module, _ = audit
+    result = module.report()["evaluations"]["synthetic_english_abstention_regression"]
+    assert result["labeled"] == 48 and result["correct"] >= 47
+    assert result["wrong"] == 0 and result["unsure"] <= 1
+    assert result["ambiguous"] == result["ambiguousAbstained"] == 12
+
+
+def test_audit_rejects_changed_frozen_labels_instead_of_reporting_improved_scores(
+    audit,
+):
+    module, path = audit
+    sample = path / "samples/kenyan-english-synthetic-evaluation.csv"
+    sample.write_text(
+        sample.read_text(encoding="utf-8").replace('"unsure"', '"other"', 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Frozen synthetic regression sample"):
+        module.report()
